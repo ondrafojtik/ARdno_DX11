@@ -35,11 +35,22 @@ namespace ARdno_OpenXR
 		void OnOrientationChanged(Windows::Graphics::Display::DisplayInformation^ sender, Platform::Object^ args);
 		void OnDisplayContentsInvalidated(Windows::Graphics::Display::DisplayInformation^ sender, Platform::Object^ args);
 
+		//OpenXR stuff (my stuff)
+		void CreateInstance();
+		void InitializeSession();
+
+
 	private:
 		std::shared_ptr<DX::DeviceResources> m_deviceResources;
 		std::unique_ptr<ARdno_OpenXRMain> m_main;
 		bool m_windowClosed;
 		bool m_windowVisible;
+
+		// my stuff
+		xr::InstanceHandle m_instance;
+		xr::SessionHandle m_session;
+		std::string m_applicationName;
+		xr::ExtensionDispatchTable m_extensions;
 	};
 }
 

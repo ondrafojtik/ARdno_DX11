@@ -64,14 +64,18 @@
     </Image>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="App.cpp" />
     <ClCompile Include="ARdno_OpenXRMain.cpp" />
     <ClCompile Include="pch.cpp" />
+    <ClCompile Include="OpenXrProgram.cpp" />
+    <ClCompile Include="DxUtility.cpp" />
+    <ClCompile Include="App.cpp" />
+    <ClCompile Include="CubeGraphics.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="App.h" />
     <ClInclude Include="ARdno_OpenXRMain.h" />
     <ClInclude Include="pch.h" />
+    <ClInclude Include="OpenXrProgram.h" />
+    <ClInclude Include="DxUtility.h" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="Assets\StoreLogo.png">
@@ -83,5 +87,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
+    <None Include="$(OpenXRLoaderBinaryRoot)\bin\openxr_loader.dll" />
   </ItemGroup>
 </Project>

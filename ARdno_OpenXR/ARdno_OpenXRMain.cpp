@@ -52,6 +52,7 @@ void ARdno_OpenXRMain::Update()
 	});
 }
 
+
 // Renders the current frame according to the current application state.
 // Returns true if the frame was rendered and is ready to be displayed.
 bool ARdno_OpenXRMain::Render() 

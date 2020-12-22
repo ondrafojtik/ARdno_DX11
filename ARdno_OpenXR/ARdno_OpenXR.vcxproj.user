@@ -2,34 +2,37 @@
 <Project ToolsVersion="Current" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <DebuggerFlavor>UWPRemoteDebugger</DebuggerFlavor>
-    <DebuggerMachineName>HOLOLENS-4JHIB2</DebuggerMachineName>
+    <DebuggerMachineName>192.168.1.106</DebuggerMachineName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">
-    <DebuggerMachineName>HOLOLENS-4JHIB2</DebuggerMachineName>
+    <DebuggerMachineName>192.168.1.106</DebuggerMachineName>
     <DebuggerFlavor>UWPRemoteDebugger</DebuggerFlavor>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">
-    <DebuggerMachineName>HOLOLENS-4JHIB2</DebuggerMachineName>
+    <DebuggerMachineName>192.168.1.106</DebuggerMachineName>
     <DebuggerFlavor>UWPRemoteDebugger</DebuggerFlavor>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">
-    <DebuggerMachineName>HOLOLENS-4JHIB2</DebuggerMachineName>
+    <DebuggerMachineName>192.168.1.106</DebuggerMachineName>
     <DebuggerFlavor>UWPRemoteDebugger</DebuggerFlavor>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">
-    <DebuggerMachineName>HOLOLENS-4JHIB2</DebuggerMachineName>
+    <DebuggerMachineName>192.168.1.106</DebuggerMachineName>
     <DebuggerFlavor>UWPRemoteDebugger</DebuggerFlavor>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <DebuggerMachineName>HOLOLENS-4JHIB2</DebuggerMachineName>
+    <DebuggerMachineName>192.168.1.106</DebuggerMachineName>
     <DebuggerFlavor>UWPRemoteDebugger</DebuggerFlavor>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <DebuggerMachineName>HOLOLENS-4JHIB2</DebuggerMachineName>
+    <DebuggerMachineName>192.168.1.106</DebuggerMachineName>
     <DebuggerFlavor>UWPRemoteDebugger</DebuggerFlavor>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <DebuggerMachineName>HOLOLENS-4JHIB2</DebuggerMachineName>
+    <DebuggerMachineName>192.168.1.106</DebuggerMachineName>
     <DebuggerFlavor>UWPRemoteDebugger</DebuggerFlavor>
+  </PropertyGroup>
+  <PropertyGroup>
+    <ShowAllFiles>true</ShowAllFiles>
   </PropertyGroup>
 </Project>
