@@ -63,13 +63,14 @@ namespace {
 
             // Build out the extensions to enable. Some extensions are required and some are optional.
             const std::vector<const char*> enabledExtensions = SelectExtensions();
-
+            
             // Create the instance with enabled extensions.
             XrInstanceCreateInfo createInfo{XR_TYPE_INSTANCE_CREATE_INFO};
             createInfo.enabledExtensionCount = (uint32_t)enabledExtensions.size();
             createInfo.enabledExtensionNames = enabledExtensions.data();
 
-            createInfo.applicationInfo = {"BasicXrApp", 1, "", 1, XR_CURRENT_API_VERSION};
+            createInfo.applicationInfo = {"ARdno", 1, "", 1, XR_CURRENT_API_VERSION};
+            // error check ?
             strcpy_s(createInfo.applicationInfo.applicationName, m_applicationName.c_str());
             CHECK_XRCMD(xrCreateInstance(&createInfo, m_instance.Put()));
 
@@ -77,6 +78,8 @@ namespace {
         }
 
         std::vector<const char*> SelectExtensions() {
+            // its only the 4 extensions (dx3d11, compo_depth, reference_space, spacial_anchor
+
             // Fetch the list of extensions supported by the runtime.
             uint32_t extensionCount;
             CHECK_XRCMD(xrEnumerateInstanceExtensionProperties(nullptr, 0, &extensionCount, nullptr));
@@ -106,9 +109,9 @@ namespace {
 
             // Additional optional extensions for enhanced functionality. Track whether enabled in m_optionalExtensions.
             m_optionalExtensions.DepthExtensionSupported = EnableExtensionIfSupported(XR_KHR_COMPOSITION_LAYER_DEPTH_EXTENSION_NAME);
-            m_optionalExtensions.UnboundedRefSpaceSupported = EnableExtensionIfSupported(XR_MSFT_UNBOUNDED_REFERENCE_SPACE_EXTENSION_NAME);
-            m_optionalExtensions.SpatialAnchorSupported = EnableExtensionIfSupported(XR_MSFT_SPATIAL_ANCHOR_EXTENSION_NAME);
-
+            m_optionalExtensions.UnboundedRefSpaceSupported = EnableExtensionIfSupported(XR_MSFT_UNBOUNDED_REFERENCE_SPACE_EXTENSION_NAME); // ONDRA: tohle se ti bude hodit.. i mean.. tohle vypada na 
+            m_optionalExtensions.SpatialAnchorSupported = EnableExtensionIfSupported(XR_MSFT_SPATIAL_ANCHOR_EXTENSION_NAME);                // dulezite extensiony Xd
+                                                                                                                                            // potrebuju taky XR_KHR_D3D11_ENABLE_EXTENSION_NAME -> hololens
             return enabledExtensions;
         }
 
@@ -172,12 +175,23 @@ namespace {
                     actionInfo.subactionPaths = m_subactionPaths.data();
                     CHECK_XRCMD(xrCreateAction(m_actionSet.Get(), &actionInfo, m_exitAction.Put()));
                 }
+
+                // create an input action to display cube while pointing
+                {
+                    XrActionCreateInfo actionInfo{ XR_TYPE_ACTION_CREATE_INFO };
+                    actionInfo.actionType = XR_ACTION_TYPE_BOOLEAN_INPUT;
+                    strcpy_s(actionInfo.actionName, "aim_pose");
+                    strcpy_s(actionInfo.localizedActionName, "Left hand Aim Pose");
+                    actionInfo.countSubactionPaths = (uint32_t)m_subactionPaths.size();
+                    actionInfo.subactionPaths = m_subactionPaths.data();
+                    CHECK_XRCMD(xrCreateAction(m_actionSet.Get(), &actionInfo, m_aimAction.Put()));
+                }
             }
 
             // Set up suggested bindings for the simple_controller profile.
             {
                 std::vector<XrActionSuggestedBinding> bindings;
-                bindings.push_back({m_placeAction.Get(), GetXrPath("/user/hand/right/input/select/click")});
+                bindings.push_back({m_aimAction.Get(), GetXrPath("/user/hand/right/input/select/click")});
                 bindings.push_back({m_placeAction.Get(), GetXrPath("/user/hand/left/input/select/click")});
                 bindings.push_back({m_poseAction.Get(), GetXrPath("/user/hand/right/input/grip/pose")});
                 bindings.push_back({m_poseAction.Get(), GetXrPath("/user/hand/left/input/grip/pose")});
@@ -214,19 +228,22 @@ namespace {
             };
 
             // Choose an environment blend mode.
-            {
-                // Query the list of supported environment blend modes for the current system.
-                uint32_t count;
-                CHECK_XRCMD(xrEnumerateEnvironmentBlendModes(m_instance.Get(), m_systemId, m_primaryViewConfigType, 0, &count, nullptr));
-                CHECK(count > 0); // A system must support at least one environment blend mode.
+            //{
+            //    // Query the list of supported environment blend modes for the current system.
+            //    uint32_t count;
+            //    CHECK_XRCMD(xrEnumerateEnvironmentBlendModes(m_instance.Get(), m_systemId, m_primaryViewConfigType, 0, &count, nullptr));
+            //    CHECK(count > 0); // A system must support at least one environment blend mode.
+            //
+            //    std::vector<XrEnvironmentBlendMode> environmentBlendModes(count);
+            //    CHECK_XRCMD(xrEnumerateEnvironmentBlendModes(
+            //        m_instance.Get(), m_systemId, m_primaryViewConfigType, count, &count, environmentBlendModes.data()));
+            //
+            //    // This sample supports all modes, pick the system's preferred one.
+            //    m_environmentBlendMode = environmentBlendModes[0];
+            //}
 
-                std::vector<XrEnvironmentBlendMode> environmentBlendModes(count);
-                CHECK_XRCMD(xrEnumerateEnvironmentBlendModes(
-                    m_instance.Get(), m_systemId, m_primaryViewConfigType, count, &count, environmentBlendModes.data()));
-
-                // This sample supports all modes, pick the system's preferred one.
-                m_environmentBlendMode = environmentBlendModes[0];
-            }
+            // chosing enviroment blend mode (chosing additive, cuz thats the one hololens uses)
+            m_environmentBlendMode = XR_ENVIRONMENT_BLEND_MODE_ADDITIVE;
 
             // Choosing a reasonable depth range can help improve hologram visual quality.
             // Use reversed-Z (near > far) for more uniform Z resolution.
@@ -543,18 +560,6 @@ namespace {
             for (uint32_t side : {LeftSide, RightSide}) {
                 const XrPath subactionPath = m_subactionPaths[side];
 
-                // Apply a tiny vibration to the corresponding hand to indicate that action is detected.
-                auto ApplyVibration = [this, subactionPath] {
-                    XrHapticActionInfo actionInfo{XR_TYPE_HAPTIC_ACTION_INFO};
-                    actionInfo.action = m_vibrateAction.Get();
-                    actionInfo.subactionPath = subactionPath;
-
-                    XrHapticVibration vibration{XR_TYPE_HAPTIC_VIBRATION};
-                    vibration.amplitude = 0.5f;
-                    vibration.duration = XR_MIN_HAPTIC_DURATION;
-                    vibration.frequency = XR_FREQUENCY_UNSPECIFIED;
-                    CHECK_XRCMD(xrApplyHapticFeedback(m_session.Get(), &actionInfo, (XrHapticBaseHeader*)&vibration));
-                };
 
                 XrActionStateBoolean placeActionValue{XR_TYPE_ACTION_STATE_BOOLEAN};
                 {
@@ -581,21 +586,21 @@ namespace {
                         m_holograms.push_back(CreateHologram(handLocation.pose, placementTime));
                     }
 
-                    ApplyVibration();
                 }
 
-                // This sample, when menu button is released, requests to quit the session, and therefore quit the application.
+                // determine whether aim pose is currently active
                 {
-                    XrActionStateBoolean exitActionValue{XR_TYPE_ACTION_STATE_BOOLEAN};
+                    XrActionStateBoolean aim_action_value{XR_TYPE_ACTION_STATE_BOOLEAN};
                     XrActionStateGetInfo getInfo{XR_TYPE_ACTION_STATE_GET_INFO};
-                    getInfo.action = m_exitAction.Get();
+                    getInfo.action = m_aimAction.Get();
                     getInfo.subactionPath = subactionPath;
-                    CHECK_XRCMD(xrGetActionStateBoolean(m_session.Get(), &getInfo, &exitActionValue));
+                    CHECK_XRCMD(xrGetActionStateBoolean(m_session.Get(), &getInfo, &aim_action_value));
 
-                    if (exitActionValue.isActive && exitActionValue.changedSinceLastSync && !exitActionValue.currentState) {
-                        CHECK_XRCMD(xrRequestExitSession(m_session.Get()));
-                        ApplyVibration();
+                    if (aim_action_value.isActive && aim_action_value.changedSinceLastSync && aim_action_value.currentState)
+                    {
+                        aim_action = !aim_action;
                     }
+
                 }
             }
         }
@@ -712,7 +717,7 @@ namespace {
             }
 
             // Pause spinning cube animation when app loses 3D focus
-            if (IsSessionFocused()) {
+            if (aim_action) {
                 auto convertToSeconds = [](XrDuration nanoSeconds) {
                     using namespace std::chrono;
                     return duration_cast<duration<float>>(duration<XrDuration, std::nano>(nanoSeconds)).count();
@@ -757,8 +762,8 @@ namespace {
                     }
                 }
             };
-
-            UpdateSpinningCube(predictedDisplayTime);
+            if (aim_action)
+                UpdateSpinningCube(predictedDisplayTime);
 
             UpdateVisibleCube(m_cubesInHand[LeftSide]);
             UpdateVisibleCube(m_cubesInHand[RightSide]);
@@ -894,6 +899,10 @@ namespace {
         xr::ActionHandle m_exitAction;
         xr::ActionHandle m_poseAction;
         xr::ActionHandle m_vibrateAction;
+        // mine
+        xr::ActionHandle m_aimAction;
+        bool aim_action = 0;
+
 
         XrEnvironmentBlendMode m_environmentBlendMode{};
         xr::math::NearFar m_nearFar{};
