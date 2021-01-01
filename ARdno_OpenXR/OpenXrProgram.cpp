@@ -154,28 +154,6 @@ namespace {
                     CHECK_XRCMD(xrCreateAction(m_actionSet.Get(), &actionInfo, m_poseAction.Put()));
                 }
 
-                // Create an output action for vibrating the left and right controller.
-                {
-                    XrActionCreateInfo actionInfo{XR_TYPE_ACTION_CREATE_INFO};
-                    actionInfo.actionType = XR_ACTION_TYPE_VIBRATION_OUTPUT;
-                    strcpy_s(actionInfo.actionName, "vibrate");
-                    strcpy_s(actionInfo.localizedActionName, "Vibrate");
-                    actionInfo.countSubactionPaths = (uint32_t)m_subactionPaths.size();
-                    actionInfo.subactionPaths = m_subactionPaths.data();
-                    CHECK_XRCMD(xrCreateAction(m_actionSet.Get(), &actionInfo, m_vibrateAction.Put()));
-                }
-
-                // Create an input action to exit the session.
-                {
-                    XrActionCreateInfo actionInfo{XR_TYPE_ACTION_CREATE_INFO};
-                    actionInfo.actionType = XR_ACTION_TYPE_BOOLEAN_INPUT;
-                    strcpy_s(actionInfo.actionName, "exit_session");
-                    strcpy_s(actionInfo.localizedActionName, "Exit session");
-                    actionInfo.countSubactionPaths = (uint32_t)m_subactionPaths.size();
-                    actionInfo.subactionPaths = m_subactionPaths.data();
-                    CHECK_XRCMD(xrCreateAction(m_actionSet.Get(), &actionInfo, m_exitAction.Put()));
-                }
-
                 // create an input action to display cube while pointing
                 {
                     XrActionCreateInfo actionInfo{ XR_TYPE_ACTION_CREATE_INFO };
@@ -195,11 +173,7 @@ namespace {
                 bindings.push_back({m_placeAction.Get(), GetXrPath("/user/hand/left/input/select/click")});
                 bindings.push_back({m_poseAction.Get(), GetXrPath("/user/hand/right/input/grip/pose")});
                 bindings.push_back({m_poseAction.Get(), GetXrPath("/user/hand/left/input/grip/pose")});
-                bindings.push_back({m_vibrateAction.Get(), GetXrPath("/user/hand/right/output/haptic")});
-                bindings.push_back({m_vibrateAction.Get(), GetXrPath("/user/hand/left/output/haptic")});
-                bindings.push_back({m_exitAction.Get(), GetXrPath("/user/hand/right/input/menu/click")});
-                bindings.push_back({m_exitAction.Get(), GetXrPath("/user/hand/left/input/menu/click")});
-
+                
                 XrInteractionProfileSuggestedBinding suggestedBindings{XR_TYPE_INTERACTION_PROFILE_SUGGESTED_BINDING};
                 suggestedBindings.interactionProfile = GetXrPath("/interaction_profiles/khr/simple_controller");
                 suggestedBindings.suggestedBindings = bindings.data();
@@ -896,9 +870,7 @@ namespace {
 
         xr::ActionSetHandle m_actionSet;
         xr::ActionHandle m_placeAction;
-        xr::ActionHandle m_exitAction;
         xr::ActionHandle m_poseAction;
-        xr::ActionHandle m_vibrateAction;
         // mine
         xr::ActionHandle m_aimAction;
         bool aim_action = 0;
