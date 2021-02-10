@@ -70,10 +70,10 @@ namespace {
             createInfo.enabledExtensionNames = enabledExtensions.data();
 
             createInfo.applicationInfo = {"ARdno", 1, "", 1, XR_CURRENT_API_VERSION};
-            // error check ?
             strcpy_s(createInfo.applicationInfo.applicationName, m_applicationName.c_str());
             CHECK_XRCMD(xrCreateInstance(&createInfo, m_instance.Put()));
 
+            // access to all the function pointers from all the extensions! 
             m_extensions.PopulateDispatchTable(m_instance.Get());
         }
 
@@ -101,17 +101,17 @@ namespace {
 
             // D3D11 extension is required for this sample, so check if it's supported.
             CHECK(EnableExtensionIfSupported(XR_KHR_D3D11_ENABLE_EXTENSION_NAME));
-
+            
 #if UWP
             // Require XR_EXT_win32_appcontainer_compatible extension when building in UWP context.
             CHECK(EnableExtensionIfSupported(XR_EXT_WIN32_APPCONTAINER_COMPATIBLE_EXTENSION_NAME));
 #endif
 
             // Additional optional extensions for enhanced functionality. Track whether enabled in m_optionalExtensions.
-            m_optionalExtensions.DepthExtensionSupported = EnableExtensionIfSupported(XR_KHR_COMPOSITION_LAYER_DEPTH_EXTENSION_NAME);
-            m_optionalExtensions.UnboundedRefSpaceSupported = EnableExtensionIfSupported(XR_MSFT_UNBOUNDED_REFERENCE_SPACE_EXTENSION_NAME); // ONDRA: tohle se ti bude hodit.. i mean.. tohle vypada na 
-            m_optionalExtensions.SpatialAnchorSupported = EnableExtensionIfSupported(XR_MSFT_SPATIAL_ANCHOR_EXTENSION_NAME);                // dulezite extensiony Xd
-                                                                                                                                            // potrebuju taky XR_KHR_D3D11_ENABLE_EXTENSION_NAME -> hololens
+            m_optionalExtensions.DepthExtensionSupported =      EnableExtensionIfSupported(XR_KHR_COMPOSITION_LAYER_DEPTH_EXTENSION_NAME);
+            m_optionalExtensions.UnboundedRefSpaceSupported =   EnableExtensionIfSupported(XR_MSFT_UNBOUNDED_REFERENCE_SPACE_EXTENSION_NAME); 
+            m_optionalExtensions.SpatialAnchorSupported =       EnableExtensionIfSupported(XR_MSFT_SPATIAL_ANCHOR_EXTENSION_NAME);                
+            
             return enabledExtensions;
         }
 
@@ -162,14 +162,14 @@ namespace {
                     strcpy_s(actionInfo.localizedActionName, "Left hand Aim Pose");
                     actionInfo.countSubactionPaths = (uint32_t)m_subactionPaths.size();
                     actionInfo.subactionPaths = m_subactionPaths.data();
-                    CHECK_XRCMD(xrCreateAction(m_actionSet.Get(), &actionInfo, m_aimAction.Put()));
+                    CHECK_XRCMD(xrCreateAction(m_actionSet.Get(), &actionInfo, m_stopAction.Put()));
                 }
             }
 
             // Set up suggested bindings for the simple_controller profile.
             {
                 std::vector<XrActionSuggestedBinding> bindings;
-                bindings.push_back({m_aimAction.Get(), GetXrPath("/user/hand/right/input/select/click")});
+                bindings.push_back({m_stopAction.Get(), GetXrPath("/user/hand/right/input/select/click")});
                 bindings.push_back({m_placeAction.Get(), GetXrPath("/user/hand/left/input/select/click")});
                 bindings.push_back({m_poseAction.Get(), GetXrPath("/user/hand/right/input/grip/pose")});
                 bindings.push_back({m_poseAction.Get(), GetXrPath("/user/hand/left/input/grip/pose")});
@@ -186,6 +186,7 @@ namespace {
             CHECK(m_instance.Get() != XR_NULL_HANDLE);
             CHECK(m_systemId == XR_NULL_SYSTEM_ID);
 
+            // kinda useles.. (check, if headset is available (na hololens to nedava smysl..))
             XrSystemGetInfo systemInfo{XR_TYPE_SYSTEM_GET_INFO};
             systemInfo.formFactor = m_formFactor;
             while (true) {
@@ -200,21 +201,6 @@ namespace {
                     CHECK_XRRESULT(result, "xrGetSystem");
                 }
             };
-
-            // Choose an environment blend mode.
-            //{
-            //    // Query the list of supported environment blend modes for the current system.
-            //    uint32_t count;
-            //    CHECK_XRCMD(xrEnumerateEnvironmentBlendModes(m_instance.Get(), m_systemId, m_primaryViewConfigType, 0, &count, nullptr));
-            //    CHECK(count > 0); // A system must support at least one environment blend mode.
-            //
-            //    std::vector<XrEnvironmentBlendMode> environmentBlendModes(count);
-            //    CHECK_XRCMD(xrEnumerateEnvironmentBlendModes(
-            //        m_instance.Get(), m_systemId, m_primaryViewConfigType, count, &count, environmentBlendModes.data()));
-            //
-            //    // This sample supports all modes, pick the system's preferred one.
-            //    m_environmentBlendMode = environmentBlendModes[0];
-            //}
 
             // chosing enviroment blend mode (chosing additive, cuz thats the one hololens uses)
             m_environmentBlendMode = XR_ENVIRONMENT_BLEND_MODE_ADDITIVE;
@@ -271,14 +257,8 @@ namespace {
 
             // Create a app space to bridge interactions and all holograms.
             {
-                if (m_optionalExtensions.UnboundedRefSpaceSupported) {
-                    // Unbounded reference space provides the best app space for world-scale experiences.
-                    m_appSpaceType = XR_REFERENCE_SPACE_TYPE_UNBOUNDED_MSFT;
-                } else {
-                    // If running on a platform that does not support world-scale experiences, fall back to local space.
-                    m_appSpaceType = XR_REFERENCE_SPACE_TYPE_LOCAL;
-                }
-
+                m_appSpaceType = XR_REFERENCE_SPACE_TYPE_UNBOUNDED_MSFT;
+                
                 XrReferenceSpaceCreateInfo spaceCreateInfo{XR_TYPE_REFERENCE_SPACE_CREATE_INFO};
                 spaceCreateInfo.referenceSpaceType = m_appSpaceType;
                 spaceCreateInfo.poseInReferenceSpace = xr::math::Pose::Identity();
@@ -562,11 +542,11 @@ namespace {
 
                 }
 
-                // determine whether aim pose is currently active
+                // determine whether the right hand did an air-tap (so that we can stop rendering the rotating cube..)
                 {
                     XrActionStateBoolean aim_action_value{XR_TYPE_ACTION_STATE_BOOLEAN};
                     XrActionStateGetInfo getInfo{XR_TYPE_ACTION_STATE_GET_INFO};
-                    getInfo.action = m_aimAction.Get();
+                    getInfo.action = m_stopAction.Get();
                     getInfo.subactionPath = subactionPath;
                     CHECK_XRCMD(xrGetActionStateBoolean(m_session.Get(), &getInfo, &aim_action_value));
 
@@ -872,7 +852,7 @@ namespace {
         xr::ActionHandle m_placeAction;
         xr::ActionHandle m_poseAction;
         // mine
-        xr::ActionHandle m_aimAction;
+        xr::ActionHandle m_stopAction;
         bool aim_action = 0;
 
 
