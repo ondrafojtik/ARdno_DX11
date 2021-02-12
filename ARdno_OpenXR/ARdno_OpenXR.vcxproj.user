@@ -2,45 +2,53 @@
 <Project ToolsVersion="Current" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <DebuggerFlavor>UWPRemoteDebugger</DebuggerFlavor>
-    <DebuggerMachineName>192.168.1.108</DebuggerMachineName>
+    <DebuggerMachineName>192.168.1.102</DebuggerMachineName>
     <DebuggerRequireAuthentication>Universal</DebuggerRequireAuthentication>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">
-    <DebuggerMachineName>192.168.1.108</DebuggerMachineName>
+    <DebuggerMachineName>192.168.1.102</DebuggerMachineName>
     <DebuggerFlavor>UWPRemoteDebugger</DebuggerFlavor>
     <DebuggerRequireAuthentication>Universal</DebuggerRequireAuthentication>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">
-    <DebuggerMachineName>192.168.1.108</DebuggerMachineName>
+    <DebuggerMachineName>192.168.1.102</DebuggerMachineName>
     <DebuggerFlavor>UWPRemoteDebugger</DebuggerFlavor>
     <DebuggerRequireAuthentication>Universal</DebuggerRequireAuthentication>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">
-    <DebuggerMachineName>192.168.1.108</DebuggerMachineName>
+    <DebuggerMachineName>192.168.1.102</DebuggerMachineName>
     <DebuggerFlavor>UWPRemoteDebugger</DebuggerFlavor>
     <DebuggerRequireAuthentication>Universal</DebuggerRequireAuthentication>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">
-    <DebuggerMachineName>192.168.1.108</DebuggerMachineName>
+    <DebuggerMachineName>192.168.1.102</DebuggerMachineName>
     <DebuggerFlavor>UWPRemoteDebugger</DebuggerFlavor>
     <DebuggerRequireAuthentication>Universal</DebuggerRequireAuthentication>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <DebuggerMachineName>192.168.1.108</DebuggerMachineName>
+    <DebuggerMachineName>192.168.1.102</DebuggerMachineName>
     <DebuggerFlavor>UWPRemoteDebugger</DebuggerFlavor>
     <DebuggerRequireAuthentication>Universal</DebuggerRequireAuthentication>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <DebuggerMachineName>192.168.1.108</DebuggerMachineName>
+    <DebuggerMachineName>192.168.1.102</DebuggerMachineName>
     <DebuggerFlavor>UWPRemoteDebugger</DebuggerFlavor>
     <DebuggerRequireAuthentication>Universal</DebuggerRequireAuthentication>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <DebuggerMachineName>192.168.1.108</DebuggerMachineName>
+    <DebuggerMachineName>192.168.1.102</DebuggerMachineName>
     <DebuggerFlavor>UWPRemoteDebugger</DebuggerFlavor>
     <DebuggerRequireAuthentication>Universal</DebuggerRequireAuthentication>
   </PropertyGroup>
   <PropertyGroup>
     <ShowAllFiles>true</ShowAllFiles>
+    <Source>C:\dev\ARdno_OpenXR\ARdno_OpenXR\ff.png</Source>
+    <SmallTileSource>C:\dev\ARdno_OpenXR\ARdno_OpenXR\ff.png</SmallTileSource>
+    <MediumTileSource>C:\dev\ARdno_OpenXR\ARdno_OpenXR\ff.png</MediumTileSource>
+    <WideTileSource>C:\dev\ARdno_OpenXR\ARdno_OpenXR\ff.png</WideTileSource>
+    <LargeTileSource>C:\dev\ARdno_OpenXR\ARdno_OpenXR\ff.png</LargeTileSource>
+    <AppIconSource>C:\dev\ARdno_OpenXR\ARdno_OpenXR\ff.png</AppIconSource>
+    <SplashScreenSource>C:\dev\ARdno_OpenXR\ARdno_OpenXR\ff.png</SplashScreenSource>
+    <PackageLogoSource>C:\dev\ARdno_OpenXR\ARdno_OpenXR\ff.png</PackageLogoSource>
   </PropertyGroup>
 </Project>

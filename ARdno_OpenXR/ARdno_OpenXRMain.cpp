@@ -7,7 +7,7 @@ using namespace Windows::Foundation;
 using namespace Windows::System::Threading;
 using namespace Concurrency;
 
-// Loads and initializes application assets when the application is loaded.
+// Loads and initializes application when the application is loaded.
 ARdno_OpenXRMain::ARdno_OpenXRMain(const std::shared_ptr<DX::DeviceResources>& deviceResources) :
 	m_deviceResources(deviceResources)
 {

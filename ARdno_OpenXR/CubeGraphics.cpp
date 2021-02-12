@@ -17,12 +17,21 @@
 #include "pch.h"
 #include "OpenXrProgram.h"
 #include "DxUtility.h"
+#include <DirectXTex.h>
+#include <wrl\client.h>
+#include <wincodec.h>
+#include <WICTextureLoader.h>
+
+#include <iostream>
+#include <fstream>
+
 
 namespace {
     namespace CubeShader {
         struct Vertex {
             XrVector3f Position;
             XrVector3f Color;
+            XrVector2f TexCoords;
         };
 
         constexpr XrVector3f Red{1, 0, 0};
@@ -42,25 +51,52 @@ namespace {
         constexpr XrVector3f RTB{0.5f, 0.5f, -0.5f};
         constexpr XrVector3f RTF{0.5f, 0.5f, 0.5f};
 
+
+
 #define CUBE_SIDE(V1, V2, V3, V4, V5, V6, COLOR) {V1, COLOR}, {V2, COLOR}, {V3, COLOR}, {V4, COLOR}, {V5, COLOR}, {V6, COLOR},
 
+
+        //       POSITION       |      COLOR      | TEXCOORD
         constexpr Vertex c_cubeVertices[] = {
-            CUBE_SIDE(LTB, LBF, LBB, LTB, LTF, LBF, DarkRed)   // -X
-            CUBE_SIDE(RTB, RBB, RBF, RTB, RBF, RTF, Red)       // +X
-            CUBE_SIDE(LBB, LBF, RBF, LBB, RBF, RBB, DarkGreen) // -Y
-            CUBE_SIDE(LTB, RTB, RTF, LTB, RTF, LTF, Green)     // +Y
-            CUBE_SIDE(LBB, RBB, RTB, LBB, RTB, LTB, DarkBlue)  // -Z
-            CUBE_SIDE(LBF, LTF, RTF, LBF, RTF, RBF, Blue)      // +Z
+            -0.5f, -0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, // side 1 (front)
+             0.5f, -0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f,
+             0.5f,  0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f,
+            -0.5f,  0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f,
+             0.5f, -0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, // side 2 (right)
+             0.5f, -0.5f,  0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f,
+             0.5f,  0.5f,  0.5f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f,
+             0.5f,  0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f,
+             0.5f, -0.5f,  0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, // side 3 (back)
+            -0.5f, -0.5f,  0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f,
+            -0.5f,  0.5f,  0.5f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f,
+             0.5f,  0.5f,  0.5f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f,
+            -0.5f, -0.5f,  0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, // side 4 (left)
+            -0.5f, -0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f,
+            -0.5f,  0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f,
+            -0.5f,  0.5f,  0.5f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f,
+            -0.5f, -0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, // side 5 (bottom)
+             0.5f, -0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f,
+             0.5f, -0.5f,  0.5f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f,
+            -0.5f, -0.5f,  0.5f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f,
+            -0.5f,  0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, // side 6 (top)
+             0.5f,  0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f,
+             0.5f,  0.5f,  0.5f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f,
+            -0.5f,  0.5f,  0.5f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f,
         };
 
-        // Winding order is clockwise. Each side uses a different color.
         constexpr unsigned short c_cubeIndices[] = {
-            0,  1,  2,  3,  4,  5,  // -X
-            6,  7,  8,  9,  10, 11, // +X
-            12, 13, 14, 15, 16, 17, // -Y
-            18, 19, 20, 21, 22, 23, // +Y
-            24, 25, 26, 27, 28, 29, // -Z
-            30, 31, 32, 33, 34, 35, // +Z
+            0, 1, 2, //front
+            2, 3, 0,
+            4, 5, 6, //right
+            6, 7, 4,
+            8, 9, 10, //back
+            10, 11, 8,
+            12, 13, 14, //left
+            14, 15, 12,
+            16, 17, 18, //bottom
+            18, 19, 16,
+            20, 21, 22, //top
+            22, 23, 20, 
         };
 
         struct ModelConstantBuffer {
@@ -78,11 +114,13 @@ namespace {
             struct VSOutput {
                 float4 Pos : SV_POSITION;
                 float3 Color : COLOR0;
+                float2 texCoord : TEXCOORD;
                 uint viewId : SV_RenderTargetArrayIndex;
             };
             struct VSInput {
                 float3 Pos : POSITION;
                 float3 Color : COLOR0;
+                float2 texCoord : TEXCOORD;
                 uint instId : SV_InstanceID;
             };
             cbuffer ModelConstantBuffer : register(b0) {
@@ -91,17 +129,21 @@ namespace {
             cbuffer ViewProjectionConstantBuffer : register(b1) {
                 float4x4 ViewProjection[2];
             };
-
             VSOutput MainVS(VSInput input) {
                 VSOutput output;
                 output.Pos = mul(mul(float4(input.Pos, 1), Model), ViewProjection[input.instId]);
                 output.Color = input.Color;
+                output.texCoord = input.texCoord;
                 output.viewId = input.instId;
                 return output;
             }
+            
+            Texture2D objTexture : TEXTURE : register(t0);
+            SamplerState objSamplerState : SAMPLER : register(s0);
 
             float4 MainPS(VSOutput input) : SV_TARGET {
-                return float4(input.Color, 1);
+                float4 final_color = objTexture.Sample(objSamplerState, input.texCoord);
+                return final_color;
             }
             )_";
 
@@ -130,6 +172,7 @@ namespace {
             const D3D11_INPUT_ELEMENT_DESC vertexDesc[] = {
                 {"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0},
                 {"COLOR", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0},
+                {"TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0},
             };
 
             CHECK_HRCMD(m_device->CreateInputLayout(vertexDesc,
@@ -163,6 +206,32 @@ namespace {
             depthStencilDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
             depthStencilDesc.DepthFunc = D3D11_COMPARISON_GREATER;
             CHECK_HRCMD(m_device->CreateDepthStencilState(&depthStencilDesc, m_reversedZDepthNoStencilTest.put()));
+
+            // test
+
+            // creating sampler
+            D3D11_SAMPLER_DESC sampler;
+            ZeroMemory(&sampler, sizeof(sampler));
+            sampler.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
+            sampler.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
+            sampler.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
+            sampler.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
+            sampler.ComparisonFunc = D3D11_COMPARISON_NEVER;
+            sampler.MinLOD = 0;
+            sampler.MaxLOD = D3D11_FLOAT32_MAX;
+            m_device->CreateSamplerState(&sampler, sampler_state.GetAddressOf());
+
+            // creating texture
+            HRESULT hr = Windows::Foundation::Initialize(RO_INIT_TYPE::RO_INIT_MULTITHREADED);
+            hr = DirectX::CreateWICTextureFromFile(m_device.get(), L"Assets\\Square44x44Logo.altform-lightunplated_targetsize-256.png", nullptr, myTexture.GetAddressOf());
+            //hr = DirectX::CreateWICTextureFromFile(m_device.get(), L"Assets\\StoreLogo.png", nullptr, myTexture.GetAddressOf());
+            if (FAILED(hr))
+            {
+                m_deviceContext->PSSetShaderResources(0, 1, myTexture.GetAddressOf());
+                
+            }
+            m_deviceContext->PSSetShaderResources(0, 1, myTexture.GetAddressOf());
+        
         }
 
         const std::vector<DXGI_FORMAT>& SupportedColorFormats() const override {
@@ -226,6 +295,8 @@ namespace {
             m_deviceContext->VSSetConstantBuffers(0, (UINT)std::size(constantBuffers), constantBuffers);
             m_deviceContext->VSSetShader(m_vertexShader.get(), nullptr, 0);
             m_deviceContext->PSSetShader(m_pixelShader.get(), nullptr, 0);
+            m_deviceContext->PSSetSamplers(0, 1, sampler_state.GetAddressOf());
+            m_deviceContext->PSSetShaderResources(0, 1, myTexture.GetAddressOf());
 
             CubeShader::ViewProjectionConstantBuffer viewProjectionCBufferData{};
 
@@ -272,6 +343,10 @@ namespace {
         winrt::com_ptr<ID3D11Buffer> m_cubeVertexBuffer;
         winrt::com_ptr<ID3D11Buffer> m_cubeIndexBuffer;
         winrt::com_ptr<ID3D11DepthStencilState> m_reversedZDepthNoStencilTest;
+
+        Microsoft::WRL::ComPtr<ID3D11SamplerState> sampler_state;
+        Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> myTexture;
+
     };
 } // namespace
 

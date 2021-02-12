@@ -63,7 +63,7 @@ namespace {
 
             // Build out the extensions to enable. Some extensions are required and some are optional.
             const std::vector<const char*> enabledExtensions = SelectExtensions();
-            
+
             // Create the instance with enabled extensions.
             XrInstanceCreateInfo createInfo{XR_TYPE_INSTANCE_CREATE_INFO};
             createInfo.enabledExtensionCount = (uint32_t)enabledExtensions.size();
@@ -73,7 +73,7 @@ namespace {
             strcpy_s(createInfo.applicationInfo.applicationName, m_applicationName.c_str());
             CHECK_XRCMD(xrCreateInstance(&createInfo, m_instance.Put()));
 
-            // access to all the function pointers from all the extensions! 
+            // access to all the function pointers from all the extensions!
             m_extensions.PopulateDispatchTable(m_instance.Get());
         }
 
@@ -101,7 +101,7 @@ namespace {
 
             // D3D11 extension is required for this sample, so check if it's supported.
             CHECK(EnableExtensionIfSupported(XR_KHR_D3D11_ENABLE_EXTENSION_NAME));
-            
+
 #if UWP
             // Require XR_EXT_win32_appcontainer_compatible extension when building in UWP context.
             CHECK(EnableExtensionIfSupported(XR_EXT_WIN32_APPCONTAINER_COMPATIBLE_EXTENSION_NAME));
@@ -109,9 +109,9 @@ namespace {
 
             // Additional optional extensions for enhanced functionality. Track whether enabled in m_optionalExtensions.
             m_optionalExtensions.DepthExtensionSupported =      EnableExtensionIfSupported(XR_KHR_COMPOSITION_LAYER_DEPTH_EXTENSION_NAME);
-            m_optionalExtensions.UnboundedRefSpaceSupported =   EnableExtensionIfSupported(XR_MSFT_UNBOUNDED_REFERENCE_SPACE_EXTENSION_NAME); 
-            m_optionalExtensions.SpatialAnchorSupported =       EnableExtensionIfSupported(XR_MSFT_SPATIAL_ANCHOR_EXTENSION_NAME);                
-            
+            m_optionalExtensions.UnboundedRefSpaceSupported =   EnableExtensionIfSupported(XR_MSFT_UNBOUNDED_REFERENCE_SPACE_EXTENSION_NAME);
+            m_optionalExtensions.SpatialAnchorSupported =       EnableExtensionIfSupported(XR_MSFT_SPATIAL_ANCHOR_EXTENSION_NAME);
+
             return enabledExtensions;
         }
 
@@ -173,7 +173,7 @@ namespace {
                 bindings.push_back({m_placeAction.Get(), GetXrPath("/user/hand/left/input/select/click")});
                 bindings.push_back({m_poseAction.Get(), GetXrPath("/user/hand/right/input/grip/pose")});
                 bindings.push_back({m_poseAction.Get(), GetXrPath("/user/hand/left/input/grip/pose")});
-                
+
                 XrInteractionProfileSuggestedBinding suggestedBindings{XR_TYPE_INTERACTION_PROFILE_SUGGESTED_BINDING};
                 suggestedBindings.interactionProfile = GetXrPath("/interaction_profiles/khr/simple_controller");
                 suggestedBindings.suggestedBindings = bindings.data();
@@ -258,7 +258,7 @@ namespace {
             // Create a app space to bridge interactions and all holograms.
             {
                 m_appSpaceType = XR_REFERENCE_SPACE_TYPE_UNBOUNDED_MSFT;
-                
+
                 XrReferenceSpaceCreateInfo spaceCreateInfo{XR_TYPE_REFERENCE_SPACE_CREATE_INFO};
                 spaceCreateInfo.referenceSpaceType = m_appSpaceType;
                 spaceCreateInfo.poseInReferenceSpace = xr::math::Pose::Identity();
