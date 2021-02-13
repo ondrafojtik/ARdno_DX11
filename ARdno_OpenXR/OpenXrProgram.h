@@ -16,6 +16,7 @@
 
 #pragma once
 
+
 namespace sample {
     struct Cube {
         xr::SpaceHandle Space{};
@@ -23,6 +24,14 @@ namespace sample {
         XrVector3f Scale{0.1f, 0.1f, 0.1f};
 
         XrPosef PoseInAppSpace = xr::math::Pose::Identity(); // Cube pose in app space that gets updated every frame
+    };
+
+    struct Quad {
+        xr::SpaceHandle Space{};
+        std::optional<XrPosef> PoseInSpace{};
+        XrVector3f Scale{ 0.1f, 0.1f, 0.1f };
+
+        XrPosef PoseInAppSpace = xr::math::Pose::Identity();
     };
 
     struct IOpenXrProgram {
@@ -48,7 +57,17 @@ namespace sample {
                                 ID3D11Texture2D* colorTexture,
                                 DXGI_FORMAT depthSwapchainFormat,
                                 ID3D11Texture2D* depthTexture,
-                                const std::vector<const sample::Cube*>& cubes) = 0;
+                                const std::vector<const sample::Cube*>& cubes,
+                                const std::vector<const sample::Cube*>& quads) = 0;
+
+        virtual void RenderView(const XrRect2Di& imageRect,
+                                const float renderTargetClearColor[4],
+                                const std::vector<xr::math::ViewProjection>& viewProjections,
+                                DXGI_FORMAT colorSwapchainFormat,
+                                ID3D11Texture2D* colorTexture,
+                                DXGI_FORMAT depthSwapchainFormat,
+                                ID3D11Texture2D* depthTexture,
+                                const std::vector<const sample::Quad*>& quads) = 0;
     };
 
     std::unique_ptr<IGraphicsPluginD3D11> CreateCubeGraphics();

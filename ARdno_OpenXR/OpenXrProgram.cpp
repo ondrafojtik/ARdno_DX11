@@ -469,8 +469,10 @@ namespace {
         }
 
         struct Hologram;
-        Hologram CreateHologram(const XrPosef& poseInAppSpace, XrTime placementTime) const {
+        enum ObjectType;
+        Hologram CreateHologram(const XrPosef& poseInAppSpace, XrTime placementTime, ObjectType type) const {
             Hologram hologram{};
+            hologram.type = type;
             if (m_optionalExtensions.SpatialAnchorSupported) {
                 // Anchors provide the best stability when moving beyond 5 meters, so if the extension is enabled,
                 // create an anchor at given location and place the hologram at the resulting anchor space.
@@ -537,7 +539,7 @@ namespace {
                         DEBUG_PRINT("Cube cannot be placed when positional tracking is lost.");
                     } else {
                         // Place a new cube at the given location and time, and remember output placement space and anchor.
-                        m_holograms.push_back(CreateHologram(handLocation.pose, placementTime));
+                        m_holograms.push_back(CreateHologram(handLocation.pose, placementTime, ObjectType::Quad));
                     }
 
                 }
@@ -648,6 +650,7 @@ namespace {
                 Hologram hologram{};
                 hologram.Cube.Scale = {0.25f, 0.25f, 0.25f};
                 hologram.Cube.Space = createReferenceSpace(XR_REFERENCE_SPACE_TYPE_LOCAL, xr::math::Pose::Translation({0, 0, -1}));
+                hologram.type = ObjectType::Cube;
                 m_holograms.push_back(std::move(hologram));
                 m_mainCubeIndex = (uint32_t)m_holograms.size() - 1;
             }
@@ -657,6 +660,7 @@ namespace {
                 Hologram hologram{};
                 hologram.Cube.Scale = {0.1f, 0.1f, 0.1f};
                 hologram.Cube.Space = createReferenceSpace(XR_REFERENCE_SPACE_TYPE_LOCAL, xr::math::Pose::Translation({0, 0, -1}));
+                hologram.type = ObjectType::Cube;
                 m_holograms.push_back(std::move(hologram));
                 m_spinningCubeIndex = (uint32_t)m_holograms.size() - 1;
 
@@ -687,6 +691,8 @@ namespace {
                 pose.position = {radius * std::sin(angle), 0, radius * std::cos(angle)};
                 pose.orientation = xr::math::Quaternion::RotationAxisAngle({0, 1, 0}, angle);
                 m_holograms[m_spinningCubeIndex.value()].Cube.PoseInSpace = pose;
+                m_holograms[m_spinningCubeIndex.value()].type = ObjectType::Cube;
+                m_holograms[m_mainCubeIndex.value()].type = ObjectType::Cube;
             }
         }
 
@@ -699,6 +705,7 @@ namespace {
             }
 
             std::vector<const sample::Cube*> visibleCubes;
+            std::vector<const sample::Cube*> visibleQuads;
 
             auto UpdateVisibleCube = [&](sample::Cube& cube) {
                 if (cube.Space.Get() != XR_NULL_HANDLE) {
@@ -716,6 +723,25 @@ namespace {
                     }
                 }
             };
+            auto UpdateVisibleQuad = [&](sample::Cube& cube) {
+                if (cube.Space.Get() != XR_NULL_HANDLE) {
+                    XrSpaceLocation cubeSpaceInAppSpace{ XR_TYPE_SPACE_LOCATION };
+                    CHECK_XRCMD(xrLocateSpace(cube.Space.Get(), m_appSpace.Get(), predictedDisplayTime, &cubeSpaceInAppSpace));
+
+                    // Update cube's location with latest space location
+                    if (xr::math::Pose::IsPoseValid(cubeSpaceInAppSpace)) {
+                        if (cube.PoseInSpace.has_value()) {
+                            cube.PoseInAppSpace = xr::math::Pose::Multiply(cube.PoseInSpace.value(), cubeSpaceInAppSpace.pose);
+                        }
+                        else {
+                            cube.PoseInAppSpace = cubeSpaceInAppSpace.pose;
+                        }
+                        visibleQuads.push_back(&cube);
+                    }
+                }
+            };
+
+
             if (aim_action)
                 UpdateSpinningCube(predictedDisplayTime);
 
@@ -723,7 +749,11 @@ namespace {
             UpdateVisibleCube(m_cubesInHand[RightSide]);
 
             for (auto& hologram : m_holograms) {
-                UpdateVisibleCube(hologram.Cube);
+                if (hologram.type == ObjectType::Cube)
+                    UpdateVisibleCube(hologram.Cube);
+                if (hologram.type == ObjectType::Quad)
+                    UpdateVisibleQuad(hologram.Cube);
+
             }
 
             m_renderResources->ProjectionLayerViews.resize(viewCount);
@@ -776,6 +806,16 @@ namespace {
             const DirectX::XMVECTORF32 renderTargetClearColor =
                 (m_environmentBlendMode == XR_ENVIRONMENT_BLEND_MODE_OPAQUE) ? opaqueColor : transparent;
 
+
+            //m_graphicsPlugin->RenderView(imageRect,
+            //                             renderTargetClearColor,
+            //                             viewProjections,
+            //                             colorSwapchain.Format,
+            //                             colorSwapchain.Images[colorSwapchainImageIndex].texture,
+            //                             depthSwapchain.Format,
+            //                             depthSwapchain.Images[depthSwapchainImageIndex].texture,
+            //                             visibleQuads);
+
             m_graphicsPlugin->RenderView(imageRect,
                                          renderTargetClearColor,
                                          viewProjections,
@@ -783,7 +823,9 @@ namespace {
                                          colorSwapchain.Images[colorSwapchainImageIndex].texture,
                                          depthSwapchain.Format,
                                          depthSwapchain.Images[depthSwapchainImageIndex].texture,
-                                         visibleCubes);
+                                         visibleCubes,
+                                         visibleQuads);
+
 
             XrSwapchainImageReleaseInfo releaseInfo{XR_TYPE_SWAPCHAIN_IMAGE_RELEASE_INFO};
             CHECK_XRCMD(xrReleaseSwapchainImage(colorSwapchain.Handle.Get(), &releaseInfo));
@@ -833,9 +875,15 @@ namespace {
         xr::SpaceHandle m_appSpace;
         XrReferenceSpaceType m_appSpaceType{};
 
+        enum ObjectType
+        {
+            Cube = 0, Quad
+        };
+
         struct Hologram {
             sample::Cube Cube;
             xr::SpatialAnchorHandle Anchor;
+            ObjectType type;
         };
         std::vector<Hologram> m_holograms;
 
