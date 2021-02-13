@@ -42,13 +42,14 @@
   </PropertyGroup>
   <PropertyGroup>
     <ShowAllFiles>true</ShowAllFiles>
-    <Source>C:\dev\ARdno_OpenXR\ARdno_OpenXR\ff.png</Source>
-    <SmallTileSource>C:\dev\ARdno_OpenXR\ARdno_OpenXR\ff.png</SmallTileSource>
-    <MediumTileSource>C:\dev\ARdno_OpenXR\ARdno_OpenXR\ff.png</MediumTileSource>
-    <WideTileSource>C:\dev\ARdno_OpenXR\ARdno_OpenXR\ff.png</WideTileSource>
-    <LargeTileSource>C:\dev\ARdno_OpenXR\ARdno_OpenXR\ff.png</LargeTileSource>
-    <AppIconSource>C:\dev\ARdno_OpenXR\ARdno_OpenXR\ff.png</AppIconSource>
-    <SplashScreenSource>C:\dev\ARdno_OpenXR\ARdno_OpenXR\ff.png</SplashScreenSource>
-    <PackageLogoSource>C:\dev\ARdno_OpenXR\ARdno_OpenXR\ff.png</PackageLogoSource>
+    <Source>C:\dev\ARdno_OpenXR\ARdno_OpenXR\Assets\StoreLogo.png</Source>
+    <SmallTileSource>C:\dev\ARdno_OpenXR\ARdno_OpenXR\Assets\StoreLogo.png</SmallTileSource>
+    <MediumTileSource>C:\dev\ARdno_OpenXR\ARdno_OpenXR\Assets\StoreLogo.png</MediumTileSource>
+    <WideTileSource>C:\dev\ARdno_OpenXR\ARdno_OpenXR\Assets\StoreLogo.png</WideTileSource>
+    <LargeTileSource>C:\dev\ARdno_OpenXR\ARdno_OpenXR\Assets\StoreLogo.png</LargeTileSource>
+    <AppIconSource>C:\dev\ARdno_OpenXR\ARdno_OpenXR\Assets\StoreLogo.png</AppIconSource>
+    <SplashScreenSource>C:\dev\ARdno_OpenXR\ARdno_OpenXR\Assets\StoreLogo.png</SplashScreenSource>
+    <PackageLogoSource>C:\dev\ARdno_OpenXR\ARdno_OpenXR\Assets\StoreLogo.png</PackageLogoSource>
+    <BadgeLogoSource>C:\dev\ARdno_OpenXR\ARdno_OpenXR\Assets\StoreLogo.png</BadgeLogoSource>
   </PropertyGroup>
 </Project>

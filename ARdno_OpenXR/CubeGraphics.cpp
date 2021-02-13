@@ -323,7 +323,7 @@ namespace {
 
             // creating texture
             HRESULT hr = Windows::Foundation::Initialize(RO_INIT_TYPE::RO_INIT_MULTITHREADED);
-            hr = DirectX::CreateWICTextureFromFile(m_device.get(), L"Assets\\Square44x44Logo.altform-lightunplated_targetsize-256.png", nullptr, myTexture.GetAddressOf());
+            hr = DirectX::CreateWICTextureFromFile(m_device.get(), L"Assets\\font_sheet_5.png", nullptr, myTexture.GetAddressOf());
             //hr = DirectX::CreateWICTextureFromFile(m_device.get(), L"Assets\\StoreLogo.png", nullptr, myTexture.GetAddressOf());
             if (FAILED(hr))
             {
