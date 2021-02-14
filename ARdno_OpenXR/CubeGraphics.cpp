@@ -174,7 +174,7 @@ namespace {
         constexpr XrVector3f RTF{ 0.5f, 0.5f, 0.5f };
 
         //       POSITION       |      COLOR      | TEXCOORD
-        constexpr Vertex c_quadVertices[] = {
+        float c_quadVertices[] = {
             -0.5f, -0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, // side 1 (front)
              0.5f, -0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f,
              0.5f,  0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f,
@@ -195,6 +195,39 @@ namespace {
         };
 
         constexpr uint32_t MaxViewInstance = 2;
+
+        void set_coords(char32_t c)
+        {
+            XrVector2f sprite_size;
+            sprite_size.x = 32.0f;
+            sprite_size.y = 32.0f;
+
+            XrVector2f texture_size;
+            texture_size.x = 4096.0f;
+            texture_size.y = 32.0f;
+
+            int32_t x = c - ' ';
+            float _magic = 0.999f;
+
+            // XrVector2f* coords = new XrVector2f[4];
+            // coords[0] = { (x * sprite_size.x) / texture_size.x, 0.0f };
+            // coords[1] = { ((x + 1) * sprite_size.x) / (texture_size.x) * _magic, 0.0f };
+            // coords[2] = { ((x + 1) * sprite_size.x) / (texture_size.x) * _magic, 1.0f };
+            // coords[3] = { (x * sprite_size.x) / (texture_size.x), 1.0f };
+
+            c_quadVertices[6] = (x * sprite_size.x) / texture_size.x;
+            c_quadVertices[7] = 0.0f;
+
+            c_quadVertices[14] = ((x + 1) * sprite_size.x) / (texture_size.x) * _magic;
+            c_quadVertices[15] = 0.0f;
+
+            c_quadVertices[22] = ((x + 1) * sprite_size.x) / (texture_size.x) * _magic;
+            c_quadVertices[23] = 1.0f;
+
+            c_quadVertices[30] = (x * sprite_size.x) / (texture_size.x);
+            c_quadVertices[31] = 1.0f;
+
+        }
 
         // Separate entrypoints for the vertex and pixel shader functions.
         constexpr char ShaderHlsl[] = R"_(
@@ -307,7 +340,24 @@ namespace {
             depthStencilDesc.DepthFunc = D3D11_COMPARISON_GREATER;
             CHECK_HRCMD(m_device->CreateDepthStencilState(&depthStencilDesc, m_reversedZDepthNoStencilTest.put()));
 
-            // test
+            // alpha blending
+            ID3D11BlendState* blend_state;
+            D3D11_BLEND_DESC blend_desc;
+            float blend_factor[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
+            ZeroMemory(&blend_desc, sizeof(blend_desc));
+            for (int i = 0; i < 8; i++)
+            {
+                blend_desc.RenderTarget[i].BlendEnable = true;
+                blend_desc.RenderTarget[i].SrcBlend = D3D11_BLEND_SRC_ALPHA;
+                blend_desc.RenderTarget[i].DestBlend = D3D11_BLEND_INV_SRC_ALPHA;
+                blend_desc.RenderTarget[i].BlendOp = D3D11_BLEND_OP_ADD;
+                blend_desc.RenderTarget[i].SrcBlendAlpha = D3D11_BLEND_ONE;
+                blend_desc.RenderTarget[i].DestBlendAlpha = D3D11_BLEND_ZERO;
+                blend_desc.RenderTarget[i].BlendOpAlpha = D3D11_BLEND_OP_ADD;
+                blend_desc.RenderTarget[i].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
+            }
+            m_device->CreateBlendState(&blend_desc, &blend_state);
+            m_deviceContext->OMSetBlendState(blend_state, blend_factor, 0xFFFFFFFF);
 
             // creating sampler
             D3D11_SAMPLER_DESC sampler;
@@ -421,7 +471,7 @@ namespace {
             ID3D11Buffer* vertexBuffers[] = { m_quadVertexBuffer.get() };
             m_deviceContext->IASetVertexBuffers(0, (UINT)std::size(vertexBuffers), vertexBuffers, strides, offsets);
             m_deviceContext->IASetIndexBuffer(m_quadIndexBuffer.get(), DXGI_FORMAT_R16_UINT, 0);*/
-            
+
             const UINT strides_cube[] = { sizeof(CubeShader::Vertex) };
             ID3D11Buffer* vb_cube[] = { m_cubeVertexBuffer.get() };
             const UINT offsets[] = { 0 };
@@ -429,7 +479,7 @@ namespace {
             m_deviceContext->IASetIndexBuffer(m_cubeIndexBuffer.get(), DXGI_FORMAT_R16_UINT, 0);
             m_deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
             m_deviceContext->IASetInputLayout(m_inputLayout.get());
-            
+
             // Render each cube
             for (const sample::Cube* cube : cubes) {
                 // Compute and update the model transform for each cube, transpose for shader usage.
@@ -442,14 +492,13 @@ namespace {
                 m_deviceContext->DrawIndexedInstanced((UINT)std::size(CubeShader::c_cubeIndices), viewInstanceCount, 0, 0, 0);
             }
 
-            
+
             const UINT strides_quad[] = { sizeof(CubeShader::Vertex) };
-            ID3D11Buffer* vb_quad[] = { m_cubeVertexBuffer.get() };
+            ID3D11Buffer* vb_quad[] = { m_quadVertexBuffer.get() };
             m_deviceContext->IASetVertexBuffers(0, (UINT)std::size({ m_quadVertexBuffer.get() }), vb_quad, strides_quad, offsets);
             m_deviceContext->IASetIndexBuffer(m_quadIndexBuffer.get(), DXGI_FORMAT_R16_UINT, 0);
             m_deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
             m_deviceContext->IASetInputLayout(m_inputLayout.get());
-            
 
             for (const sample::Cube* quad : quads) {
                 // Compute and update the model transform for each cube, transpose for shader usage.
@@ -457,6 +506,18 @@ namespace {
                 const DirectX::XMMATRIX scaleMatrix = DirectX::XMMatrixScaling(quad->Scale.x, quad->Scale.y, quad->Scale.z);
                 DirectX::XMStoreFloat4x4(&model.Model, DirectX::XMMatrixTranspose(scaleMatrix * xr::math::LoadXrPose(quad->PoseInAppSpace)));
                 m_deviceContext->UpdateSubresource(m_modelCBuffer.get(), 0, nullptr, &model, 0, 0);
+
+                QuadShader::set_coords('A');
+                //const D3D11_SUBRESOURCE_DATA vertexBufferData{ QuadShader::c_quadVertices };
+                //const CD3D11_BUFFER_DESC vertexBufferDesc(sizeof(QuadShader::c_quadVertices), D3D11_BIND_VERTEX_BUFFER);
+                //CHECK_HRCMD(m_device->CreateBuffer(&vertexBufferDesc, &vertexBufferData, m_quadVertexBuffer.put()));
+                
+                m_deviceContext->UpdateSubresource(m_quadVertexBuffer.get(), 0, nullptr, &QuadShader::c_quadVertices, 0, 0);
+
+                const UINT strides_quad[] = { sizeof(QuadShader::Vertex) };
+                ID3D11Buffer* vb_quad[] = { m_quadVertexBuffer.get() };
+                m_deviceContext->IASetVertexBuffers(0, (UINT)std::size({ m_quadVertexBuffer.get() }), vb_quad, strides_quad, offsets);
+
 
                 // Draw the cube.
                 m_deviceContext->DrawIndexedInstanced((UINT)std::size(QuadShader::c_quadIndices), viewInstanceCount, 0, 0, 0);
