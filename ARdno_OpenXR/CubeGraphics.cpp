@@ -173,18 +173,6 @@ namespace {
         constexpr XrVector3f RTB{ 0.5f, 0.5f, -0.5f };
         constexpr XrVector3f RTF{ 0.5f, 0.5f, 0.5f };
 
-        //       POSITION       |      COLOR      | TEXCOORD
-        float c_quadVertices[] = {
-            -0.5f, -0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, // side 1 (front)
-             0.5f, -0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f,
-             0.5f,  0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f,
-            -0.5f,  0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f,
-        };
-
-        constexpr unsigned short c_quadIndices[] = {
-            0, 1, 2, //front
-            2, 3, 0,
-        };
 
         struct ModelConstantBuffer {
             DirectX::XMFLOAT4X4 Model;
@@ -195,6 +183,206 @@ namespace {
         };
 
         constexpr uint32_t MaxViewInstance = 2;
+
+        std::vector<Vertex> get_vb_with_text(std::string text)
+        {
+            int32_t size = text.size();
+            std::vector<Vertex> _vertices;
+
+            auto reverse_lerp = [](float value, float min, float max) -> float
+            {
+                float val = (value - min) / (max - min);
+                val = val - 0.5f;
+                return val;
+            };
+
+            auto get_coords = [](char32_t c) -> XrVector2f*
+            {
+                XrVector2f sprite_size;
+                sprite_size.x = 32.0f;
+                sprite_size.y = 32.0f;
+
+                XrVector2f texture_size;
+                texture_size.x = 4096.0f;
+                texture_size.y = 32.0f;
+
+                int32_t x = c - ' ';
+                float _magic = 0.999f;
+
+                XrVector2f* coords = new XrVector2f[4];
+                coords[0] = { (x * sprite_size.x) / texture_size.x, 0.0f };
+                coords[1] = { ((x + 1) * sprite_size.x) / (texture_size.x) * _magic, 0.0f };
+                coords[2] = { ((x + 1) * sprite_size.x) / (texture_size.x) * _magic, 1.0f };
+                coords[3] = { (x * sprite_size.x) / (texture_size.x), 1.0f };
+
+                return coords;
+            };
+
+            for (int i = 0; i < size; i++)
+            {
+                // TODO: y-value
+                XrVector2f* coords = get_coords(text[i]);
+
+                // Vertex 1
+                {
+                    Vertex v;
+                    v.Position.x = reverse_lerp(i, 0, (float)size);
+                    v.Position.y = -0.5f * (1/(float)size);
+                    v.Position.z = 0.0f;
+
+                    v.Color = { 1.0f, 1.0f, 1.0f };
+
+                    v.TexCoords = coords[0];
+                    _vertices.push_back(v);
+                }
+                // Vertex 2
+                {
+                    Vertex v;
+                    v.Position.x = reverse_lerp(i + 1, 0, (float)size);
+                    v.Position.y = -0.5f * (1/(float)size);
+                    v.Position.z = 0.0f;
+
+                    v.Color = { 1.0f, 1.0f, 1.0f };
+
+                    v.TexCoords = coords[1];
+                    _vertices.push_back(v);
+                }
+                // Vertex 3
+                {
+                    Vertex v;
+                    v.Position.x = reverse_lerp(i + 1, 0, (float)size);
+                    v.Position.y = 0.5f * (1/(float)size);
+                    v.Position.z = 0.0f;
+
+                    v.Color = { 1.0f, 1.0f, 1.0f };
+
+                    v.TexCoords = coords[2];
+                    _vertices.push_back(v);
+                }
+                // Vertex 4
+                {
+                    Vertex v;
+                    v.Position.x = reverse_lerp(i, 0, (float)size);
+                    v.Position.y = 0.5f * (1/(float)size);
+                    v.Position.z = 0.0f;
+
+                    v.Color = { 1.0f, 1.0f, 1.0f };
+
+                    v.TexCoords = coords[3];
+                    _vertices.push_back(v);
+                }
+
+            }
+
+            // edit VB and IB
+            Vertex* vertices = &_vertices[0];
+            return _vertices;
+        }
+
+        float* convert_to_float_arr(std::vector<Vertex>& buffer)
+        {
+            int32_t vertex_size = (3 + 3 + 2);
+            int32_t size = buffer.size() * vertex_size;
+            float* final_buffer = new float[size];
+            for (int i = 0; i < buffer.size(); i++)
+            {
+                final_buffer[(i * vertex_size) + 0] = buffer[i].Position.x;
+                final_buffer[(i * vertex_size) + 1] = buffer[i].Position.y;
+                final_buffer[(i * vertex_size) + 2] = buffer[i].Position.z;
+
+                final_buffer[(i * vertex_size) + 3] = buffer[i].Color.x;
+                final_buffer[(i * vertex_size) + 4] = buffer[i].Color.y;
+                final_buffer[(i * vertex_size) + 5] = buffer[i].Color.z;
+
+                final_buffer[(i * vertex_size) + 6] = buffer[i].TexCoords.x;
+                final_buffer[(i * vertex_size) + 7] = buffer[i].TexCoords.y;
+            }
+
+            return final_buffer;
+        }
+
+        std::vector<unsigned short> get_ib_with_text(std::string text)
+        {
+            int32_t size = text.size();
+
+            std::vector<unsigned short> _indices;
+
+            for (int i = 0; i < size; i++)
+            {
+                int32_t init_value = i * 4;
+                _indices.push_back(init_value + 0);
+                _indices.push_back(init_value + 1);
+                _indices.push_back(init_value + 2);
+
+                _indices.push_back(init_value + 2);
+                _indices.push_back(init_value + 3);
+                _indices.push_back(init_value + 0);
+
+            }
+
+
+            /*
+            // the initial triangle (first one)
+            _indices.push_back(0);
+            _indices.push_back(1);
+            _indices.push_back(2);
+
+            _indices.push_back(2);
+            _indices.push_back(3);
+            _indices.push_back(0);
+
+            int32_t jump = 3;
+            for (int i = 1; i < size; i++)
+            {
+                // old indices
+                int32_t old_bottom = _indices[_indices.size() - 5];
+                int32_t old_top = _indices[_indices.size() - 4];
+
+                // triangle 1
+                _indices.push_back(old_bottom);
+                jump += 1;
+                _indices.push_back(jump);
+                jump += 1;
+                _indices.push_back(jump);
+
+                // triangle 2
+                _indices.push_back(jump);
+                _indices.push_back(old_top);
+                _indices.push_back(old_bottom);
+            }*/
+
+            unsigned short* indices = &_indices[0];
+            return _indices;
+        }
+
+        //float c_quadVertices[] = {
+        //    -0.5f, -0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 0.23f, 0.0f, // side 1 (front)
+        //     0.5f, -0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 0.23f, 1.0f,
+        //     0.5f,  0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 0.28f, 1.0f,
+        //    -0.5f,  0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 0.28f, 0.0f,
+        //
+        //    -0.5f, -0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 0.28f, 0.0f, // side 1 (front)
+        //     0.5f, -0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 0.28f, 1.0f,
+        //     0.5f,  0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 0.33f, 1.0f,
+        //    -0.5f,  0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 0.33f, 0.0f,
+        //
+        //    -0.5f, -0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 0.33f, 0.0f, // side 1 (front)
+        //     0.5f, -0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 0.33f, 1.0f,
+        //     0.5f,  0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 0.38f, 1.0f,
+        //    -0.5f,  0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 0.38f, 0.0f,
+        //};
+
+        float* c_quadVertices = convert_to_float_arr(get_vb_with_text("CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC")); // max 32chars..
+        std::vector<unsigned short> c_quadIndices = get_ib_with_text("CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC");
+
+        //constexpr unsigned short c_quadIndices[] = {
+        //    0, 1, 2,
+        //    2, 3, 0,
+        //    1, 4, 5,
+        //    5, 2, 1,
+        //    4, 6, 7,
+        //    7, 5, 4,
+        //};
 
         void set_coords(char32_t c)
         {
@@ -228,6 +416,9 @@ namespace {
             c_quadVertices[31] = 1.0f;
 
         }
+
+
+
 
         // Separate entrypoints for the vertex and pixel shader functions.
         constexpr char ShaderHlsl[] = R"_(
@@ -321,13 +512,33 @@ namespace {
             }
             // quad
             {
-                const D3D11_SUBRESOURCE_DATA vertexBufferData{ QuadShader::c_quadVertices };
-                const CD3D11_BUFFER_DESC vertexBufferDesc(sizeof(QuadShader::c_quadVertices), D3D11_BIND_VERTEX_BUFFER);
-                CHECK_HRCMD(m_device->CreateBuffer(&vertexBufferDesc, &vertexBufferData, m_quadVertexBuffer.put()));
+                //const D3D11_SUBRESOURCE_DATA vertexBufferData{ QuadShader::c_quadVertices };
+                //const CD3D11_BUFFER_DESC vertexBufferDesc(sizeof(QuadShader::c_quadVertices), D3D11_BIND_VERTEX_BUFFER);
+                //HRESULT hr = m_device->CreateBuffer(&vertexBufferDesc, &vertexBufferData, m_quadVertexBuffer.put());
 
-                const D3D11_SUBRESOURCE_DATA indexBufferData{ QuadShader::c_quadIndices };
-                const CD3D11_BUFFER_DESC indexBufferDesc(sizeof(QuadShader::c_quadIndices), D3D11_BIND_INDEX_BUFFER);
-                CHECK_HRCMD(m_device->CreateBuffer(&indexBufferDesc, &indexBufferData, m_quadIndexBuffer.put()));
+                // Dynamic VB
+                D3D11_BUFFER_DESC vertexBufferDesc;
+                ZeroMemory(&vertexBufferDesc, sizeof(vertexBufferDesc));
+                vertexBufferDesc.Usage = D3D11_USAGE_DYNAMIC;
+                vertexBufferDesc.ByteWidth = sizeof(QuadShader::Vertex) * QuadShader::get_vb_with_text("CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC").size(); // 8 * 32
+                vertexBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+                vertexBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+                D3D11_SUBRESOURCE_DATA initial_data{ QuadShader::c_quadVertices };
+                HRESULT hr = m_device->CreateBuffer(&vertexBufferDesc, &initial_data, m_quadVertexBuffer.put());
+
+                // Dynamic IB
+                D3D11_BUFFER_DESC indexBufferDesc;
+                ZeroMemory(&indexBufferDesc, sizeof(indexBufferDesc));
+                indexBufferDesc.Usage = D3D11_USAGE_DYNAMIC;
+                indexBufferDesc.ByteWidth = sizeof(unsigned short) * 32 * 4;
+                indexBufferDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
+                indexBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+                D3D11_SUBRESOURCE_DATA data{ QuadShader::c_quadIndices.data() };
+                hr = m_device->CreateBuffer(&indexBufferDesc, &data, m_quadIndexBuffer.put());
+
+                //const D3D11_SUBRESOURCE_DATA indexBufferData{ QuadShader::c_quadIndices };
+                //const CD3D11_BUFFER_DESC indexBufferDesc(sizeof(QuadShader::c_quadIndices), D3D11_BIND_INDEX_BUFFER);
+                //hr = m_device->CreateBuffer(&indexBufferDesc, &indexBufferData, m_quadIndexBuffer.put());
             }
             D3D11_FEATURE_DATA_D3D11_OPTIONS3 options;
             m_device->CheckFeatureSupport(D3D11_FEATURE_D3D11_OPTIONS3, &options, sizeof(options));
@@ -507,103 +718,38 @@ namespace {
                 DirectX::XMStoreFloat4x4(&model.Model, DirectX::XMMatrixTranspose(scaleMatrix * xr::math::LoadXrPose(quad->PoseInAppSpace)));
                 m_deviceContext->UpdateSubresource(m_modelCBuffer.get(), 0, nullptr, &model, 0, 0);
 
-                QuadShader::set_coords('A');
-                //const D3D11_SUBRESOURCE_DATA vertexBufferData{ QuadShader::c_quadVertices };
-                //const CD3D11_BUFFER_DESC vertexBufferDesc(sizeof(QuadShader::c_quadVertices), D3D11_BIND_VERTEX_BUFFER);
-                //CHECK_HRCMD(m_device->CreateBuffer(&vertexBufferDesc, &vertexBufferData, m_quadVertexBuffer.put()));
-                
-                m_deviceContext->UpdateSubresource(m_quadVertexBuffer.get(), 0, nullptr, &QuadShader::c_quadVertices, 0, 0);
+                std::vector<QuadShader::Vertex> cc = QuadShader::get_vb_with_text("OLA");
+                std::string word_to_render = "ONDRA VOLE";
+                {
+                    // VB
+                    D3D11_MAPPED_SUBRESOURCE resource;
+                    HRESULT hr = m_deviceContext->Map(m_quadVertexBuffer.get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &resource);
+                    memcpy(resource.pData, static_cast<void*>(QuadShader::get_vb_with_text(word_to_render).data()), QuadShader::get_vb_with_text(word_to_render).size() * sizeof(float) * 8);
+                    m_deviceContext->Unmap(m_quadVertexBuffer.get(), 0);
+                }
 
-                const UINT strides_quad[] = { sizeof(QuadShader::Vertex) };
+                {
+                    // IB
+                    D3D11_MAPPED_SUBRESOURCE resource;
+                    HRESULT hr = m_deviceContext->Map(m_quadIndexBuffer.get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &resource);
+                    memcpy(resource.pData, static_cast<void*>(QuadShader::get_ib_with_text(word_to_render).data()), QuadShader::get_ib_with_text(word_to_render).size() * sizeof(unsigned short));
+                    m_deviceContext->Unmap(m_quadIndexBuffer.get(), 0);
+                }
+
+
+
+                const UINT strides_quad[] = { sizeof(float) * 8 };
                 ID3D11Buffer* vb_quad[] = { m_quadVertexBuffer.get() };
                 m_deviceContext->IASetVertexBuffers(0, (UINT)std::size({ m_quadVertexBuffer.get() }), vb_quad, strides_quad, offsets);
-
+                m_deviceContext->IASetIndexBuffer(m_quadIndexBuffer.get(), DXGI_FORMAT_R16_UINT, 0);
 
                 // Draw the cube.
                 m_deviceContext->DrawIndexedInstanced((UINT)std::size(QuadShader::c_quadIndices), viewInstanceCount, 0, 0, 0);
+                // m_deviceContext->DrawIndexedInstanced((UINT)std::size(QuadShader::c_quadIndices), viewInstanceCount, 0, 0, 0); // old
+
             }
 
         }
-
-        void RenderView(const XrRect2Di& imageRect,
-            const float renderTargetClearColor[4],
-            const std::vector<xr::math::ViewProjection>& viewProjections,
-            DXGI_FORMAT colorSwapchainFormat,
-            ID3D11Texture2D* colorTexture,
-            DXGI_FORMAT depthSwapchainFormat,
-            ID3D11Texture2D* depthTexture,
-            const std::vector<const sample::Quad*>& quads) override {
-            const uint32_t viewInstanceCount = (uint32_t)viewProjections.size();
-            CHECK_MSG(viewInstanceCount <= QuadShader::MaxViewInstance,
-                "Sample shader supports 2 or fewer view instances. Adjust shader to accommodate more.")
-
-                CD3D11_VIEWPORT viewport(
-                    (float)imageRect.offset.x, (float)imageRect.offset.y, (float)imageRect.extent.width, (float)imageRect.extent.height);
-            m_deviceContext->RSSetViewports(1, &viewport);
-
-            // Create RenderTargetView with the original swapchain format (swapchain image is typeless).
-            winrt::com_ptr<ID3D11RenderTargetView> renderTargetView;
-            const CD3D11_RENDER_TARGET_VIEW_DESC renderTargetViewDesc(D3D11_RTV_DIMENSION_TEXTURE2DARRAY, colorSwapchainFormat);
-            CHECK_HRCMD(m_device->CreateRenderTargetView(colorTexture, &renderTargetViewDesc, renderTargetView.put()));
-
-            // Create a DepthStencilView with the original swapchain format (swapchain image is typeless)
-            winrt::com_ptr<ID3D11DepthStencilView> depthStencilView;
-            CD3D11_DEPTH_STENCIL_VIEW_DESC depthStencilViewDesc(D3D11_DSV_DIMENSION_TEXTURE2DARRAY, depthSwapchainFormat);
-            CHECK_HRCMD(m_device->CreateDepthStencilView(depthTexture, &depthStencilViewDesc, depthStencilView.put()));
-
-            const bool reversedZ = viewProjections[0].NearFar.Near > viewProjections[0].NearFar.Far;
-            const float depthClearValue = reversedZ ? 0.f : 1.f;
-
-            // Clear swapchain and depth buffer. NOTE: This will clear the entire render target view, not just the specified view.
-            m_deviceContext->ClearRenderTargetView(renderTargetView.get(), renderTargetClearColor);
-            m_deviceContext->ClearDepthStencilView(depthStencilView.get(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, depthClearValue, 0);
-            m_deviceContext->OMSetDepthStencilState(reversedZ ? m_reversedZDepthNoStencilTest.get() : nullptr, 0);
-
-            ID3D11RenderTargetView* renderTargets[] = { renderTargetView.get() };
-            m_deviceContext->OMSetRenderTargets((UINT)std::size(renderTargets), renderTargets, depthStencilView.get());
-
-            // binding
-            ID3D11Buffer* const constantBuffers[] = { m_modelCBuffer.get(), m_viewProjectionCBuffer.get() };
-            m_deviceContext->VSSetConstantBuffers(0, (UINT)std::size(constantBuffers), constantBuffers);
-            m_deviceContext->VSSetShader(m_vertexShader.get(), nullptr, 0);
-            m_deviceContext->PSSetShader(m_pixelShader.get(), nullptr, 0);
-            m_deviceContext->PSSetSamplers(0, 1, sampler_state.GetAddressOf());
-            m_deviceContext->PSSetShaderResources(0, 1, myTexture.GetAddressOf());
-
-            QuadShader::ViewProjectionConstantBuffer viewProjectionCBufferData{};
-
-            for (uint32_t k = 0; k < viewInstanceCount; k++) {
-                const DirectX::XMMATRIX spaceToView = xr::math::LoadInvertedXrPose(viewProjections[k].Pose);
-                const DirectX::XMMATRIX projectionMatrix = ComposeProjectionMatrix(viewProjections[k].Fov, viewProjections[k].NearFar);
-
-                // Set view projection matrix for each view, transpose for shader usage.
-                DirectX::XMStoreFloat4x4(&viewProjectionCBufferData.ViewProjection[k],
-                    DirectX::XMMatrixTranspose(spaceToView * projectionMatrix));
-            }
-            m_deviceContext->UpdateSubresource(m_viewProjectionCBuffer.get(), 0, nullptr, &viewProjectionCBufferData, 0, 0);
-
-            // Set quad primitive data.
-            const UINT strides[] = { sizeof(QuadShader::Vertex) };
-            const UINT offsets[] = { 0 };
-            ID3D11Buffer* vertexBuffers[] = { m_quadVertexBuffer.get() };
-            m_deviceContext->IASetVertexBuffers(0, (UINT)std::size(vertexBuffers), vertexBuffers, strides, offsets);
-            m_deviceContext->IASetIndexBuffer(m_quadIndexBuffer.get(), DXGI_FORMAT_R16_UINT, 0);
-            m_deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-            m_deviceContext->IASetInputLayout(m_inputLayout.get());
-
-            // Render each quad
-            //for (const sample::Cube* quad : quads) {
-            //    // Compute and update the model transform for each quad, transpose for shader usage.
-            //    QuadShader::ModelConstantBuffer model;
-            //    const DirectX::XMMATRIX scaleMatrix = DirectX::XMMatrixScaling(quad->Scale.x, quad->Scale.y, quad->Scale.z);
-            //    DirectX::XMStoreFloat4x4(&model.Model, DirectX::XMMatrixTranspose(scaleMatrix * xr::math::LoadXrPose(quad->PoseInAppSpace)));
-            //    m_deviceContext->UpdateSubresource(m_modelCBuffer.get(), 0, nullptr, &model, 0, 0);
-            //
-            //    // Draw the quad.
-            //    m_deviceContext->DrawIndexedInstanced((UINT)std::size(QuadShader::c_quadIndices), viewInstanceCount, 0, 0, 0);
-            //}
-        }
-
 
     private:
         winrt::com_ptr<ID3D11Device> m_device;

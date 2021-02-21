@@ -60,15 +60,7 @@ namespace sample {
                                 const std::vector<const sample::Cube*>& cubes,
                                 const std::vector<const sample::Cube*>& quads) = 0;
 
-        virtual void RenderView(const XrRect2Di& imageRect,
-                                const float renderTargetClearColor[4],
-                                const std::vector<xr::math::ViewProjection>& viewProjections,
-                                DXGI_FORMAT colorSwapchainFormat,
-                                ID3D11Texture2D* colorTexture,
-                                DXGI_FORMAT depthSwapchainFormat,
-                                ID3D11Texture2D* depthTexture,
-                                const std::vector<const sample::Quad*>& quads) = 0;
-    };
+      };
 
     std::unique_ptr<IGraphicsPluginD3D11> CreateCubeGraphics();
     std::unique_ptr<IOpenXrProgram> CreateOpenXrProgram(std::string applicationName, std::unique_ptr<IGraphicsPluginD3D11> graphicsPlugin);
