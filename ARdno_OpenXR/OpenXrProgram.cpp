@@ -169,7 +169,7 @@ namespace {
             // Set up suggested bindings for the simple_controller profile.
             {
                 std::vector<XrActionSuggestedBinding> bindings;
-                bindings.push_back({m_stopAction.Get(), GetXrPath("/user/hand/right/input/select/click")});
+                bindings.push_back({ m_placeAction.Get(), GetXrPath("/user/hand/right/input/select/click")});
                 bindings.push_back({m_placeAction.Get(), GetXrPath("/user/hand/left/input/select/click")});
                 bindings.push_back({m_poseAction.Get(), GetXrPath("/user/hand/right/input/grip/pose")});
                 bindings.push_back({m_poseAction.Get(), GetXrPath("/user/hand/left/input/grip/pose")});
@@ -538,16 +538,33 @@ namespace {
                     if (!xr::math::Pose::IsPoseValid(handLocation)) {
                         DEBUG_PRINT("Cube cannot be placed when positional tracking is lost.");
                     } else {
-                        // Place a new cube at the given location and time, and remember output placement space and anchor.
-                        m_holograms.push_back(CreateHologram(handLocation.pose, placementTime, ObjectType::Quad));
+                        if (side == LeftSide)
+                        {
+                            std::vector<std::string> text_buffer;
+                            text_buffer.push_back("KOSTKA");
+                            text_buffer.push_back("OBRAZ");
+                            text_buffer.push_back("KYTKA");
+
+                            m_holograms.push_back(CreateHologram(handLocation.pose, placementTime, ObjectType::Quad));
+                            if (text_index < 3)
+                                m_holograms[m_holograms.size() - 1].Cube.text = text_buffer[text_index];
+                            else
+                                m_holograms[m_holograms.size() - 1].Cube.text = "SAMPLE TEXT";
+                            text_index += 1;
+                        }
+                        else if (side == RightSide)
+                        {
+                            m_holograms.push_back(CreateHologram(handLocation.pose, placementTime, ObjectType::Cube));
+                        }
+
                     }
 
                 }
-
-                // determine whether the right hand did an air-tap (so that we can stop rendering the rotating cube..)
+                
+                /*// determine whether the right hand did an air-tap (so that we can stop rendering the rotating cube..)
                 {
-                    XrActionStateBoolean aim_action_value{XR_TYPE_ACTION_STATE_BOOLEAN};
-                    XrActionStateGetInfo getInfo{XR_TYPE_ACTION_STATE_GET_INFO};
+                    XrActionStateBoolean aim_action_value{ XR_TYPE_ACTION_STATE_BOOLEAN };
+                    XrActionStateGetInfo getInfo{ XR_TYPE_ACTION_STATE_GET_INFO };
                     getInfo.action = m_stopAction.Get();
                     getInfo.subactionPath = subactionPath;
                     CHECK_XRCMD(xrGetActionStateBoolean(m_session.Get(), &getInfo, &aim_action_value));
@@ -557,7 +574,7 @@ namespace {
                         aim_action = !aim_action;
                     }
 
-                }
+                }*/
             }
         }
 
@@ -635,7 +652,7 @@ namespace {
             return swapchainImageIndex;
         }
 
-        void InitializeSpinningCube(XrTime predictedDisplayTime) {
+        /*void InitializeSpinningCube(XrTime predictedDisplayTime) {
             auto createReferenceSpace = [session = m_session.Get()](XrReferenceSpaceType referenceSpaceType, XrPosef poseInReferenceSpace) {
                 xr::SpaceHandle space;
                 XrReferenceSpaceCreateInfo createInfo{XR_TYPE_REFERENCE_SPACE_CREATE_INFO};
@@ -666,9 +683,9 @@ namespace {
 
                 m_spinningCubeStartTime = predictedDisplayTime;
             }
-        }
+        }*/
 
-        void UpdateSpinningCube(XrTime predictedDisplayTime) {
+        /*void UpdateSpinningCube(XrTime predictedDisplayTime) {
             if (!m_mainCubeIndex || !m_spinningCubeIndex) {
                 // Deferred initialization of spinning cubes so they appear at right place for the first frame.
                 InitializeSpinningCube(predictedDisplayTime);
@@ -694,7 +711,7 @@ namespace {
                 m_holograms[m_spinningCubeIndex.value()].type = ObjectType::Cube;
                 m_holograms[m_mainCubeIndex.value()].type = ObjectType::Cube;
             }
-        }
+        }*/
 
         bool RenderLayer(XrTime predictedDisplayTime, XrCompositionLayerProjection& layer) {
             const uint32_t viewCount = (uint32_t)m_renderResources->ConfigViews.size();
@@ -742,8 +759,8 @@ namespace {
             };
 
 
-            if (aim_action)
-                UpdateSpinningCube(predictedDisplayTime);
+            //if (aim_action)
+            //    UpdateSpinningCube(predictedDisplayTime);
 
             UpdateVisibleCube(m_cubesInHand[LeftSide]);
             UpdateVisibleCube(m_cubesInHand[RightSide]);
@@ -892,6 +909,7 @@ namespace {
         // mine
         xr::ActionHandle m_stopAction;
         bool aim_action = 0;
+        int text_index = 0;
 
 
         XrEnvironmentBlendMode m_environmentBlendMode{};

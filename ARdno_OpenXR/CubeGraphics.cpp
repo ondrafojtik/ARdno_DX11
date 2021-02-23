@@ -454,6 +454,7 @@ namespace {
 
             float4 MainPS(VSOutput input) : SV_TARGET {
                 float4 final_color = objTexture.Sample(objSamplerState, input.texCoord);
+                //float4 color = final_color * float4(input.texCoord.x, 0.0f, input.texCoord.y, 1.0f);
                 return final_color;
             }
             )_";
@@ -473,13 +474,26 @@ namespace {
         }
 
         void InitializeD3DResources() {
+            
+            
             const winrt::com_ptr<ID3DBlob> vertexShaderBytes = sample::dx::CompileShader(CubeShader::ShaderHlsl, "MainVS", "vs_5_0");
             CHECK_HRCMD(m_device->CreateVertexShader(
-                vertexShaderBytes->GetBufferPointer(), vertexShaderBytes->GetBufferSize(), nullptr, m_vertexShader.put()));
+                vertexShaderBytes->GetBufferPointer(), vertexShaderBytes->GetBufferSize(), nullptr, m_CubeVertexShader.put()));
 
             const winrt::com_ptr<ID3DBlob> pixelShaderBytes = sample::dx::CompileShader(CubeShader::ShaderHlsl, "MainPS", "ps_5_0");
             CHECK_HRCMD(m_device->CreatePixelShader(
-                pixelShaderBytes->GetBufferPointer(), pixelShaderBytes->GetBufferSize(), nullptr, m_pixelShader.put()));
+                pixelShaderBytes->GetBufferPointer(), pixelShaderBytes->GetBufferSize(), nullptr, m_CubePixelShader.put()));
+
+            
+            const winrt::com_ptr<ID3DBlob> _vertexShaderBytes = sample::dx::CompileShader(QuadShader::ShaderHlsl, "MainVS", "vs_5_0");
+            CHECK_HRCMD(m_device->CreateVertexShader(
+                _vertexShaderBytes->GetBufferPointer(), _vertexShaderBytes->GetBufferSize(), nullptr, m_QuadVertexShader.put()));
+
+            const winrt::com_ptr<ID3DBlob> _pixelShaderBytes = sample::dx::CompileShader(QuadShader::ShaderHlsl, "MainPS", "ps_5_0");
+            CHECK_HRCMD(m_device->CreatePixelShader(
+                _pixelShaderBytes->GetBufferPointer(), _pixelShaderBytes->GetBufferSize(), nullptr, m_QuadPixelShader.put()));
+
+            
 
             const D3D11_INPUT_ELEMENT_DESC vertexDesc[] = {
                 {"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0},
@@ -488,10 +502,19 @@ namespace {
             };
 
             CHECK_HRCMD(m_device->CreateInputLayout(vertexDesc,
-                                                    (UINT)std::size(vertexDesc),
-                                                    vertexShaderBytes->GetBufferPointer(),
-                                                    vertexShaderBytes->GetBufferSize(),
-                                                    m_inputLayout.put()));
+                (UINT)std::size(vertexDesc),
+                vertexShaderBytes->GetBufferPointer(),
+                vertexShaderBytes->GetBufferSize(),
+                m_CubeInputLayout.put()));
+
+            CHECK_HRCMD(m_device->CreateInputLayout(vertexDesc,
+                (UINT)std::size(vertexDesc),
+                _vertexShaderBytes->GetBufferPointer(),
+                _vertexShaderBytes->GetBufferSize(),
+                m_QuadInputLayout.put()));
+
+
+            
             // init of CubeShader
             const CD3D11_BUFFER_DESC modelConstantBufferDesc(sizeof(CubeShader::ModelConstantBuffer), D3D11_BIND_CONSTANT_BUFFER);
             CHECK_HRCMD(m_device->CreateBuffer(&modelConstantBufferDesc, nullptr, m_modelCBuffer.put()));
@@ -530,7 +553,7 @@ namespace {
                 D3D11_BUFFER_DESC indexBufferDesc;
                 ZeroMemory(&indexBufferDesc, sizeof(indexBufferDesc));
                 indexBufferDesc.Usage = D3D11_USAGE_DYNAMIC;
-                indexBufferDesc.ByteWidth = sizeof(unsigned short) * 32 * 4;
+                indexBufferDesc.ByteWidth = sizeof(unsigned short) * QuadShader::get_ib_with_text("CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC").size();;
                 indexBufferDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
                 indexBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
                 D3D11_SUBRESOURCE_DATA data{ QuadShader::c_quadIndices.data() };
@@ -584,15 +607,9 @@ namespace {
 
             // creating texture
             HRESULT hr = Windows::Foundation::Initialize(RO_INIT_TYPE::RO_INIT_MULTITHREADED);
-            hr = DirectX::CreateWICTextureFromFile(m_device.get(), L"Assets\\font_sheet_5.png", nullptr, myTexture.GetAddressOf());
-            //hr = DirectX::CreateWICTextureFromFile(m_device.get(), L"Assets\\StoreLogo.png", nullptr, myTexture.GetAddressOf());
-            if (FAILED(hr))
-            {
-                m_deviceContext->PSSetShaderResources(0, 1, myTexture.GetAddressOf());
-
-            }
-            m_deviceContext->PSSetShaderResources(0, 1, myTexture.GetAddressOf());
-
+            hr = DirectX::CreateWICTextureFromFile(m_device.get(), L"Assets\\font_sheet_5.png", nullptr, font_texture.GetAddressOf());
+            hr = DirectX::CreateWICTextureFromFile(m_device.get(), L"Assets\\StoreLogo.png", nullptr, cube_texture.GetAddressOf());
+            
         }
 
         const std::vector<DXGI_FORMAT>& SupportedColorFormats() const override {
@@ -655,11 +672,8 @@ namespace {
 
             ID3D11Buffer* const constantBuffers[] = {m_modelCBuffer.get(), m_viewProjectionCBuffer.get()};
             m_deviceContext->VSSetConstantBuffers(0, (UINT)std::size(constantBuffers), constantBuffers);
-            m_deviceContext->VSSetShader(m_vertexShader.get(), nullptr, 0);
-            m_deviceContext->PSSetShader(m_pixelShader.get(), nullptr, 0);
             m_deviceContext->PSSetSamplers(0, 1, sampler_state.GetAddressOf());
-            m_deviceContext->PSSetShaderResources(0, 1, myTexture.GetAddressOf());
-
+            
             CubeShader::ViewProjectionConstantBuffer viewProjectionCBufferData{};
 
             for (uint32_t k = 0; k < viewInstanceCount; k++) {
@@ -682,6 +696,8 @@ namespace {
             ID3D11Buffer* vertexBuffers[] = { m_quadVertexBuffer.get() };
             m_deviceContext->IASetVertexBuffers(0, (UINT)std::size(vertexBuffers), vertexBuffers, strides, offsets);
             m_deviceContext->IASetIndexBuffer(m_quadIndexBuffer.get(), DXGI_FORMAT_R16_UINT, 0);*/
+            m_deviceContext->VSSetShader(m_CubeVertexShader.get(), nullptr, 0);
+            m_deviceContext->PSSetShader(m_CubePixelShader.get(), nullptr, 0);
 
             const UINT strides_cube[] = { sizeof(CubeShader::Vertex) };
             ID3D11Buffer* vb_cube[] = { m_cubeVertexBuffer.get() };
@@ -689,8 +705,8 @@ namespace {
             m_deviceContext->IASetVertexBuffers(0, (UINT)std::size({ m_cubeVertexBuffer.get() }), vb_cube, strides_cube, offsets);
             m_deviceContext->IASetIndexBuffer(m_cubeIndexBuffer.get(), DXGI_FORMAT_R16_UINT, 0);
             m_deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-            m_deviceContext->IASetInputLayout(m_inputLayout.get());
-
+            m_deviceContext->IASetInputLayout(m_CubeInputLayout.get());
+            m_deviceContext->PSSetShaderResources(0, 1, cube_texture.GetAddressOf());
             // Render each cube
             for (const sample::Cube* cube : cubes) {
                 // Compute and update the model transform for each cube, transpose for shader usage.
@@ -703,23 +719,26 @@ namespace {
                 m_deviceContext->DrawIndexedInstanced((UINT)std::size(CubeShader::c_cubeIndices), viewInstanceCount, 0, 0, 0);
             }
 
-
+            m_deviceContext->VSSetShader(m_QuadVertexShader.get(), nullptr, 0);
+            m_deviceContext->PSSetShader(m_QuadPixelShader.get(), nullptr, 0);
             const UINT strides_quad[] = { sizeof(CubeShader::Vertex) };
             ID3D11Buffer* vb_quad[] = { m_quadVertexBuffer.get() };
             m_deviceContext->IASetVertexBuffers(0, (UINT)std::size({ m_quadVertexBuffer.get() }), vb_quad, strides_quad, offsets);
             m_deviceContext->IASetIndexBuffer(m_quadIndexBuffer.get(), DXGI_FORMAT_R16_UINT, 0);
             m_deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-            m_deviceContext->IASetInputLayout(m_inputLayout.get());
+            m_deviceContext->IASetInputLayout(m_QuadInputLayout.get());
 
+            m_deviceContext->PSSetShaderResources(0, 1, font_texture.GetAddressOf());
             for (const sample::Cube* quad : quads) {
                 // Compute and update the model transform for each cube, transpose for shader usage.
                 QuadShader::ModelConstantBuffer model;
-                const DirectX::XMMATRIX scaleMatrix = DirectX::XMMatrixScaling(quad->Scale.x, quad->Scale.y, quad->Scale.z);
+                const DirectX::XMMATRIX scaleMatrix = DirectX::XMMatrixScaling(quad->Scale.x * 2, quad->Scale.y * 2, quad->Scale.z * 2);
                 DirectX::XMStoreFloat4x4(&model.Model, DirectX::XMMatrixTranspose(scaleMatrix * xr::math::LoadXrPose(quad->PoseInAppSpace)));
+                DirectX::XMStoreFloat4x4(&model.Model, DirectX::XMMatrixTranspose(DirectX::XMMatrixRotationRollPitchYaw(DirectX::XM_PIDIV2, DirectX::XM_PIDIV2, 0) * scaleMatrix * xr::math::LoadXrPose(quad->PoseInAppSpace)));
                 m_deviceContext->UpdateSubresource(m_modelCBuffer.get(), 0, nullptr, &model, 0, 0);
 
                 std::vector<QuadShader::Vertex> cc = QuadShader::get_vb_with_text("OLA");
-                std::string word_to_render = "ONDRA VOLE";
+                std::string word_to_render = quad->text;
                 {
                     // VB
                     D3D11_MAPPED_SUBRESOURCE resource;
@@ -754,9 +773,12 @@ namespace {
     private:
         winrt::com_ptr<ID3D11Device> m_device;
         winrt::com_ptr<ID3D11DeviceContext> m_deviceContext;
-        winrt::com_ptr<ID3D11VertexShader> m_vertexShader;
-        winrt::com_ptr<ID3D11PixelShader> m_pixelShader;
-        winrt::com_ptr<ID3D11InputLayout> m_inputLayout;
+        winrt::com_ptr<ID3D11VertexShader> m_CubeVertexShader;
+        winrt::com_ptr<ID3D11PixelShader> m_CubePixelShader;
+        winrt::com_ptr<ID3D11VertexShader> m_QuadVertexShader;
+        winrt::com_ptr<ID3D11PixelShader> m_QuadPixelShader;
+        winrt::com_ptr<ID3D11InputLayout> m_CubeInputLayout;
+        winrt::com_ptr<ID3D11InputLayout> m_QuadInputLayout;
         winrt::com_ptr<ID3D11Buffer> m_modelCBuffer;
         winrt::com_ptr<ID3D11Buffer> m_viewProjectionCBuffer;
         winrt::com_ptr<ID3D11Buffer> m_cubeVertexBuffer;
@@ -766,7 +788,9 @@ namespace {
         winrt::com_ptr<ID3D11DepthStencilState> m_reversedZDepthNoStencilTest;
 
         Microsoft::WRL::ComPtr<ID3D11SamplerState> sampler_state;
-        Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> myTexture;
+        Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> font_texture;
+        Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> cube_texture;
+
 
     };
 } // namespace
