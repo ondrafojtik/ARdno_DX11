@@ -70,6 +70,7 @@
     <ClCompile Include="DxUtility.cpp" />
     <ClCompile Include="App.cpp" />
     <ClCompile Include="CubeGraphics.cpp" />
+    <ClCompile Include="liver.h" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ARdno_OpenXRMain.h" />
@@ -237,6 +238,9 @@
       <Filter>Assets</Filter>
     </Image>
     <Image Include="Assets\BadgeLogo.scale-400.png">
+      <Filter>Assets</Filter>
+    </Image>
+    <Image Include="Assets\Blank.png">
       <Filter>Assets</Filter>
     </Image>
   </ItemGroup>

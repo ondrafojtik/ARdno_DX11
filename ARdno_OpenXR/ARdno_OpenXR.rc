@@ -52,6 +52,8 @@ END
 
 IDB_PNG1                PNG                     "Assets\\font_sheet_5.png"
 
+IDB_PNG2                PNG                     "Assets\\Blank.png"
+
 #endif    // English (United States) resources
 /////////////////////////////////////////////////////////////////////////////
 

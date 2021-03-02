@@ -12,7 +12,6 @@
 #include <unordered_map>
 #include <algorithm>
 #include <assert.h>
-
 #define WIN32_LEAN_AND_MEAN
 #define NOMINMAX
 #include <windows.h>
@@ -31,7 +30,6 @@
 #include <XrUtility/XrExtensions.h>
 
 #include <winrt/base.h> // winrt::com_ptr
-
 
 #include <wrl.h>
 #include <wrl/client.h>

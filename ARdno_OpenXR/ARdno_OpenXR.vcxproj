@@ -256,6 +256,7 @@
     <Image Include="Assets\BadgeLogo.scale-150.png" />
     <Image Include="Assets\BadgeLogo.scale-200.png" />
     <Image Include="Assets\BadgeLogo.scale-400.png" />
+    <Image Include="Assets\Blank.png" />
     <Image Include="Assets\font_sheet_5.png" />
     <Image Include="Assets\LargeTile.scale-100.png" />
     <Image Include="Assets\LargeTile.scale-125.png" />
@@ -330,6 +331,7 @@
     <ClCompile Include="Content\Sample3DSceneRenderer.cpp" />
     <ClCompile Include="CubeGraphics.cpp" />
     <ClCompile Include="DxUtility.cpp" />
+    <ClCompile Include="liver.h" />
     <ClCompile Include="OpenXrProgram.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
