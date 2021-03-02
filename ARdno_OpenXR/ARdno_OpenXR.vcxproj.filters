@@ -243,6 +243,9 @@
     <Image Include="Assets\Blank.png">
       <Filter>Assets</Filter>
     </Image>
+    <Image Include="Assets\bojack.PNG">
+      <Filter>Assets</Filter>
+    </Image>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="ARdno_OpenXR.rc" />

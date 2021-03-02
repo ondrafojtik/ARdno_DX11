@@ -208,6 +208,7 @@ namespace {
             // Choosing a reasonable depth range can help improve hologram visual quality.
             // Use reversed-Z (near > far) for more uniform Z resolution.
             m_nearFar = {20.f, 0.1f};
+            //m_nearFar = { 0.1f, 20.f };
         }
 
         void InitializeSession() {

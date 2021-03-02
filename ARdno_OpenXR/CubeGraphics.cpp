@@ -117,7 +117,7 @@ namespace {
         {
             DirectX::XMFLOAT4 lightPos;
         };
-            
+
         constexpr uint32_t MaxViewInstance = 2;
 
         // Separate entrypoints for the vertex and pixel shader functions.
@@ -150,53 +150,51 @@ namespace {
             };
 
             float4x4 inverse(float4x4 m) {
-    float n11 = m[0][0], n12 = m[1][0], n13 = m[2][0], n14 = m[3][0];
-    float n21 = m[0][1], n22 = m[1][1], n23 = m[2][1], n24 = m[3][1];
-    float n31 = m[0][2], n32 = m[1][2], n33 = m[2][2], n34 = m[3][2];
-    float n41 = m[0][3], n42 = m[1][3], n43 = m[2][3], n44 = m[3][3];
+                float n11 = m[0][0], n12 = m[1][0], n13 = m[2][0], n14 = m[3][0];
+                float n21 = m[0][1], n22 = m[1][1], n23 = m[2][1], n24 = m[3][1];
+                float n31 = m[0][2], n32 = m[1][2], n33 = m[2][2], n34 = m[3][2];
+                float n41 = m[0][3], n42 = m[1][3], n43 = m[2][3], n44 = m[3][3];
 
-    float t11 = n23 * n34 * n42 - n24 * n33 * n42 + n24 * n32 * n43 - n22 * n34 * n43 - n23 * n32 * n44 + n22 * n33 * n44;
-    float t12 = n14 * n33 * n42 - n13 * n34 * n42 - n14 * n32 * n43 + n12 * n34 * n43 + n13 * n32 * n44 - n12 * n33 * n44;
-    float t13 = n13 * n24 * n42 - n14 * n23 * n42 + n14 * n22 * n43 - n12 * n24 * n43 - n13 * n22 * n44 + n12 * n23 * n44;
-    float t14 = n14 * n23 * n32 - n13 * n24 * n32 - n14 * n22 * n33 + n12 * n24 * n33 + n13 * n22 * n34 - n12 * n23 * n34;
+                float t11 = n23 * n34 * n42 - n24 * n33 * n42 + n24 * n32 * n43 - n22 * n34 * n43 - n23 * n32 * n44 + n22 * n33 * n44;
+                float t12 = n14 * n33 * n42 - n13 * n34 * n42 - n14 * n32 * n43 + n12 * n34 * n43 + n13 * n32 * n44 - n12 * n33 * n44;
+                float t13 = n13 * n24 * n42 - n14 * n23 * n42 + n14 * n22 * n43 - n12 * n24 * n43 - n13 * n22 * n44 + n12 * n23 * n44;
+                float t14 = n14 * n23 * n32 - n13 * n24 * n32 - n14 * n22 * n33 + n12 * n24 * n33 + n13 * n22 * n34 - n12 * n23 * n34;
 
-    float det = n11 * t11 + n21 * t12 + n31 * t13 + n41 * t14;
-    float idet = 1.0f / det;
+                float det = n11 * t11 + n21 * t12 + n31 * t13 + n41 * t14;
+                float idet = 1.0f / det;
 
-    float4x4 ret;
+                float4x4 ret;
 
-    ret[0][0] = t11 * idet;
-    ret[0][1] = (n24 * n33 * n41 - n23 * n34 * n41 - n24 * n31 * n43 + n21 * n34 * n43 + n23 * n31 * n44 - n21 * n33 * n44) * idet;
-    ret[0][2] = (n22 * n34 * n41 - n24 * n32 * n41 + n24 * n31 * n42 - n21 * n34 * n42 - n22 * n31 * n44 + n21 * n32 * n44) * idet;
-    ret[0][3] = (n23 * n32 * n41 - n22 * n33 * n41 - n23 * n31 * n42 + n21 * n33 * n42 + n22 * n31 * n43 - n21 * n32 * n43) * idet;
+                ret[0][0] = t11 * idet;
+                ret[0][1] = (n24 * n33 * n41 - n23 * n34 * n41 - n24 * n31 * n43 + n21 * n34 * n43 + n23 * n31 * n44 - n21 * n33 * n44) * idet;
+                ret[0][2] = (n22 * n34 * n41 - n24 * n32 * n41 + n24 * n31 * n42 - n21 * n34 * n42 - n22 * n31 * n44 + n21 * n32 * n44) * idet;
+                ret[0][3] = (n23 * n32 * n41 - n22 * n33 * n41 - n23 * n31 * n42 + n21 * n33 * n42 + n22 * n31 * n43 - n21 * n32 * n43) * idet;
 
-    ret[1][0] = t12 * idet;
-    ret[1][1] = (n13 * n34 * n41 - n14 * n33 * n41 + n14 * n31 * n43 - n11 * n34 * n43 - n13 * n31 * n44 + n11 * n33 * n44) * idet;
-    ret[1][2] = (n14 * n32 * n41 - n12 * n34 * n41 - n14 * n31 * n42 + n11 * n34 * n42 + n12 * n31 * n44 - n11 * n32 * n44) * idet;
-    ret[1][3] = (n12 * n33 * n41 - n13 * n32 * n41 + n13 * n31 * n42 - n11 * n33 * n42 - n12 * n31 * n43 + n11 * n32 * n43) * idet;
+                ret[1][0] = t12 * idet;
+                ret[1][1] = (n13 * n34 * n41 - n14 * n33 * n41 + n14 * n31 * n43 - n11 * n34 * n43 - n13 * n31 * n44 + n11 * n33 * n44) * idet;
+                ret[1][2] = (n14 * n32 * n41 - n12 * n34 * n41 - n14 * n31 * n42 + n11 * n34 * n42 + n12 * n31 * n44 - n11 * n32 * n44) * idet;
+                ret[1][3] = (n12 * n33 * n41 - n13 * n32 * n41 + n13 * n31 * n42 - n11 * n33 * n42 - n12 * n31 * n43 + n11 * n32 * n43) * idet;
 
-    ret[2][0] = t13 * idet;
-    ret[2][1] = (n14 * n23 * n41 - n13 * n24 * n41 - n14 * n21 * n43 + n11 * n24 * n43 + n13 * n21 * n44 - n11 * n23 * n44) * idet;
-    ret[2][2] = (n12 * n24 * n41 - n14 * n22 * n41 + n14 * n21 * n42 - n11 * n24 * n42 - n12 * n21 * n44 + n11 * n22 * n44) * idet;
-    ret[2][3] = (n13 * n22 * n41 - n12 * n23 * n41 - n13 * n21 * n42 + n11 * n23 * n42 + n12 * n21 * n43 - n11 * n22 * n43) * idet;
+                ret[2][0] = t13 * idet;
+                ret[2][1] = (n14 * n23 * n41 - n13 * n24 * n41 - n14 * n21 * n43 + n11 * n24 * n43 + n13 * n21 * n44 - n11 * n23 * n44) * idet;
+                ret[2][2] = (n12 * n24 * n41 - n14 * n22 * n41 + n14 * n21 * n42 - n11 * n24 * n42 - n12 * n21 * n44 + n11 * n22 * n44) * idet;
+                ret[2][3] = (n13 * n22 * n41 - n12 * n23 * n41 - n13 * n21 * n42 + n11 * n23 * n42 + n12 * n21 * n43 - n11 * n22 * n43) * idet;
 
-    ret[3][0] = t14 * idet;
-    ret[3][1] = (n13 * n24 * n31 - n14 * n23 * n31 + n14 * n21 * n33 - n11 * n24 * n33 - n13 * n21 * n34 + n11 * n23 * n34) * idet;
-    ret[3][2] = (n14 * n22 * n31 - n12 * n24 * n31 - n14 * n21 * n32 + n11 * n24 * n32 + n12 * n21 * n34 - n11 * n22 * n34) * idet;
-    ret[3][3] = (n12 * n23 * n31 - n13 * n22 * n31 + n13 * n21 * n32 - n11 * n23 * n32 - n12 * n21 * n33 + n11 * n22 * n33) * idet;
+                ret[3][0] = t14 * idet;
+                ret[3][1] = (n13 * n24 * n31 - n14 * n23 * n31 + n14 * n21 * n33 - n11 * n24 * n33 - n13 * n21 * n34 + n11 * n23 * n34) * idet;
+                ret[3][2] = (n14 * n22 * n31 - n12 * n24 * n31 - n14 * n21 * n32 + n11 * n24 * n32 + n12 * n21 * n34 - n11 * n22 * n34) * idet;
+                ret[3][3] = (n12 * n23 * n31 - n13 * n22 * n31 + n13 * n21 * n32 - n11 * n23 * n32 - n12 * n21 * n33 + n11 * n22 * n33) * idet;
 
-    return ret;
-}
+                return ret;
+            }
 
             VSOutput MainVS(VSInput input) {
                 VSOutput output;
                 output.Pos = mul(mul(float4(input.Pos, 1), Model), ViewProjection[input.instId]);
                 output.Color = float3(Color.x, Color.y, Color.z);//input.Color;
                 output.texCoord = input.texCoord;
-                
-                float4 _normal = float4(input.Color, 0);
-                _normal = mul(_normal, inverse(transpose(Model)));
-                output.normal = _normal.xyz;
+
+                output.normal = mul((float3x3)inverse(transpose(Model)), input.Color);
 
                 output.lightPos = lightPos.xyz;
                 output.viewId = input.instId;
@@ -207,13 +205,13 @@ namespace {
             SamplerState objSamplerState : SAMPLER : register(s0);
 
             float4 MainPS(VSOutput input) : SV_TARGET {
-                float4 albedo = objTexture.Sample(objSamplerState, input.texCoord) * float4(input.Color.x, input.Color.y, input.Color.z, 1.0f);
-                float ambientStrength = 0.3f;
+                float4 albedo = float4(input.Color, 1.0f);//objTexture.Sample(objSamplerState, input.texCoord); * float4(input.Color.x, input.Color.y, input.Color.z, 1.0f);
+                float ambientStrength = 0.1f;
                 float3 norm = normalize(input.normal);
-                float3 lightDir = normalize(input.lightPos - input.Pos.xyz);                
+                float3 lightDir = normalize(input.lightPos - input.Pos.xyz);
                 float diffuseStrength = max(dot(norm, lightDir), 0.0f);
                 float3 diffuse = mul(diffuseStrength, float3(albedo.x, albedo.y, albedo.z));
-                float4 ambient = albedo * 0.3f; 
+                float4 ambient = albedo * 0.3f;
                 float4 _color = ambient + float4(diffuse, 1.0f);
                 return _color;
             }
@@ -545,8 +543,8 @@ namespace {
         }
 
         void InitializeD3DResources() {
-            
-            
+
+
             const winrt::com_ptr<ID3DBlob> vertexShaderBytes = sample::dx::CompileShader(CubeShader::ShaderHlsl, "MainVS", "vs_5_0");
             CHECK_HRCMD(m_device->CreateVertexShader(
                 vertexShaderBytes->GetBufferPointer(), vertexShaderBytes->GetBufferSize(), nullptr, m_CubeVertexShader.put()));
@@ -555,7 +553,7 @@ namespace {
             CHECK_HRCMD(m_device->CreatePixelShader(
                 pixelShaderBytes->GetBufferPointer(), pixelShaderBytes->GetBufferSize(), nullptr, m_CubePixelShader.put()));
 
-            
+
             const winrt::com_ptr<ID3DBlob> _vertexShaderBytes = sample::dx::CompileShader(QuadShader::ShaderHlsl, "MainVS", "vs_5_0");
             CHECK_HRCMD(m_device->CreateVertexShader(
                 _vertexShaderBytes->GetBufferPointer(), _vertexShaderBytes->GetBufferSize(), nullptr, m_QuadVertexShader.put()));
@@ -564,7 +562,7 @@ namespace {
             CHECK_HRCMD(m_device->CreatePixelShader(
                 _pixelShaderBytes->GetBufferPointer(), _pixelShaderBytes->GetBufferSize(), nullptr, m_QuadPixelShader.put()));
 
-            
+
 
             const D3D11_INPUT_ELEMENT_DESC vertexDesc[] = {
                 {"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0},
@@ -585,7 +583,7 @@ namespace {
                 m_QuadInputLayout.put()));
 
 
-            
+
             // init of CubeShader
             const CD3D11_BUFFER_DESC modelConstantBufferDesc(sizeof(CubeShader::ModelConstantBuffer), D3D11_BIND_CONSTANT_BUFFER);
             CHECK_HRCMD(m_device->CreateBuffer(&modelConstantBufferDesc, nullptr, m_modelCBuffer.put()));
@@ -599,7 +597,7 @@ namespace {
             const CD3D11_BUFFER_DESC lightPosConstantBufferDesc(sizeof(CubeShader::LightPosBuffer), D3D11_BIND_CONSTANT_BUFFER);
             CHECK_HRCMD(m_device->CreateBuffer(&lightPosConstantBufferDesc, nullptr, m_lightPosCBuffer.put()));
 
-            
+
             // cube
             //{
             //    const D3D11_SUBRESOURCE_DATA vertexBufferData{CubeShader::c_cubeVertices};
@@ -655,7 +653,7 @@ namespace {
             CHECK_MSG(options.VPAndRTArrayIndexFromAnyShaderFeedingRasterizer,
                       "This sample requires VPRT support. Adjust sample shaders on GPU without VRPT.");
 
-            CD3D11_DEPTH_STENCIL_DESC depthStencilDesc(CD3D11_DEFAULT{});
+            CD3D11_DEPTH_STENCIL_DESC  depthStencilDesc(CD3D11_DEFAULT{});
             depthStencilDesc.DepthEnable = true;
             depthStencilDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
             depthStencilDesc.DepthFunc = D3D11_COMPARISON_GREATER;
@@ -680,6 +678,21 @@ namespace {
             m_device->CreateBlendState(&blend_desc, &blend_state);
             m_deviceContext->OMSetBlendState(blend_state, blend_factor, 0xFFFFFFFF);
 
+            ID3D11RasterizerState* rasterizer_state;
+            D3D11_RASTERIZER_DESC rasterizer_desc;
+            rasterizer_desc.FillMode = D3D11_FILL_SOLID;
+            rasterizer_desc.CullMode = D3D11_CULL_NONE;
+            rasterizer_desc.FrontCounterClockwise = FALSE;
+            rasterizer_desc.DepthBias = 0;
+            rasterizer_desc.SlopeScaledDepthBias = 0.0f;
+            rasterizer_desc.DepthBias = 0.0f;
+            rasterizer_desc.DepthClipEnable = TRUE;
+            rasterizer_desc.ScissorEnable = FALSE;
+            rasterizer_desc.MultisampleEnable = FALSE;
+            rasterizer_desc.AntialiasedLineEnable = FALSE;
+            HRESULT h = m_device->CreateRasterizerState(&rasterizer_desc, &rasterizer_state);
+            m_deviceContext->RSSetState(rasterizer_state);
+            
             // creating sampler
             D3D11_SAMPLER_DESC sampler;
             ZeroMemory(&sampler, sizeof(sampler));
@@ -761,23 +774,16 @@ namespace {
             CubeShader::ColorBuffer colorCBuffer;
             colorCBuffer.Color = DirectX::XMFLOAT4(0.8f, 0.0f, 0.0f, 1.0f);
             CubeShader::LightPosBuffer lightPosCBuffer;
-            if (cubes.size() != 0)
-            {
-                XrPosef pose = cubes[0]->PoseInAppSpace;
-                lightPosCBuffer.lightPos = DirectX::XMFLOAT4(pose.position.x, pose.position.y, pose.position.z, 0.0f);
-            }
-            else
-            {
-                lightPosCBuffer.lightPos = DirectX::XMFLOAT4(1.0f, 1.0f, 1.0f, 0.0f);
-            }
-            
+            lightPosCBuffer.lightPos = DirectX::XMFLOAT4(1.0f, 6.0f, 6.0f, 0.0f);
+          
+
             m_deviceContext->UpdateSubresource(m_colorCBuffer.get(), 0, nullptr, &colorCBuffer, 0, 0);
             m_deviceContext->UpdateSubresource(m_lightPosCBuffer.get(), 0, nullptr, &lightPosCBuffer, 0, 0);
 
             ID3D11Buffer* const constantBuffers[] = { m_modelCBuffer.get(), m_viewProjectionCBuffer.get(), m_colorCBuffer.get(), m_lightPosCBuffer.get() };
             m_deviceContext->VSSetConstantBuffers(0, (UINT)std::size(constantBuffers), constantBuffers);
             m_deviceContext->PSSetSamplers(0, 1, sampler_state.GetAddressOf());
-            
+
             CubeShader::ViewProjectionConstantBuffer viewProjectionCBufferData{};
 
             for (uint32_t k = 0; k < viewInstanceCount; k++) {
@@ -811,7 +817,7 @@ namespace {
             m_deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
             m_deviceContext->IASetInputLayout(m_CubeInputLayout.get());
             m_deviceContext->PSSetShaderResources(0, 1, blank_texture.GetAddressOf());
-            
+
             // Render each cube
             for (const sample::Cube* cube : cubes) {
                 // Compute and update the model transform for each cube, transpose for shader usage.
@@ -898,7 +904,7 @@ namespace {
 
         Microsoft::WRL::ComPtr<ID3D11SamplerState> sampler_state;
         Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> font_texture;
-        Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> cube_texture; 
+        Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> cube_texture;
         Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> blank_texture;
 
     };

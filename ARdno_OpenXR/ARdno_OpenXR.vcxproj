@@ -257,6 +257,7 @@
     <Image Include="Assets\BadgeLogo.scale-200.png" />
     <Image Include="Assets\BadgeLogo.scale-400.png" />
     <Image Include="Assets\Blank.png" />
+    <Image Include="Assets\bojack.PNG" />
     <Image Include="Assets\font_sheet_5.png" />
     <Image Include="Assets\LargeTile.scale-100.png" />
     <Image Include="Assets\LargeTile.scale-125.png" />
