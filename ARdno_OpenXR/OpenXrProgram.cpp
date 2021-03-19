@@ -249,6 +249,7 @@ namespace {
             attachInfo.actionSets = actionSets.data();
             CHECK_XRCMD(xrAttachSessionActionSets(m_session.Get(), &attachInfo));
 
+           
             CreateSpaces();
             CreateSwapchains();
         }
@@ -542,7 +543,7 @@ namespace {
                         if (side == LeftSide)
                         {
                             std::vector<std::string> text_buffer;
-                            text_buffer.push_back("KOSTKA");
+                            text_buffer.push_back("SAMPLE");
                             text_buffer.push_back("OBRAZ");
                             text_buffer.push_back("KYTKA");
 
@@ -653,6 +654,9 @@ namespace {
             return swapchainImageIndex;
         }
 
+        // initialize light
+        
+
         /*void InitializeSpinningCube(XrTime predictedDisplayTime) {
             auto createReferenceSpace = [session = m_session.Get()](XrReferenceSpaceType referenceSpaceType, XrPosef poseInReferenceSpace) {
                 xr::SpaceHandle space;
@@ -762,6 +766,30 @@ namespace {
 
             //if (aim_action)
             //    UpdateSpinningCube(predictedDisplayTime);
+            
+            // create light
+            {
+                auto createReferenceSpace = [session = m_session.Get()](XrReferenceSpaceType referenceSpaceType, XrPosef poseInReferenceSpace) {
+                    xr::SpaceHandle space;
+                    XrReferenceSpaceCreateInfo createInfo{ XR_TYPE_REFERENCE_SPACE_CREATE_INFO };
+                    createInfo.referenceSpaceType = referenceSpaceType;
+                    createInfo.poseInReferenceSpace = poseInReferenceSpace;
+                    CHECK_XRCMD(xrCreateReferenceSpace(session, &createInfo, space.Put()));
+                    return space;
+                };
+                
+                // Initialize a big cube 1 meter in front of user.
+                Hologram hologram{};
+                hologram.Cube.Scale = { 0.25f, 0.25f, 0.25f };
+                hologram.Cube.Space = createReferenceSpace(XR_REFERENCE_SPACE_TYPE_LOCAL, xr::math::Pose::Translation({ 0, 0, -1 }));
+                hologram.type = ObjectType::Cube;
+                //m_holograms.push_back(std::move(hologram));
+                //m_mainCubeIndex = (uint32_t)m_holograms.size() - 1;
+
+                m_light.PoseInAppSpace = hologram.Cube.PoseInAppSpace;
+
+
+            }
 
             UpdateVisibleCube(m_cubesInHand[LeftSide]);
             UpdateVisibleCube(m_cubesInHand[RightSide]);
@@ -832,7 +860,8 @@ namespace {
                                          depthSwapchain.Format,
                                          depthSwapchain.Images[depthSwapchainImageIndex].texture,
                                          visibleCubes,
-                                         visibleQuads);
+                                         visibleQuads,
+                                         m_light);
 
 
             XrSwapchainImageReleaseInfo releaseInfo{XR_TYPE_SWAPCHAIN_IMAGE_RELEASE_INFO};
@@ -893,7 +922,15 @@ namespace {
             xr::SpatialAnchorHandle Anchor;
             ObjectType type;
         };
+
+        //struct Light
+        //{
+        //    xr::SpaceHandle Space{}; // refers to position
+        //};
+
         std::vector<Hologram> m_holograms;
+        //sample::Light m_light;
+        sample::Cube m_light;
 
         std::optional<uint32_t> m_mainCubeIndex;
         std::optional<uint32_t> m_spinningCubeIndex;

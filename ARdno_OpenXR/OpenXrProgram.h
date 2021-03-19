@@ -27,6 +27,11 @@ namespace sample {
         std::string text;
     };
 
+    struct Light
+    {
+        xr::SpaceHandle Space{}; // refers to position
+    };
+
     struct Quad {
         xr::SpaceHandle Space{};
         std::optional<XrPosef> PoseInSpace{};
@@ -59,7 +64,8 @@ namespace sample {
                                 DXGI_FORMAT depthSwapchainFormat,
                                 ID3D11Texture2D* depthTexture,
                                 const std::vector<const sample::Cube*>& cubes,
-                                const std::vector<const sample::Cube*>& quads) = 0;
+                                const std::vector<const sample::Cube*>& quads,
+                                const sample::Cube& light) = 0;
 
       };
 

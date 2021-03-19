@@ -35,27 +35,6 @@ namespace {
             XrVector2f TexCoords;
         };
 
-        constexpr XrVector3f Red{1, 0, 0};
-        constexpr XrVector3f DarkRed{0.25f, 0, 0};
-        constexpr XrVector3f Green{0, 1, 0};
-        constexpr XrVector3f DarkGreen{0, 0.25f, 0};
-        constexpr XrVector3f Blue{0, 0, 1};
-        constexpr XrVector3f DarkBlue{0, 0, 0.25f};
-
-        // Vertices for a 1x1x1 meter cube. (Left/Right, Top/Bottom, Front/Back)
-        constexpr XrVector3f LBB{-0.5f, -0.5f, -0.5f};
-        constexpr XrVector3f LBF{-0.5f, -0.5f, 0.5f};
-        constexpr XrVector3f LTB{-0.5f, 0.5f, -0.5f};
-        constexpr XrVector3f LTF{-0.5f, 0.5f, 0.5f};
-        constexpr XrVector3f RBB{0.5f, -0.5f, -0.5f};
-        constexpr XrVector3f RBF{0.5f, -0.5f, 0.5f};
-        constexpr XrVector3f RTB{0.5f, 0.5f, -0.5f};
-        constexpr XrVector3f RTF{0.5f, 0.5f, 0.5f};
-
-
-
-#define CUBE_SIDE(V1, V2, V3, V4, V5, V6, COLOR) {V1, COLOR}, {V2, COLOR}, {V3, COLOR}, {V4, COLOR}, {V5, COLOR}, {V6, COLOR},
-
 
         //       POSITION       |      COLOR      | TEXCOORD
         constexpr Vertex c_cubeVertices[] = {
@@ -211,8 +190,8 @@ namespace {
                 float3 lightDir = normalize(input.lightPos - input.Pos.xyz);
                 float diffuseStrength = max(dot(norm, lightDir), 0.0f);
                 float3 diffuse = mul(diffuseStrength, float3(albedo.x, albedo.y, albedo.z));
-                float4 ambient = albedo * 0.3f;
-                float4 _color = ambient + float4(diffuse, 1.0f);
+                float3 ambient = albedo.xyz * 0.1f;
+                float4 _color = float4(ambient, 1.0f) + float4(diffuse, 1.0f);
                 return _color;
             }
             )_";
@@ -289,7 +268,6 @@ namespace {
 
             for (int i = 0; i < size; i++)
             {
-                // TODO: y-value
                 XrVector2f* coords = get_coords(text[i]);
 
                 // Vertex 1
@@ -664,19 +642,20 @@ namespace {
             D3D11_BLEND_DESC blend_desc;
             float blend_factor[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
             ZeroMemory(&blend_desc, sizeof(blend_desc));
-            for (int i = 0; i < 8; i++)
-            {
-                blend_desc.RenderTarget[i].BlendEnable = true;
-                blend_desc.RenderTarget[i].SrcBlend = D3D11_BLEND_SRC_ALPHA;
-                blend_desc.RenderTarget[i].DestBlend = D3D11_BLEND_INV_SRC_ALPHA;
-                blend_desc.RenderTarget[i].BlendOp = D3D11_BLEND_OP_ADD;
-                blend_desc.RenderTarget[i].SrcBlendAlpha = D3D11_BLEND_ONE;
-                blend_desc.RenderTarget[i].DestBlendAlpha = D3D11_BLEND_ZERO;
-                blend_desc.RenderTarget[i].BlendOpAlpha = D3D11_BLEND_OP_ADD;
-                blend_desc.RenderTarget[i].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
-            }
+            blend_desc.RenderTarget[0].BlendEnable = true;
+            blend_desc.RenderTarget[0].SrcBlend = D3D11_BLEND_SRC_ALPHA;
+            blend_desc.RenderTarget[0].DestBlend = D3D11_BLEND_INV_SRC_ALPHA;
+            blend_desc.RenderTarget[0].BlendOp = D3D11_BLEND_OP_ADD;
+            blend_desc.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_ONE;
+            blend_desc.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_ZERO;
+            blend_desc.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_ADD;
+            blend_desc.RenderTarget[0].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
+            
             m_device->CreateBlendState(&blend_desc, &blend_state);
             m_deviceContext->OMSetBlendState(blend_state, blend_factor, 0xFFFFFFFF);
+            
+
+
 
             ID3D11RasterizerState* rasterizer_state;
             D3D11_RASTERIZER_DESC rasterizer_desc;
@@ -741,7 +720,8 @@ namespace {
                         DXGI_FORMAT depthSwapchainFormat,
                         ID3D11Texture2D* depthTexture,
                         const std::vector<const sample::Cube*>& cubes,
-                        const std::vector<const sample::Cube*>& quads) override {
+                        const std::vector<const sample::Cube*>& quads,
+                        const sample::Cube& light) override {
             const uint32_t viewInstanceCount = (uint32_t)viewProjections.size();
             CHECK_MSG(viewInstanceCount <= CubeShader::MaxViewInstance,
                       "Sample shader supports 2 or fewer view instances. Adjust shader to accommodate more.")
@@ -774,8 +754,8 @@ namespace {
             CubeShader::ColorBuffer colorCBuffer;
             colorCBuffer.Color = DirectX::XMFLOAT4(0.8f, 0.0f, 0.0f, 1.0f);
             CubeShader::LightPosBuffer lightPosCBuffer;
-            lightPosCBuffer.lightPos = DirectX::XMFLOAT4(1.0f, 6.0f, 6.0f, 0.0f);
-          
+            lightPosCBuffer.lightPos = DirectX::XMFLOAT4(light.PoseInAppSpace.position.x, light.PoseInAppSpace.position.y, light.PoseInAppSpace.position.z, 1.0f);
+            
 
             m_deviceContext->UpdateSubresource(m_colorCBuffer.get(), 0, nullptr, &colorCBuffer, 0, 0);
             m_deviceContext->UpdateSubresource(m_lightPosCBuffer.get(), 0, nullptr, &lightPosCBuffer, 0, 0);
@@ -796,16 +776,6 @@ namespace {
             }
             m_deviceContext->UpdateSubresource(m_viewProjectionCBuffer.get(), 0, nullptr, &viewProjectionCBufferData, 0, 0);
 
-            // Set cube primitive data.
-            //const UINT strides[] = {sizeof(CubeShader::Vertex)};
-            //const UINT offsets[] = {0};
-            //ID3D11Buffer* vertexBuffers[] = {m_cubeVertexBuffer.get()};
-
-            /*const UINT strides[] = { sizeof(QuadShader::Vertex) };
-            const UINT offsets[] = { 0 };
-            ID3D11Buffer* vertexBuffers[] = { m_quadVertexBuffer.get() };
-            m_deviceContext->IASetVertexBuffers(0, (UINT)std::size(vertexBuffers), vertexBuffers, strides, offsets);
-            m_deviceContext->IASetIndexBuffer(m_quadIndexBuffer.get(), DXGI_FORMAT_R16_UINT, 0);*/
             m_deviceContext->VSSetShader(m_CubeVertexShader.get(), nullptr, 0);
             m_deviceContext->PSSetShader(m_CubePixelShader.get(), nullptr, 0);
 
@@ -827,8 +797,6 @@ namespace {
                 DirectX::XMStoreFloat4x4(&model.Model, DirectX::XMMatrixTranspose(scaleMatrix * xr::math::LoadXrPose(cube->PoseInAppSpace)));
                 m_deviceContext->UpdateSubresource(m_modelCBuffer.get(), 0, nullptr, &model, 0, 0);
 
-                // Draw the cube.
-                //m_deviceContext->DrawIndexedInstanced((UINT)std::size(CubeShader::c_cubeIndices), viewInstanceCount, 0, 0, 0);
                 m_deviceContext->DrawIndexedInstanced((UINT)std::size(sample::liver::ib), viewInstanceCount, 0, 0, 0);
             }
 
