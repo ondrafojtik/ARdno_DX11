@@ -35,7 +35,6 @@ namespace {
             XrVector2f TexCoords;
         };
 
-
         //       POSITION       |      COLOR      | TEXCOORD
         constexpr Vertex c_cubeVertices[] = {
             -0.5f, -0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, // side 1 (front)
@@ -128,7 +127,8 @@ namespace {
                 float4 lightPos;
             };
 
-            float4x4 inverse(float4x4 m) {
+            float4x4 inverse(float4x4 m) 
+            {
                 float n11 = m[0][0], n12 = m[1][0], n13 = m[2][0], n14 = m[3][0];
                 float n21 = m[0][1], n22 = m[1][1], n23 = m[2][1], n24 = m[3][1];
                 float n31 = m[0][2], n32 = m[1][2], n33 = m[2][2], n34 = m[3][2];
@@ -204,24 +204,6 @@ namespace {
             XrVector3f Color;
             XrVector2f TexCoords;
         };
-
-        constexpr XrVector3f Red{ 1, 0, 0 };
-        constexpr XrVector3f DarkRed{ 0.25f, 0, 0 };
-        constexpr XrVector3f Green{ 0, 1, 0 };
-        constexpr XrVector3f DarkGreen{ 0, 0.25f, 0 };
-        constexpr XrVector3f Blue{ 0, 0, 1 };
-        constexpr XrVector3f DarkBlue{ 0, 0, 0.25f };
-
-        // Vertices for a 1x1x1 meter cube. (Left/Right, Top/Bottom, Front/Back)
-        constexpr XrVector3f LBB{ -0.5f, -0.5f, -0.5f };
-        constexpr XrVector3f LBF{ -0.5f, -0.5f, 0.5f };
-        constexpr XrVector3f LTB{ -0.5f, 0.5f, -0.5f };
-        constexpr XrVector3f LTF{ -0.5f, 0.5f, 0.5f };
-        constexpr XrVector3f RBB{ 0.5f, -0.5f, -0.5f };
-        constexpr XrVector3f RBF{ 0.5f, -0.5f, 0.5f };
-        constexpr XrVector3f RTB{ 0.5f, 0.5f, -0.5f };
-        constexpr XrVector3f RTF{ 0.5f, 0.5f, 0.5f };
-
 
         struct ModelConstantBuffer {
             DirectX::XMFLOAT4X4 Model;
@@ -321,7 +303,6 @@ namespace {
 
             }
 
-            // edit VB and IB
             Vertex* vertices = &_vertices[0];
             return _vertices;
         }
@@ -346,6 +327,9 @@ namespace {
             }
 
             return final_buffer;
+
+            // TODO: is this actually something Ive gotta do? I mean, cant I just do some &buffer[0] or smth?
+
         }
 
         std::vector<unsigned short> get_ib_with_text(std::string text)
@@ -367,105 +351,13 @@ namespace {
 
             }
 
-
-            /*
-            // the initial triangle (first one)
-            _indices.push_back(0);
-            _indices.push_back(1);
-            _indices.push_back(2);
-
-            _indices.push_back(2);
-            _indices.push_back(3);
-            _indices.push_back(0);
-
-            int32_t jump = 3;
-            for (int i = 1; i < size; i++)
-            {
-                // old indices
-                int32_t old_bottom = _indices[_indices.size() - 5];
-                int32_t old_top = _indices[_indices.size() - 4];
-
-                // triangle 1
-                _indices.push_back(old_bottom);
-                jump += 1;
-                _indices.push_back(jump);
-                jump += 1;
-                _indices.push_back(jump);
-
-                // triangle 2
-                _indices.push_back(jump);
-                _indices.push_back(old_top);
-                _indices.push_back(old_bottom);
-            }*/
-
             unsigned short* indices = &_indices[0];
             return _indices;
         }
-
-        //float c_quadVertices[] = {
-        //    -0.5f, -0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 0.23f, 0.0f, // side 1 (front)
-        //     0.5f, -0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 0.23f, 1.0f,
-        //     0.5f,  0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 0.28f, 1.0f,
-        //    -0.5f,  0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 0.28f, 0.0f,
-        //
-        //    -0.5f, -0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 0.28f, 0.0f, // side 1 (front)
-        //     0.5f, -0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 0.28f, 1.0f,
-        //     0.5f,  0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 0.33f, 1.0f,
-        //    -0.5f,  0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 0.33f, 0.0f,
-        //
-        //    -0.5f, -0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 0.33f, 0.0f, // side 1 (front)
-        //     0.5f, -0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 0.33f, 1.0f,
-        //     0.5f,  0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 0.38f, 1.0f,
-        //    -0.5f,  0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 0.38f, 0.0f,
-        //};
-
+        
+        // TODO: inconsistency. Why is one a vector and the other float* (&indices[0]?...)
         float* c_quadVertices = convert_to_float_arr(get_vb_with_text("CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC")); // max 32chars..
         std::vector<unsigned short> c_quadIndices = get_ib_with_text("CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC");
-
-        //constexpr unsigned short c_quadIndices[] = {
-        //    0, 1, 2,
-        //    2, 3, 0,
-        //    1, 4, 5,
-        //    5, 2, 1,
-        //    4, 6, 7,
-        //    7, 5, 4,
-        //};
-
-        void set_coords(char32_t c)
-        {
-            XrVector2f sprite_size;
-            sprite_size.x = 32.0f;
-            sprite_size.y = 32.0f;
-
-            XrVector2f texture_size;
-            texture_size.x = 4096.0f;
-            texture_size.y = 32.0f;
-
-            int32_t x = c - ' ';
-            float _magic = 0.999f;
-
-            // XrVector2f* coords = new XrVector2f[4];
-            // coords[0] = { (x * sprite_size.x) / texture_size.x, 0.0f };
-            // coords[1] = { ((x + 1) * sprite_size.x) / (texture_size.x) * _magic, 0.0f };
-            // coords[2] = { ((x + 1) * sprite_size.x) / (texture_size.x) * _magic, 1.0f };
-            // coords[3] = { (x * sprite_size.x) / (texture_size.x), 1.0f };
-
-            c_quadVertices[6] = (x * sprite_size.x) / texture_size.x;
-            c_quadVertices[7] = 0.0f;
-
-            c_quadVertices[14] = ((x + 1) * sprite_size.x) / (texture_size.x) * _magic;
-            c_quadVertices[15] = 0.0f;
-
-            c_quadVertices[22] = ((x + 1) * sprite_size.x) / (texture_size.x) * _magic;
-            c_quadVertices[23] = 1.0f;
-
-            c_quadVertices[30] = (x * sprite_size.x) / (texture_size.x);
-            c_quadVertices[31] = 1.0f;
-
-        }
-
-
-
 
         // Separate entrypoints for the vertex and pixel shader functions.
         constexpr char ShaderHlsl[] = R"_(
@@ -541,7 +433,6 @@ namespace {
                 _pixelShaderBytes->GetBufferPointer(), _pixelShaderBytes->GetBufferSize(), nullptr, m_QuadPixelShader.put()));
 
 
-
             const D3D11_INPUT_ELEMENT_DESC vertexDesc[] = {
                 {"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0},
                 {"COLOR", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0},
@@ -598,10 +489,6 @@ namespace {
             }
             // quad
             {
-                //const D3D11_SUBRESOURCE_DATA vertexBufferData{ QuadShader::c_quadVertices };
-                //const CD3D11_BUFFER_DESC vertexBufferDesc(sizeof(QuadShader::c_quadVertices), D3D11_BIND_VERTEX_BUFFER);
-                //HRESULT hr = m_device->CreateBuffer(&vertexBufferDesc, &vertexBufferData, m_quadVertexBuffer.put());
-
                 // Dynamic VB
                 D3D11_BUFFER_DESC vertexBufferDesc;
                 ZeroMemory(&vertexBufferDesc, sizeof(vertexBufferDesc));
@@ -621,10 +508,6 @@ namespace {
                 indexBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
                 D3D11_SUBRESOURCE_DATA data{ QuadShader::c_quadIndices.data() };
                 hr = m_device->CreateBuffer(&indexBufferDesc, &data, m_quadIndexBuffer.put());
-
-                //const D3D11_SUBRESOURCE_DATA indexBufferData{ QuadShader::c_quadIndices };
-                //const CD3D11_BUFFER_DESC indexBufferDesc(sizeof(QuadShader::c_quadIndices), D3D11_BIND_INDEX_BUFFER);
-                //hr = m_device->CreateBuffer(&indexBufferDesc, &indexBufferData, m_quadIndexBuffer.put());
             }
             D3D11_FEATURE_DATA_D3D11_OPTIONS3 options;
             m_device->CheckFeatureSupport(D3D11_FEATURE_D3D11_OPTIONS3, &options, sizeof(options));
@@ -654,9 +537,7 @@ namespace {
             m_device->CreateBlendState(&blend_desc, &blend_state);
             m_deviceContext->OMSetBlendState(blend_state, blend_factor, 0xFFFFFFFF);
             
-
-
-
+            // culling
             ID3D11RasterizerState* rasterizer_state;
             D3D11_RASTERIZER_DESC rasterizer_desc;
             rasterizer_desc.FillMode = D3D11_FILL_SOLID;
@@ -672,7 +553,7 @@ namespace {
             HRESULT h = m_device->CreateRasterizerState(&rasterizer_desc, &rasterizer_state);
             m_deviceContext->RSSetState(rasterizer_state);
             
-            // creating sampler
+            // creating sampler 
             D3D11_SAMPLER_DESC sampler;
             ZeroMemory(&sampler, sizeof(sampler));
             sampler.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
@@ -684,7 +565,7 @@ namespace {
             sampler.MaxLOD = D3D11_FLOAT32_MAX;
             m_device->CreateSamplerState(&sampler, sampler_state.GetAddressOf());
 
-            // creating texture
+            // creating textures
             HRESULT hr = Windows::Foundation::Initialize(RO_INIT_TYPE::RO_INIT_MULTITHREADED);
             hr = DirectX::CreateWICTextureFromFile(m_device.get(), L"Assets\\font_sheet_5.png", nullptr, font_texture.GetAddressOf());
             hr = DirectX::CreateWICTextureFromFile(m_device.get(), L"Assets\\StoreLogo.png", nullptr, cube_texture.GetAddressOf());
@@ -835,8 +716,6 @@ namespace {
                     memcpy(resource.pData, static_cast<void*>(QuadShader::get_ib_with_text(word_to_render).data()), QuadShader::get_ib_with_text(word_to_render).size() * sizeof(unsigned short));
                     m_deviceContext->Unmap(m_quadIndexBuffer.get(), 0);
                 }
-
-
 
                 const UINT strides_quad[] = { sizeof(float) * 8 };
                 ID3D11Buffer* vb_quad[] = { m_quadVertexBuffer.get() };
