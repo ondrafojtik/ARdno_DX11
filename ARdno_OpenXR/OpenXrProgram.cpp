@@ -18,6 +18,8 @@
 #include "OpenXrProgram.h"
 #include "DxUtility.h"
 
+#include "XrUtility/XrSceneUnderstanding.h"
+
 namespace {
     struct ImplementOpenXrProgram : sample::IOpenXrProgram {
         ImplementOpenXrProgram(std::string applicationName, std::unique_ptr<sample::IGraphicsPluginD3D11> graphicsPlugin)
