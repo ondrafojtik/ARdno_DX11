@@ -84,10 +84,22 @@ XR_ENUM_STR(XrResult);
     _(XR_ERROR_ACTIONSETS_ALREADY_ATTACHED, -47) \
     _(XR_ERROR_LOCALIZED_NAME_DUPLICATED, -48) \
     _(XR_ERROR_LOCALIZED_NAME_INVALID, -49) \
+    _(XR_ERROR_GRAPHICS_REQUIREMENTS_CALL_MISSING, -50) \
     _(XR_ERROR_ANDROID_THREAD_SETTINGS_ID_INVALID_KHR, -1000003000) \
     _(XR_ERROR_ANDROID_THREAD_SETTINGS_FAILURE_KHR, -1000003001) \
     _(XR_ERROR_CREATE_SPATIAL_ANCHOR_FAILED_MSFT, -1000039001) \
     _(XR_ERROR_SECONDARY_VIEW_CONFIGURATION_TYPE_NOT_ENABLED_MSFT, -1000053000) \
+    _(XR_ERROR_CONTROLLER_MODEL_KEY_INVALID_MSFT, -1000055000) \
+    _(XR_ERROR_DISPLAY_REFRESH_RATE_UNSUPPORTED_FB, -1000101000) \
+    _(XR_ERROR_COLOR_SPACE_UNSUPPORTED_FB, -1000108000) \
+    _(XR_ERROR_COMPUTE_NEW_SCENE_NOT_COMPLETED_MSFT, -1000097000) \
+    _(XR_ERROR_SCENE_COMPONENT_ID_INVALID_MSFT, -1000097001) \
+    _(XR_ERROR_SCENE_COMPONENT_TYPE_MISMATCH_MSFT, -1000097002) \
+    _(XR_ERROR_SCENE_MESH_BUFFER_ID_INVALID_MSFT, -1000097003) \
+    _(XR_ERROR_REPROJECTION_MODE_UNSUPPORTED_MSFT, -1000066000) \
+    _(XR_SPATIAL_ANCHOR_EXPORT_DATA_UNAVAILABLE_MSFT, 1000062000) \
+    _(XR_ERROR_SPATIAL_ANCHOR_EXPORT_FAILED_MSFT, -1000062000) \
+    _(XR_ERROR_SPATIAL_ANCHOR_SUFFICIENCY_QUERY_FAILED_MSFT, -1000062001) \
     _(XR_RESULT_MAX_ENUM, 0x7FFFFFFF)
 
 #define XR_LIST_ENUM_XrStructureType(_) \
@@ -176,6 +188,7 @@ XR_ENUM_STR(XrResult);
     _(XR_TYPE_EVENT_DATA_VISIBILITY_MASK_CHANGED_KHR, 1000031001) \
     _(XR_TYPE_SESSION_CREATE_INFO_OVERLAY_EXTX, 1000033000) \
     _(XR_TYPE_EVENT_DATA_MAIN_SESSION_VISIBILITY_CHANGED_EXTX, 1000033003) \
+    _(XR_TYPE_COMPOSITION_LAYER_COLOR_SCALE_BIAS_KHR, 1000034000) \
     _(XR_TYPE_SPATIAL_ANCHOR_CREATE_INFO_MSFT, 1000039000) \
     _(XR_TYPE_SPATIAL_ANCHOR_SPACE_CREATE_INFO_MSFT, 1000039001) \
     _(XR_TYPE_VIEW_CONFIGURATION_DEPTH_RANGE_EXT, 1000046000) \
@@ -197,9 +210,45 @@ XR_ENUM_STR(XrResult);
     _(XR_TYPE_SECONDARY_VIEW_CONFIGURATION_FRAME_END_INFO_MSFT, 1000053003) \
     _(XR_TYPE_SECONDARY_VIEW_CONFIGURATION_LAYER_INFO_MSFT, 1000053004) \
     _(XR_TYPE_SECONDARY_VIEW_CONFIGURATION_SWAPCHAIN_CREATE_INFO_MSFT, 1000053005) \
+    _(XR_TYPE_CONTROLLER_MODEL_KEY_STATE_MSFT, 1000055000) \
+    _(XR_TYPE_CONTROLLER_MODEL_NODE_PROPERTIES_MSFT, 1000055001) \
+    _(XR_TYPE_CONTROLLER_MODEL_PROPERTIES_MSFT, 1000055002) \
+    _(XR_TYPE_CONTROLLER_MODEL_NODE_STATE_MSFT, 1000055003) \
+    _(XR_TYPE_CONTROLLER_MODEL_STATE_MSFT, 1000055004) \
     _(XR_TYPE_VIEW_CONFIGURATION_VIEW_FOV_EPIC, 1000059000) \
     _(XR_TYPE_HOLOGRAPHIC_WINDOW_ATTACHMENT_MSFT, 1000063000) \
+    _(XR_TYPE_ANDROID_SURFACE_SWAPCHAIN_CREATE_INFO_FB, 1000070000) \
     _(XR_TYPE_INTERACTION_PROFILE_ANALOG_THRESHOLD_VALVE, 1000079000) \
+    _(XR_TYPE_LOADER_INIT_INFO_ANDROID_KHR, 1000089000) \
+    _(XR_TYPE_VULKAN_INSTANCE_CREATE_INFO_KHR, 1000090000) \
+    _(XR_TYPE_VULKAN_DEVICE_CREATE_INFO_KHR, 1000090001) \
+    _(XR_TYPE_VULKAN_GRAPHICS_DEVICE_GET_INFO_KHR, 1000090003) \
+    _(XR_TYPE_COMPOSITION_LAYER_EQUIRECT2_KHR, 1000091000) \
+    _(XR_TYPE_EVENT_DATA_DISPLAY_REFRESH_RATE_CHANGED_FB, 1000101000) \
+    _(XR_TYPE_SYSTEM_COLOR_SPACE_PROPERTIES_FB, 1000108000) \
+    _(XR_TYPE_BINDING_MODIFICATIONS_KHR, 1000120000) \
+    _(XR_TYPE_SCENE_OBSERVER_CREATE_INFO_MSFT, 1000097000) \
+    _(XR_TYPE_SCENE_CREATE_INFO_MSFT, 1000097001) \
+    _(XR_TYPE_NEW_SCENE_COMPUTE_INFO_MSFT, 1000097002) \
+    _(XR_TYPE_WORLD_MESH_COMPUTE_INFO_MSFT, 1000097003) \
+    _(XR_TYPE_SCENE_COMPONENTS_GET_INFO_MSFT, 1000097004) \
+    _(XR_TYPE_SCENE_COMPONENT_LOCATIONS_MSFT, 1000097005) \
+    _(XR_TYPE_SCENE_COMPONENTS_LOCATE_INFO_MSFT, 1000097006) \
+    _(XR_TYPE_SCENE_COMPONENT_STATES_MSFT, 1000097007) \
+    _(XR_TYPE_SCENE_OBJECT_STATES_MSFT, 1000097008) \
+    _(XR_TYPE_SCENE_PLANE_STATES_MSFT, 1000097009) \
+    _(XR_TYPE_SCENE_MESH_STATES_MSFT, 1000097010) \
+    _(XR_TYPE_SCENE_MESH_BUFFERS_GET_INFO_MSFT, 1000097011) \
+    _(XR_TYPE_SCENE_MESH_BUFFERS_MSFT, 1000097012) \
+    _(XR_TYPE_SCENE_COMPONENT_PARENT_FILTER_INFO_MSFT, 1000097013) \
+    _(XR_TYPE_SCENE_OBJECT_KINDS_FILTER_INFO_MSFT, 1000097014) \
+    _(XR_TYPE_SCENE_PLANE_ALIGNMENT_FILTER_INFO_MSFT, 1000097015) \
+    _(XR_TYPE_DESERIALIZE_SCENE_INFO_MSFT, 1000098000) \
+    _(XR_TYPE_SERIALIZE_SCENE_MSFT, 1000098001) \
+    _(XR_TYPE_COMPOSITION_LAYER_REPROJECTION_INFO_MSFT, 1000066000) \
+    _(XR_TYPE_COMPOSITION_LAYER_REPROJECTION_PLANE_OVERRIDE_MSFT, 1000066001) \
+    _(XR_TYPE_SPATIAL_ANCHOR_EXPORT_PURPOSE_INFO_MSFT, 1000062000) \
+    _(XR_TYPE_SPATIAL_ANCHOR_EXPORT_SUFFICIENCY_MSFT, 1000062001) \
     _(XR_STRUCTURE_TYPE_MAX_ENUM, 0x7FFFFFFF)
 
 #define XR_LIST_ENUM_XrFormFactor(_) \
@@ -264,6 +313,9 @@ XR_ENUM_STR(XrResult);
     _(XR_OBJECT_TYPE_DEBUG_UTILS_MESSENGER_EXT, 1000019000) \
     _(XR_OBJECT_TYPE_SPATIAL_ANCHOR_MSFT, 1000039000) \
     _(XR_OBJECT_TYPE_HAND_TRACKER_EXT, 1000051000) \
+    _(XR_OBJECT_TYPE_SCENE_OBSERVER_MSFT, 1000097000) \
+    _(XR_OBJECT_TYPE_SCENE_MSFT, 1000097001) \
+    _(XR_OBJECT_TYPE_SPATIAL_ANCHOR_NEIGHBORHOOD_DATA_STREAM_MSFT, 1000062000) \
     _(XR_OBJECT_TYPE_MAX_ENUM, 0x7FFFFFFF)
 
 #define XR_LIST_ENUM_XrAndroidThreadTypeKHR(_) \
@@ -351,6 +403,68 @@ XR_ENUM_STR(XrResult);
     _(XR_HAND_POSE_TYPE_REFERENCE_OPEN_PALM_MSFT, 1) \
     _(XR_HAND_POSE_TYPE_MAX_ENUM_MSFT, 0x7FFFFFFF)
 
+#define XR_LIST_ENUM_XrSpatialAnchorExportPurposeMSFT(_) \
+    _(XR_SPATIAL_ANCHOR_EXPORT_PURPOSE_RELOCALIZATION_MSFT, 0) \
+    _(XR_SPATIAL_ANCHOR_EXPORT_PURPOSE_SHARING_MSFT, 1) \
+    _(XR_SPATIAL_ANCHOR_EXPORT_PURPOSE_MAX_ENUM_MSFT, 0x7FFFFFFF)
+
+#define XR_LIST_ENUM_XrReprojectionModeMSFT(_) \
+    _(XR_REPROJECTION_MODE_DEPTH_MSFT, 1) \
+    _(XR_REPROJECTION_MODE_PLANAR_FROM_DEPTH_MSFT, 2) \
+    _(XR_REPROJECTION_MODE_PLANAR_MANUAL_MSFT, 3) \
+    _(XR_REPROJECTION_MODE_ORIENTATION_ONLY_MSFT, 4) \
+    _(XR_REPROJECTION_MODE_MAX_ENUM_MSFT, 0x7FFFFFFF)
+
+#define XR_LIST_ENUM_XrWorldMeshLodMSFT(_) \
+    _(XR_WORLD_MESH_LOD_COARSE_MSFT, 1) \
+    _(XR_WORLD_MESH_LOD_MEDIUM_MSFT, 2) \
+    _(XR_WORLD_MESH_LOD_FINE_MSFT, 3) \
+    _(XR_WORLD_MESH_LOD_UNLIMITED_MSFT, 4) \
+    _(XR_WORLD_MESH_LOD_MAX_ENUM_MSFT, 0x7FFFFFFF)
+
+#define XR_LIST_ENUM_XrSceneComponentTypeMSFT(_) \
+    _(XR_SCENE_COMPONENT_TYPE_INVALID_MSFT, -1) \
+    _(XR_SCENE_COMPONENT_TYPE_OBJECT_MSFT, 1) \
+    _(XR_SCENE_COMPONENT_TYPE_PLANE_MSFT, 2) \
+    _(XR_SCENE_COMPONENT_TYPE_OBJECT_MESH_MSFT, 3) \
+    _(XR_SCENE_COMPONENT_TYPE_COLLIDER_MESH_MSFT, 4) \
+    _(XR_SCENE_COMPONENT_TYPE_MAX_ENUM_MSFT, 0x7FFFFFFF)
+
+#define XR_LIST_ENUM_XrSceneObjectKindMSFT(_) \
+    _(XR_SCENE_OBJECT_KIND_UNCATEGORIZED_MSFT, -1) \
+    _(XR_SCENE_OBJECT_KIND_BACKGROUND_MSFT, 1) \
+    _(XR_SCENE_OBJECT_KIND_WALL_MSFT, 2) \
+    _(XR_SCENE_OBJECT_KIND_FLOOR_MSFT, 3) \
+    _(XR_SCENE_OBJECT_KIND_CEILING_MSFT, 4) \
+    _(XR_SCENE_OBJECT_KIND_PLATFORM_MSFT, 5) \
+    _(XR_SCENE_OBJECT_KIND_INFERRED_MSFT, 6) \
+    _(XR_SCENE_OBJECT_KIND_WORLD_MSFT, 7) \
+    _(XR_SCENE_OBJECT_KIND_MAX_ENUM_MSFT, 0x7FFFFFFF)
+
+#define XR_LIST_ENUM_XrScenePlaneAlignmentTypeMSFT(_) \
+    _(XR_SCENE_PLANE_ALIGNMENT_TYPE_NON_ORTHOGONAL_MSFT, 0) \
+    _(XR_SCENE_PLANE_ALIGNMENT_TYPE_HORIZONTAL_MSFT, 1) \
+    _(XR_SCENE_PLANE_ALIGNMENT_TYPE_VERTICAL_MSFT, 2) \
+    _(XR_SCENE_PLANE_ALIGNMENT_TYPE_MAX_ENUM_MSFT, 0x7FFFFFFF)
+
+#define XR_LIST_ENUM_XrSceneComputeStateMSFT(_) \
+    _(XR_SCENE_COMPUTE_STATE_NONE_MSFT, 0) \
+    _(XR_SCENE_COMPUTE_STATE_UPDATING_MSFT, 1) \
+    _(XR_SCENE_COMPUTE_STATE_COMPLETED_MSFT, 2) \
+    _(XR_SCENE_COMPUTE_STATE_COMPLETED_WITH_ERROR_MSFT, 3) \
+    _(XR_SCENE_COMPUTE_STATE_MAX_ENUM_MSFT, 0x7FFFFFFF)
+
+#define XR_LIST_ENUM_XrColorSpaceFB(_) \
+    _(XR_COLOR_SPACE_UNMANAGED_FB, 0) \
+    _(XR_COLOR_SPACE_REC2020_FB, 1) \
+    _(XR_COLOR_SPACE_REC709_FB, 2) \
+    _(XR_COLOR_SPACE_RIFT_CV1_FB, 3) \
+    _(XR_COLOR_SPACE_RIFT_S_FB, 4) \
+    _(XR_COLOR_SPACE_QUEST_FB, 5) \
+    _(XR_COLOR_SPACE_P3_FB, 6) \
+    _(XR_COLOR_SPACE_ADOBE_RGB_FB, 7) \
+    _(XR_COLOR_SPACE_MAX_ENUM_FB, 0x7FFFFFFF)
+
 #define XR_LIST_BITS_XrInstanceCreateFlags(_)
 
 #define XR_LIST_BITS_XrSessionCreateFlags(_)
@@ -395,6 +509,10 @@ XR_ENUM_STR(XrResult);
     _(XR_INPUT_SOURCE_LOCALIZED_NAME_INTERACTION_PROFILE_BIT, 0x00000002) \
     _(XR_INPUT_SOURCE_LOCALIZED_NAME_COMPONENT_BIT, 0x00000004) \
 
+#define XR_LIST_BITS_XrVulkanInstanceCreateFlagsKHR(_)
+
+#define XR_LIST_BITS_XrVulkanDeviceCreateFlagsKHR(_)
+
 #define XR_LIST_BITS_XrDebugUtilsMessageSeverityFlagsEXT(_) \
     _(XR_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT, 0x00000001) \
     _(XR_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT, 0x00000010) \
@@ -412,6 +530,10 @@ XR_ENUM_STR(XrResult);
 
 #define XR_LIST_BITS_XrOverlayMainSessionFlagsEXTX(_) \
     _(XR_OVERLAY_MAIN_SESSION_ENABLED_COMPOSITION_LAYER_INFO_DEPTH_BIT_EXTX, 0x00000001) \
+
+#define XR_LIST_BITS_XrAndroidSurfaceSwapchainFlagsFB(_) \
+    _(XR_ANDROID_SURFACE_SWAPCHAIN_SYNCHRONOUS_BIT_FB, 0x00000001) \
+    _(XR_ANDROID_SURFACE_SWAPCHAIN_USE_TIMESTAMPS_BIT_FB, 0x00000002) \
 
 #define XR_LIST_STRUCT_XrApiLayerProperties(_) \
     _(type) \
@@ -1037,6 +1159,70 @@ XR_ENUM_STR(XrResult);
     _(viewConfigurationType) \
     _(viewIndex) \
 
+#define XR_LIST_STRUCT_XrCompositionLayerColorScaleBiasKHR(_) \
+    _(type) \
+    _(next) \
+    _(colorScale) \
+    _(colorBias) \
+
+#define XR_LIST_STRUCT_XrLoaderInitInfoBaseHeaderKHR(_) \
+    _(type) \
+    _(next) \
+
+#define XR_LIST_STRUCT_XrLoaderInitInfoAndroidKHR(_) \
+    _(type) \
+    _(next) \
+    _(applicationVM) \
+    _(applicationContext) \
+
+#define XR_LIST_STRUCT_XrVulkanInstanceCreateInfoKHR(_) \
+    _(type) \
+    _(next) \
+    _(systemId) \
+    _(createFlags) \
+    _(pfnGetInstanceProcAddr) \
+    _(vulkanCreateInfo) \
+    _(vulkanAllocator) \
+
+#define XR_LIST_STRUCT_XrVulkanDeviceCreateInfoKHR(_) \
+    _(type) \
+    _(next) \
+    _(systemId) \
+    _(createFlags) \
+    _(pfnGetInstanceProcAddr) \
+    _(vulkanPhysicalDevice) \
+    _(vulkanCreateInfo) \
+    _(vulkanAllocator) \
+
+#define XR_LIST_STRUCT_XrVulkanGraphicsDeviceGetInfoKHR(_) \
+    _(type) \
+    _(next) \
+    _(systemId) \
+    _(vulkanInstance) \
+
+#define XR_LIST_STRUCT_XrCompositionLayerEquirect2KHR(_) \
+    _(type) \
+    _(next) \
+    _(layerFlags) \
+    _(space) \
+    _(eyeVisibility) \
+    _(subImage) \
+    _(pose) \
+    _(radius) \
+    _(centralHorizontalAngle) \
+    _(upperVerticalAngle) \
+    _(lowerVerticalAngle) \
+
+#define XR_LIST_STRUCT_XrBindingModificationBaseHeaderKHR(_) \
+    _(type) \
+    _(next) \
+
+#define XR_LIST_STRUCT_XrBindingModificationsKHR(_) \
+    _(type) \
+    _(next) \
+    _(bindingModificationCount) \
+    _(bindingModifications) \
+
 #define XR_LIST_STRUCT_XrEventDataPerfSettingsEXT(_) \
     _(type) \
     _(next) \
@@ -1260,17 +1446,76 @@ XR_ENUM_STR(XrResult);
     _(next) \
     _(viewConfigurationType) \
 
+#define XR_LIST_STRUCT_XrControllerModelKeyStateMSFT(_) \
+    _(type) \
+    _(next) \
+    _(modelKey) \
+
+#define XR_LIST_STRUCT_XrControllerModelNodePropertiesMSFT(_) \
+    _(type) \
+    _(next) \
+    _(parentNodeName) \
+    _(nodeName) \
+
+#define XR_LIST_STRUCT_XrControllerModelPropertiesMSFT(_) \
+    _(type) \
+    _(next) \
+    _(nodeCapacityInput) \
+    _(nodeCountOutput) \
+    _(nodeProperties) \
+
+#define XR_LIST_STRUCT_XrControllerModelNodeStateMSFT(_) \
+    _(type) \
+    _(next) \
+    _(nodePose) \
+
+#define XR_LIST_STRUCT_XrControllerModelStateMSFT(_) \
+    _(type) \
+    _(next) \
+    _(nodeCapacityInput) \
+    _(nodeCountOutput) \
+    _(nodeStates) \
+
 #define XR_LIST_STRUCT_XrViewConfigurationViewFovEPIC(_) \
     _(type) \
     _(next) \
     _(recommendedFov) \
     _(maxMutableFov) \
 
+#define XR_LIST_STRUCT_XrSpatialAnchorExportPurposeInfoMSFT(_) \
+    _(type) \
+    _(next) \
+    _(exportPurpose) \
+
+#define XR_LIST_STRUCT_XrSpatialAnchorExportSufficiencyMSFT(_) \
+    _(type) \
+    _(next) \
+    _(isMinimallySufficient) \
+    _(recommendedSufficiencyLevel) \
+    _(sufficiencyLevel) \
+
 #define XR_LIST_STRUCT_XrHolographicWindowAttachmentMSFT(_) \
     _(type) \
     _(next) \
     _(holographicSpace) \
     _(coreWindow) \
+
+#define XR_LIST_STRUCT_XrCompositionLayerReprojectionInfoMSFT(_) \
+    _(type) \
+    _(next) \
+    _(reprojectionMode) \
+
+#define XR_LIST_STRUCT_XrCompositionLayerReprojectionPlaneOverrideMSFT(_) \
+    _(type) \
+    _(next) \
+    _(position) \
+    _(normal) \
+    _(velocity) \
+
+#define XR_LIST_STRUCT_XrAndroidSurfaceSwapchainCreateInfoFB(_) \
+    _(type) \
+    _(next) \
+    _(createFlags) \
 
 #define XR_LIST_STRUCT_XrInteractionProfileAnalogThresholdVALVE(_) \
     _(type) \
@@ -1281,6 +1526,172 @@ XR_ENUM_STR(XrResult);
     _(offThreshold) \
     _(onHaptic) \
     _(offHaptic) \
+
+#define XR_LIST_STRUCT_XrUuidMSFT(_) \
+    _(bytes[16]) \
+
+#define XR_LIST_STRUCT_XrSceneObserverCreateInfoMSFT(_) \
+    _(type) \
+    _(next) \
+
+#define XR_LIST_STRUCT_XrSceneCreateInfoMSFT(_) \
+    _(type) \
+    _(next) \
+
+#define XR_LIST_STRUCT_XrSceneSphereBoundMSFT(_) \
+    _(center) \
+    _(radius) \
+
+#define XR_LIST_STRUCT_XrSceneOrientedBoxBoundMSFT(_) \
+    _(pose) \
+    _(extents) \
+
+#define XR_LIST_STRUCT_XrSceneFrustumBoundMSFT(_) \
+    _(pose) \
+    _(fov) \
+    _(farDistance) \
+
+#define XR_LIST_STRUCT_XrSceneBoundsMSFT(_) \
+    _(space) \
+    _(time) \
+    _(sphereCount) \
+    _(spheres) \
+    _(boxCount) \
+    _(boxes) \
+    _(frustumCount) \
+    _(frustums) \
+
+#define XR_LIST_STRUCT_XrNewSceneComputeInfoMSFT(_) \
+    _(type) \
+    _(next) \
+    _(disableInferredSceneObjects) \
+    _(bounds) \
+
+#define XR_LIST_STRUCT_XrWorldMeshComputeInfoMSFT(_) \
+    _(type) \
+    _(next) \
+    _(lod) \
+
+#define XR_LIST_STRUCT_XrSceneComponentStateMSFT(_) \
+    _(componentType) \
+    _(componentId) \
+
+#define XR_LIST_STRUCT_XrSceneComponentStatesMSFT(_) \
+    _(type) \
+    _(next) \
+    _(componentCapacityInput) \
+    _(componentCountOutput) \
+    _(components) \
+
+#define XR_LIST_STRUCT_XrSceneComponentsGetInfoMSFT(_) \
+    _(type) \
+    _(next) \
+    _(componentType) \
+
+#define XR_LIST_STRUCT_XrSceneComponentLocationMSFT(_) \
+    _(flags) \
+    _(pose) \
+
+#define XR_LIST_STRUCT_XrSceneComponentLocationsMSFT(_) \
+    _(type) \
+    _(next) \
+    _(locationCount) \
+    _(locations) \
+
+#define XR_LIST_STRUCT_XrSceneComponentsLocateInfoMSFT(_) \
+    _(type) \
+    _(next) \
+    _(baseSpace) \
+    _(time) \
+    _(idCount) \
+    _(ids) \
+
+#define XR_LIST_STRUCT_XrSceneObjectStateMSFT(_) \
+    _(objectKind) \
+
+#define XR_LIST_STRUCT_XrSceneObjectStatesMSFT(_) \
+    _(type) \
+    _(next) \
+    _(sceneObjectCount) \
+    _(sceneObjects) \
+
+#define XR_LIST_STRUCT_XrSceneComponentParentFilterInfoMSFT(_) \
+    _(type) \
+    _(next) \
+    _(parentObjectId) \
+
+#define XR_LIST_STRUCT_XrSceneObjectKindsFilterInfoMSFT(_) \
+    _(type) \
+    _(next) \
+    _(objectKindCount) \
+    _(objectKinds) \
+
+#define XR_LIST_STRUCT_XrScenePlaneStateMSFT(_) \
+    _(alignment) \
+    _(size) \
+    _(parentObjectId) \
+
+#define XR_LIST_STRUCT_XrScenePlaneStatesMSFT(_) \
+    _(type) \
+    _(next) \
+    _(scenePlaneCount) \
+    _(scenePlanes) \
+
+#define XR_LIST_STRUCT_XrScenePlaneAlignmentFilterInfoMSFT(_) \
+    _(type) \
+    _(next) \
+    _(alignmentCount) \
+    _(alignments) \
+
+#define XR_LIST_STRUCT_XrSceneMeshStateMSFT(_) \
+    _(parentObjectId) \
+    _(meshBufferId) \
+
+#define XR_LIST_STRUCT_XrSceneMeshStatesMSFT(_) \
+    _(type) \
+    _(next) \
+    _(sceneMeshCount) \
+    _(sceneMeshes) \
+
+#define XR_LIST_STRUCT_XrSceneMeshBuffersGetInfoMSFT(_) \
+    _(type) \
+    _(next) \
+    _(meshBufferId) \
+
+#define XR_LIST_STRUCT_XrSceneMeshBuffersMSFT(_) \
+    _(type) \
+    _(next) \
+    _(vertexCapacityInput) \
+    _(vertexCountOutput) \
+    _(vertices) \
+    _(indexCapacityInput) \
+    _(indexCountOutput) \
+    _(indices) \
+
+#define XR_LIST_STRUCT_XrDeserializeSceneFragmentMSFT(_) \
+    _(size) \
+    _(buffer) \
+
+#define XR_LIST_STRUCT_XrDeserializeSceneInfoMSFT(_) \
+    _(type) \
+    _(next) \
+    _(fragmentCount) \
+    _(fragments) \
+
+#define XR_LIST_STRUCT_XrSerializeSceneMSFT(_) \
+    _(type) \
+    _(next) \
+
+#define XR_LIST_STRUCT_XrEventDataDisplayRefreshRateChangedFB(_) \
+    _(type) \
+    _(next) \
+    _(fromDisplayRefreshRate) \
+    _(toDisplayRefreshRate) \
+
+#define XR_LIST_STRUCT_XrSystemColorSpacePropertiesFB(_) \
+    _(type) \
+    _(next) \
+    _(colorSpace) \
 
 
 
@@ -1340,6 +1751,9 @@ XR_ENUM_STR(XrResult);
     _(XrCompositionLayerEquirectKHR, XR_TYPE_COMPOSITION_LAYER_EQUIRECT_KHR) \
     _(XrVisibilityMaskKHR, XR_TYPE_VISIBILITY_MASK_KHR) \
     _(XrEventDataVisibilityMaskChangedKHR, XR_TYPE_EVENT_DATA_VISIBILITY_MASK_CHANGED_KHR) \
+    _(XrCompositionLayerColorScaleBiasKHR, XR_TYPE_COMPOSITION_LAYER_COLOR_SCALE_BIAS_KHR) \
+    _(XrCompositionLayerEquirect2KHR, XR_TYPE_COMPOSITION_LAYER_EQUIRECT2_KHR) \
+    _(XrBindingModificationsKHR, XR_TYPE_BINDING_MODIFICATIONS_KHR) \
     _(XrEventDataPerfSettingsEXT, XR_TYPE_EVENT_DATA_PERF_SETTINGS_EXT) \
     _(XrDebugUtilsObjectNameInfoEXT, XR_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT) \
     _(XrDebugUtilsLabelEXT, XR_TYPE_DEBUG_UTILS_LABEL_EXT) \
@@ -1369,8 +1783,37 @@ XR_ENUM_STR(XrResult);
     _(XrSecondaryViewConfigurationLayerInfoMSFT, XR_TYPE_SECONDARY_VIEW_CONFIGURATION_LAYER_INFO_MSFT) \
     _(XrSecondaryViewConfigurationFrameEndInfoMSFT, XR_TYPE_SECONDARY_VIEW_CONFIGURATION_FRAME_END_INFO_MSFT) \
     _(XrSecondaryViewConfigurationSwapchainCreateInfoMSFT, XR_TYPE_SECONDARY_VIEW_CONFIGURATION_SWAPCHAIN_CREATE_INFO_MSFT) \
+    _(XrControllerModelKeyStateMSFT, XR_TYPE_CONTROLLER_MODEL_KEY_STATE_MSFT) \
+    _(XrControllerModelNodePropertiesMSFT, XR_TYPE_CONTROLLER_MODEL_NODE_PROPERTIES_MSFT) \
+    _(XrControllerModelPropertiesMSFT, XR_TYPE_CONTROLLER_MODEL_PROPERTIES_MSFT) \
+    _(XrControllerModelNodeStateMSFT, XR_TYPE_CONTROLLER_MODEL_NODE_STATE_MSFT) \
+    _(XrControllerModelStateMSFT, XR_TYPE_CONTROLLER_MODEL_STATE_MSFT) \
     _(XrViewConfigurationViewFovEPIC, XR_TYPE_VIEW_CONFIGURATION_VIEW_FOV_EPIC) \
+    _(XrSpatialAnchorExportPurposeInfoMSFT, XR_TYPE_SPATIAL_ANCHOR_EXPORT_PURPOSE_INFO_MSFT) \
+    _(XrSpatialAnchorExportSufficiencyMSFT, XR_TYPE_SPATIAL_ANCHOR_EXPORT_SUFFICIENCY_MSFT) \
+    _(XrCompositionLayerReprojectionInfoMSFT, XR_TYPE_COMPOSITION_LAYER_REPROJECTION_INFO_MSFT) \
+    _(XrCompositionLayerReprojectionPlaneOverrideMSFT, XR_TYPE_COMPOSITION_LAYER_REPROJECTION_PLANE_OVERRIDE_MSFT) \
     _(XrInteractionProfileAnalogThresholdVALVE, XR_TYPE_INTERACTION_PROFILE_ANALOG_THRESHOLD_VALVE) \
+    _(XrSceneObserverCreateInfoMSFT, XR_TYPE_SCENE_OBSERVER_CREATE_INFO_MSFT) \
+    _(XrSceneCreateInfoMSFT, XR_TYPE_SCENE_CREATE_INFO_MSFT) \
+    _(XrNewSceneComputeInfoMSFT, XR_TYPE_NEW_SCENE_COMPUTE_INFO_MSFT) \
+    _(XrWorldMeshComputeInfoMSFT, XR_TYPE_WORLD_MESH_COMPUTE_INFO_MSFT) \
+    _(XrSceneComponentStatesMSFT, XR_TYPE_SCENE_COMPONENT_STATES_MSFT) \
+    _(XrSceneComponentsGetInfoMSFT, XR_TYPE_SCENE_COMPONENTS_GET_INFO_MSFT) \
+    _(XrSceneComponentLocationsMSFT, XR_TYPE_SCENE_COMPONENT_LOCATIONS_MSFT) \
+    _(XrSceneComponentsLocateInfoMSFT, XR_TYPE_SCENE_COMPONENTS_LOCATE_INFO_MSFT) \
+    _(XrSceneObjectStatesMSFT, XR_TYPE_SCENE_OBJECT_STATES_MSFT) \
+    _(XrSceneComponentParentFilterInfoMSFT, XR_TYPE_SCENE_COMPONENT_PARENT_FILTER_INFO_MSFT) \
+    _(XrSceneObjectKindsFilterInfoMSFT, XR_TYPE_SCENE_OBJECT_KINDS_FILTER_INFO_MSFT) \
+    _(XrScenePlaneStatesMSFT, XR_TYPE_SCENE_PLANE_STATES_MSFT) \
+    _(XrScenePlaneAlignmentFilterInfoMSFT, XR_TYPE_SCENE_PLANE_ALIGNMENT_FILTER_INFO_MSFT) \
+    _(XrSceneMeshStatesMSFT, XR_TYPE_SCENE_MESH_STATES_MSFT) \
+    _(XrSceneMeshBuffersGetInfoMSFT, XR_TYPE_SCENE_MESH_BUFFERS_GET_INFO_MSFT) \
+    _(XrSceneMeshBuffersMSFT, XR_TYPE_SCENE_MESH_BUFFERS_MSFT) \
+    _(XrDeserializeSceneInfoMSFT, XR_TYPE_DESERIALIZE_SCENE_INFO_MSFT) \
+    _(XrSerializeSceneMSFT, XR_TYPE_SERIALIZE_SCENE_MSFT) \
+    _(XrEventDataDisplayRefreshRateChangedFB, XR_TYPE_EVENT_DATA_DISPLAY_REFRESH_RATE_CHANGED_FB) \
+    _(XrSystemColorSpacePropertiesFB, XR_TYPE_SYSTEM_COLOR_SPACE_PROPERTIES_FB) \
 
 
 
@@ -1425,24 +1868,6 @@ XR_ENUM_STR(XrResult);
 #define XR_LIST_STRUCTURE_TYPES_XR_USE_GRAPHICS_API_OPENGL_XR_USE_PLATFORM_WIN32(_)
 #endif
 
-#if defined(XR_USE_GRAPHICS_API_OPENGL) && defined(XR_USE_PLATFORM_XCB)
-#define XR_LIST_STRUCTURE_TYPES_XR_USE_GRAPHICS_API_OPENGL_XR_USE_PLATFORM_XCB(_) \
-    _(XrGraphicsBindingOpenGLXcbKHR, XR_TYPE_GRAPHICS_BINDING_OPENGL_XCB_KHR) \
-
-
-#else
-#define XR_LIST_STRUCTURE_TYPES_XR_USE_GRAPHICS_API_OPENGL_XR_USE_PLATFORM_XCB(_)
-#endif
-
-#if defined(XR_USE_GRAPHICS_API_OPENGL) && defined(XR_USE_PLATFORM_XLIB)
-#define XR_LIST_STRUCTURE_TYPES_XR_USE_GRAPHICS_API_OPENGL_XR_USE_PLATFORM_XLIB(_) \
-    _(XrGraphicsBindingOpenGLXlibKHR, XR_TYPE_GRAPHICS_BINDING_OPENGL_XLIB_KHR) \
-
-
-#else
-#define XR_LIST_STRUCTURE_TYPES_XR_USE_GRAPHICS_API_OPENGL_XR_USE_PLATFORM_XLIB(_)
-#endif
-
 #if defined(XR_USE_GRAPHICS_API_OPENGL_ES)
 #define XR_LIST_STRUCTURE_TYPES_XR_USE_GRAPHICS_API_OPENGL_ES(_) \
     _(XrSwapchainImageOpenGLESKHR, XR_TYPE_SWAPCHAIN_IMAGE_OPENGL_ES_KHR) \
@@ -1468,6 +1893,9 @@ XR_ENUM_STR(XrResult);
     _(XrGraphicsBindingVulkanKHR, XR_TYPE_GRAPHICS_BINDING_VULKAN_KHR) \
     _(XrSwapchainImageVulkanKHR, XR_TYPE_SWAPCHAIN_IMAGE_VULKAN_KHR) \
     _(XrGraphicsRequirementsVulkanKHR, XR_TYPE_GRAPHICS_REQUIREMENTS_VULKAN_KHR) \
+    _(XrVulkanInstanceCreateInfoKHR, XR_TYPE_VULKAN_INSTANCE_CREATE_INFO_KHR) \
+    _(XrVulkanDeviceCreateInfoKHR, XR_TYPE_VULKAN_DEVICE_CREATE_INFO_KHR) \
+    _(XrVulkanGraphicsDeviceGetInfoKHR, XR_TYPE_VULKAN_GRAPHICS_DEVICE_GET_INFO_KHR) \
 
 
 #else
@@ -1477,6 +1905,8 @@ XR_ENUM_STR(XrResult);
 #if defined(XR_USE_PLATFORM_ANDROID)
 #define XR_LIST_STRUCTURE_TYPES_XR_USE_PLATFORM_ANDROID(_) \
     _(XrInstanceCreateInfoAndroidKHR, XR_TYPE_INSTANCE_CREATE_INFO_ANDROID_KHR) \
+    _(XrLoaderInitInfoAndroidKHR, XR_TYPE_LOADER_INIT_INFO_ANDROID_KHR) \
+    _(XrAndroidSurfaceSwapchainCreateInfoFB, XR_TYPE_ANDROID_SURFACE_SWAPCHAIN_CREATE_INFO_FB) \
 
 
 #else
@@ -1501,6 +1931,24 @@ XR_ENUM_STR(XrResult);
 #define XR_LIST_STRUCTURE_TYPES_XR_USE_PLATFORM_WIN32(_)
 #endif
 
+#if defined(XR_USE_PLATFORM_XCB) && defined(XR_USE_GRAPHICS_API_OPENGL)
+#define XR_LIST_STRUCTURE_TYPES_XR_USE_PLATFORM_XCB_XR_USE_GRAPHICS_API_OPENGL(_) \
+    _(XrGraphicsBindingOpenGLXcbKHR, XR_TYPE_GRAPHICS_BINDING_OPENGL_XCB_KHR) \
+
+
+#else
+#define XR_LIST_STRUCTURE_TYPES_XR_USE_PLATFORM_XCB_XR_USE_GRAPHICS_API_OPENGL(_)
+#endif
+
+#if defined(XR_USE_PLATFORM_XLIB) && defined(XR_USE_GRAPHICS_API_OPENGL)
+#define XR_LIST_STRUCTURE_TYPES_XR_USE_PLATFORM_XLIB_XR_USE_GRAPHICS_API_OPENGL(_) \
+    _(XrGraphicsBindingOpenGLXlibKHR, XR_TYPE_GRAPHICS_BINDING_OPENGL_XLIB_KHR) \
+
+
+#else
+#define XR_LIST_STRUCTURE_TYPES_XR_USE_PLATFORM_XLIB_XR_USE_GRAPHICS_API_OPENGL(_)
+#endif
+
 #define XR_LIST_STRUCTURE_TYPES(_) \
     XR_LIST_STRUCTURE_TYPES_CORE(_) \
     XR_LIST_STRUCTURE_TYPES_XR_USE_GRAPHICS_API_D3D11(_) \
@@ -1508,14 +1956,14 @@ XR_ENUM_STR(XrResult);
     XR_LIST_STRUCTURE_TYPES_XR_USE_GRAPHICS_API_OPENGL(_) \
     XR_LIST_STRUCTURE_TYPES_XR_USE_GRAPHICS_API_OPENGL_XR_USE_PLATFORM_WAYLAND(_) \
     XR_LIST_STRUCTURE_TYPES_XR_USE_GRAPHICS_API_OPENGL_XR_USE_PLATFORM_WIN32(_) \
-    XR_LIST_STRUCTURE_TYPES_XR_USE_GRAPHICS_API_OPENGL_XR_USE_PLATFORM_XCB(_) \
-    XR_LIST_STRUCTURE_TYPES_XR_USE_GRAPHICS_API_OPENGL_XR_USE_PLATFORM_XLIB(_) \
     XR_LIST_STRUCTURE_TYPES_XR_USE_GRAPHICS_API_OPENGL_ES(_) \
     XR_LIST_STRUCTURE_TYPES_XR_USE_GRAPHICS_API_OPENGL_ES_XR_USE_PLATFORM_ANDROID(_) \
     XR_LIST_STRUCTURE_TYPES_XR_USE_GRAPHICS_API_VULKAN(_) \
     XR_LIST_STRUCTURE_TYPES_XR_USE_PLATFORM_ANDROID(_) \
     XR_LIST_STRUCTURE_TYPES_XR_USE_PLATFORM_EGL(_) \
     XR_LIST_STRUCTURE_TYPES_XR_USE_PLATFORM_WIN32(_) \
+    XR_LIST_STRUCTURE_TYPES_XR_USE_PLATFORM_XCB_XR_USE_GRAPHICS_API_OPENGL(_) \
+    XR_LIST_STRUCTURE_TYPES_XR_USE_PLATFORM_XLIB_XR_USE_GRAPHICS_API_OPENGL(_) \
 
 
 #define XR_LIST_EXTENSIONS(_) \
@@ -1538,6 +1986,7 @@ XR_ENUM_STR(XrResult);
     _(XR_EXT_eye_gaze_interaction, 31) \
     _(XR_KHR_visibility_mask, 32) \
     _(XR_EXTX_overlay, 34) \
+    _(XR_KHR_composition_layer_color_scale_bias, 35) \
     _(XR_KHR_win32_convert_performance_counter_time, 36) \
     _(XR_KHR_convert_timespec_time, 37) \
     _(XR_VARJO_quad_views, 38) \
@@ -1554,14 +2003,29 @@ XR_ENUM_STR(XrResult);
     _(XR_MSFT_hand_tracking_mesh, 53) \
     _(XR_MSFT_secondary_view_configuration, 54) \
     _(XR_MSFT_first_person_observer, 55) \
+    _(XR_MSFT_controller_model, 56) \
+    _(XR_MSFT_perception_anchor_interop, 57) \
     _(XR_EXT_win32_appcontainer_compatible, 58) \
     _(XR_EPIC_view_configuration_fov, 60) \
+    _(XR_MSFT_spatial_anchor_export_preview, 63) \
     _(XR_MSFT_holographic_window_attachment, 64) \
+    _(XR_MSFT_composition_layer_reprojection_preview, 67) \
     _(XR_HUAWEI_controller_interaction, 70) \
+    _(XR_FB_android_surface_swapchain_create, 71) \
     _(XR_VALVE_analog_threshold, 80) \
+    _(XR_KHR_loader_init, 89) \
+    _(XR_KHR_loader_init_android, 90) \
+    _(XR_KHR_vulkan_enable2, 91) \
+    _(XR_KHR_composition_layer_equirect2, 92) \
     _(XR_EXT_samsung_odyssey_controller, 95) \
     _(XR_EXT_hp_mixed_reality_controller, 96) \
     _(XR_MND_swapchain_usage_input_attachment_bit, 97) \
+    _(XR_MSFT_scene_understanding_preview2, 98) \
+    _(XR_MSFT_scene_understanding_serialization_preview, 99) \
+    _(XR_FB_display_refresh_rate, 102) \
+    _(XR_HTC_vive_cosmos_controller_interaction, 103) \
+    _(XR_FB_color_space, 109) \
+    _(XR_KHR_binding_modification, 121) \
 
 
 #endif

@@ -766,8 +766,32 @@ namespace {
             };
 
 
-            //if (aim_action)
-            //    UpdateSpinningCube(predictedDisplayTime);
+            {
+                // scene observer
+                XrSceneObserverMSFT sceneObserver{};
+                xr::SceneObserverHandle m_sceneObserver = xr::CreateSceneObserver(m_extensions, m_session.Get());
+
+                // computing scene
+                XrNewSceneComputeInfoMSFT computeInfo{ XR_TYPE_NEW_SCENE_COMPUTE_INFO_MSFT };
+                XrSceneSphereBoundMSFT m_sphere{};
+                XrTime m_lastTimeOfUpdate{};
+                computeInfo.bounds.space = m_appSpace.Get();
+                computeInfo.bounds.time = m_lastTimeOfUpdate;
+                computeInfo.bounds.sphereCount = 1;
+                computeInfo.bounds.spheres = &m_sphere;
+
+                // inspect completion
+                XrSceneComputeStateMSFT state{};
+                m_extensions.xrGetSceneComputeStateMSFT(sceneObserver, &state);
+                CHECK_XRCMD(m_extensions.xrComputeNewSceneMSFT(m_sceneObserver.Get(), &computeInfo));
+                if (state == XR_SCENE_COMPUTE_STATE_COMPLETED_MSFT)
+                {
+                    ;
+                }
+
+                
+
+            }
             
             // create light
             {
