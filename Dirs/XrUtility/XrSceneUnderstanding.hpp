@@ -109,7 +109,7 @@ namespace xr::su {
         XrSceneComponentStatesMSFT sceneComponents{XR_TYPE_SCENE_COMPONENT_STATES_MSFT};
         CHECK_XRCMD(extensions.xrGetSceneComponentsMSFT(scene, &getInfo, &sceneComponents));
         const uint32_t count = sceneComponents.componentCountOutput;
-
+        
         std::vector<XrSceneComponentStateMSFT> components(count);
         sceneComponents.componentCapacityInput = count;
         sceneComponents.components = components.data();

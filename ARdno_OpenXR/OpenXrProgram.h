@@ -73,3 +73,4 @@ namespace sample {
     std::unique_ptr<IOpenXrProgram> CreateOpenXrProgram(std::string applicationName, std::unique_ptr<IGraphicsPluginD3D11> graphicsPlugin);
 
 } // namespace sample
+
