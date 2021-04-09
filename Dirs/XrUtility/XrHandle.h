@@ -58,9 +58,9 @@ namespace xr {
 
             m_destroyer = nullptr;
         }
-
+        HandleType m_handle{ XR_NULL_HANDLE };
     private:
-        HandleType m_handle{XR_NULL_HANDLE};
+        
         PFN_DestroyFunction m_destroyer{nullptr};
     };
 

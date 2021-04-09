@@ -1,5 +1,7 @@
 ﻿#pragma once
 
+#define _XM_NO_INTRINSICS_
+
 #include <memory>
 #include <string>
 #include <vector>

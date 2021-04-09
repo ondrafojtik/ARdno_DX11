@@ -31,6 +31,7 @@ namespace {
         }
 
         void Run() override {
+            
             CreateInstance();
             CreateActions();
 
@@ -261,8 +262,66 @@ namespace {
             CreateSwapchains();
         }
 
+        XrVector3f get_real_position(XrVector3f _v, XrQuaternionf _q)
+        {
+			DirectX::XMVECTOR v = DirectX::XMVectorSet(_v.x, _v.y, _v.z, 1.0f);
+			DirectX::XMVECTOR q = xr::math::LoadXrQuaternion(_q);
+			DirectX::XMVECTOR _result = DirectX::XMVector3Rotate(v, q);
+            XrVector3f result = {
+                DirectX::XMVectorGetX(_result),
+                DirectX::XMVectorGetY(_result),
+                DirectX::XMVectorGetZ(_result) };
+
+			result = xr::math::Normalize(result);
+            return result;
+        }
+
+		XrVector3f get_forward_with_given_quaternion(XrQuaternionf _q)
+		{
+			DirectX::XMVECTOR v = DirectX::XMVectorSet(1.0f, 0.0f, 0.0f, 1.0f);
+			DirectX::XMVECTOR q = xr::math::LoadXrQuaternion(_q);
+			DirectX::XMVECTOR _result = DirectX::XMVector3Rotate(v, q);
+			XrVector3f result = {
+				DirectX::XMVectorGetX(_result),
+				DirectX::XMVectorGetY(_result),
+				DirectX::XMVectorGetZ(_result) };
+
+			result = xr::math::Normalize(result);
+			return result;
+		}
+
+        XrVector3f final_position(XrVector3f position, XrPosef pose)
+        {
+			//DirectX::XMMATRIX m = DirectX::XMMatrixRotationQuaternion(xr::math::LoadXrQuaternion(pose.orientation));
+            /* XMMATRIX STRUCTURE
+			_11 _12 _13 _14
+            _21 _22 _23 _24
+            _31 _32 _33 _34
+            _41 _42 _43 _44
+            */
+
+			XrQuaternionf q = pose.orientation;
+
+			float roll = atan2(2.0 * (q.w * q.z + q.x * q.y), 1.0 - 2.0 * (q.y * q.y + q.z * q.z));
+			float pitch = asin(2.0 * (q.z * q.x - q.w * q.y));
+			float yaw = atan2(2.0 * (q.w * q.x + q.y * q.z), -1.0 + 2.0 * (q.x * q.x + q.y * q.y));
+
+            yaw = DirectX::XM_PI - yaw; // anti-clockwise
+
+            XrVector3f new_position = {
+                position.x * cos(yaw) + position.z * sin(yaw),
+                position.y,
+                position.z * cos(yaw) - position.x * sin(yaw)
+            };
+
+            
+            return new_position;
+
+        }
+
+
         enum ObjectType;
-        void create_hologram(float scale, DirectX::XMFLOAT3 position, ObjectType type, std::string text = "")
+        void create_hologram(float scale, DirectX::XMFLOAT3 position, DirectX::XMFLOAT3 orientation, ObjectType type, std::string text = "")
         {
 			auto createReferenceSpace = [session = m_session.Get()](XrReferenceSpaceType referenceSpaceType, XrPosef poseInReferenceSpace) {
 				xr::SpaceHandle space;
@@ -276,24 +335,29 @@ namespace {
 			Hologram hologram{};
 			hologram.Cube.Scale = { 0.25f, 0.25f, 0.25f };
             XrPosef _pose = xr::math::Pose::Identity();
-            _pose.position = { position.x + space_origin.position.x, position.y + space_origin.position.y, position.z + space_origin.position.z };
+            
+            XrVector3f forward = get_forward_with_given_quaternion(space_origin.orientation);
+            XrVector3f _position = { position.x * forward.x, position.y * forward.y, position.z * forward.z };
+            //_position = { _position.x + space_origin.position.x, _position.y + space_origin.position.y, _position.z + space_origin.position.z };
+            
+            _pose.position = final_position({ position.x, position.y, position.z }, space_origin);
             _pose.orientation = xr::math::Quaternion::RotationRollPitchYaw({ 90, 0, 90 });
             hologram.Cube.Space = createReferenceSpace(XR_REFERENCE_SPACE_TYPE_LOCAL, _pose);
 			hologram.type = type;
             hologram.Cube.text = text;
 			m_holograms.push_back(std::move(hologram));
             
+            
         }
 
         void InitializeApplication()
         {
-            
             m_holograms.clear();
 
-            create_hologram(0.25f, { 0,  0, -1}, ObjectType::Quad, "TEST");
-			create_hologram(0.25f, { 0,  0,  1}, ObjectType::Cube);
-			create_hologram(0.25f, { 1,  0,  0}, ObjectType::Cube);
-			create_hologram(0.25f, {-1,  0,  0}, ObjectType::Cube);
+            create_hologram(0.25f, { 0,  0, -1 }, { 0, 0, 0 }, ObjectType::Quad, "TEST");
+			create_hologram(0.25f, { 0,  0,  1 }, { 0, 0, 0 }, ObjectType::Cube);
+			create_hologram(0.25f, { 1,  0,  0 }, { 0, 0, 0 }, ObjectType::Cube);
+			create_hologram(0.25f, {-1,  0,  0 }, { 0, 0, 0 }, ObjectType::Cube);
 
         }
 
@@ -308,7 +372,8 @@ namespace {
                 XrReferenceSpaceCreateInfo spaceCreateInfo{XR_TYPE_REFERENCE_SPACE_CREATE_INFO};
                 spaceCreateInfo.referenceSpaceType = m_appSpaceType;
                 spaceCreateInfo.poseInReferenceSpace = xr::math::Pose::Identity();
-                CHECK_XRCMD(xrCreateReferenceSpace(m_session.Get(), &spaceCreateInfo, m_appSpace.Put()));
+                //CHECK_XRCMD(xrCreateReferenceSpace(m_session.Get(), &spaceCreateInfo, m_appSpace.Put()));
+                XrResult res = xrCreateReferenceSpace(m_session.Get(), &spaceCreateInfo, m_appSpace.Put());
             }
 
             // Create a space for each hand pointer pose.
@@ -611,44 +676,17 @@ namespace {
                         }
                         else if (side == RightSide)
                         {
-                            //m_holograms.push_back(CreateHologram(handLocation.pose, placementTime, ObjectType::Cube));
-							
-                            // move the space origin
-                            space_origin.position = handLocation.pose.position;
-                            
-                            // create new space
-                            XrReferenceSpaceCreateInfo spaceCreateInfo{ XR_TYPE_REFERENCE_SPACE_CREATE_INFO };
-							spaceCreateInfo.referenceSpaceType = m_appSpaceType;
-                            
-                            // get forward vector of the object
-                            // TODO: delete Y coord (if its the up value)
-                            //       normalize
-                            DirectX::XMVECTOR v = DirectX::XMVectorSet(1.0f, 0.0f, 0.0f, 1.0f);
-                            DirectX::XMVECTOR q = xr::math::LoadXrQuaternion(handLocation.pose.orientation);
-                            DirectX::XMVECTOR _result = DirectX::XMVector3Rotate(v, q);
-                            XrVector3f result = {
-                                DirectX::XMVectorGetX(_result),
-                                DirectX::XMVectorGetY(_result),
-                                DirectX::XMVectorGetZ(_result) };
-
-                            //XrVector3f v = cross_product({1, 0, 0}, {1, 0, 0});
-
-                            //XrVector3f v1 = { handLocation.pose.orientation.x, handLocation.pose.orientation.y, handLocation.pose.orientation.z };
-                            //XrVector3f v2 = v * v1;
-                            //xr::math::cross()
-                            //xr::math::dot()
-                            //XrVector3f rot = { handLocation.pose.orientation.x, handLocation.pose.orientation.y, handLocation.pose.orientation.z };
-                            //v = handLocation.pose.orientation * v;
-                            //v = xr::math::Normalize(v);
-
-							spaceCreateInfo.poseInReferenceSpace = xr::math::Pose::Identity();
-                            spaceCreateInfo.poseInReferenceSpace.orientation = handLocation.pose.orientation;
-                            
-							CHECK_XRCMD(xrCreateReferenceSpace(m_session.Get(), &spaceCreateInfo, m_appSpace.Put()));
-                            
+                            space_origin = handLocation.pose;
+                            //space_origin.orientation =
+                            //{
+                            //    xr::math::Quaternion::Identity().x - handLocation.pose.orientation.x,
+							//	xr::math::Quaternion::Identity().y - handLocation.pose.orientation.y,
+                            //	xr::math::Quaternion::Identity().z - handLocation.pose.orientation.z,
+                            //	xr::math::Quaternion::Identity().w - handLocation.pose.orientation.w,
+                            //
+                            //};
 
                             InitializeApplication();
-                            //CreateHologram(handLocation.pose, placementTime, ObjectType::Cube);
                         }
 
                     }
@@ -1041,7 +1079,8 @@ namespace {
         std::vector<Hologram> m_holograms;
         //sample::Light m_light;
         XrPosef space_origin = xr::math::Pose::Identity();
-        
+        XrPosef test = xr::math::Pose::Identity();
+
         sample::Cube m_light;
 
         std::optional<uint32_t> m_mainCubeIndex;
