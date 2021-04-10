@@ -56,6 +56,14 @@ IDB_PNG2                PNG                     "Assets\\Blank.png"
 
 IDB_PNG3                PNG                     "Assets\\bojack.PNG"
 
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// HTML
+//
+
+IDR_HTML1               HTML                    "html1.htm"
+
 #endif    // English (United States) resources
 /////////////////////////////////////////////////////////////////////////////
 

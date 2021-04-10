@@ -368,10 +368,16 @@
     </FxCompile>
   </ItemGroup>
   <ItemGroup>
+    <None Include="html1.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="ARdno_OpenXR.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="Text.txt" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

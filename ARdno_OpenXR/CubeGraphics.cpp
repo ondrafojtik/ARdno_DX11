@@ -256,7 +256,7 @@ namespace {
                 {
                     Vertex v;
                     v.Position.x = reverse_lerp(i, 0, (float)size);
-                    v.Position.y = -0.5f * (1/(float)size);
+                    v.Position.y = -0.5f * (1 / (float)size);
                     v.Position.z = 0.0f;
 
                     v.Color = { 1.0f, 1.0f, 1.0f };
@@ -268,7 +268,7 @@ namespace {
                 {
                     Vertex v;
                     v.Position.x = reverse_lerp(i + 1, 0, (float)size);
-                    v.Position.y = -0.5f * (1/(float)size);
+                    v.Position.y = -0.5f * (1 / (float)size);
                     v.Position.z = 0.0f;
 
                     v.Color = { 1.0f, 1.0f, 1.0f };
@@ -280,7 +280,7 @@ namespace {
                 {
                     Vertex v;
                     v.Position.x = reverse_lerp(i + 1, 0, (float)size);
-                    v.Position.y = 0.5f * (1/(float)size);
+                    v.Position.y = 0.5f * (1 / (float)size);
                     v.Position.z = 0.0f;
 
                     v.Color = { 1.0f, 1.0f, 1.0f };
@@ -292,7 +292,7 @@ namespace {
                 {
                     Vertex v;
                     v.Position.x = reverse_lerp(i, 0, (float)size);
-                    v.Position.y = 0.5f * (1/(float)size);
+                    v.Position.y = 0.5f * (1 / (float)size);
                     v.Position.z = 0.0f;
 
                     v.Color = { 1.0f, 1.0f, 1.0f };
@@ -354,7 +354,7 @@ namespace {
             unsigned short* indices = &_indices[0];
             return _indices;
         }
-        
+
         // TODO: inconsistency. Why is one a vector and the other float* (&indices[0]?...)
         float* c_quadVertices = convert_to_float_arr(get_vb_with_text("CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC")); // max 32chars..
         std::vector<unsigned short> c_quadIndices = get_ib_with_text("CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC");
@@ -512,7 +512,7 @@ namespace {
             D3D11_FEATURE_DATA_D3D11_OPTIONS3 options;
             m_device->CheckFeatureSupport(D3D11_FEATURE_D3D11_OPTIONS3, &options, sizeof(options));
             CHECK_MSG(options.VPAndRTArrayIndexFromAnyShaderFeedingRasterizer,
-                      "This sample requires VPRT support. Adjust sample shaders on GPU without VRPT.");
+                "This sample requires VPRT support. Adjust sample shaders on GPU without VRPT.");
 
             CD3D11_DEPTH_STENCIL_DESC  depthStencilDesc(CD3D11_DEFAULT{});
             depthStencilDesc.DepthEnable = true;
@@ -533,10 +533,10 @@ namespace {
             blend_desc.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_ZERO;
             blend_desc.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_ADD;
             blend_desc.RenderTarget[0].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
-            
+
             m_device->CreateBlendState(&blend_desc, &blend_state);
             m_deviceContext->OMSetBlendState(blend_state, blend_factor, 0xFFFFFFFF);
-            
+
             // culling
             ID3D11RasterizerState* rasterizer_state;
             D3D11_RASTERIZER_DESC rasterizer_desc;
@@ -552,7 +552,7 @@ namespace {
             rasterizer_desc.AntialiasedLineEnable = FALSE;
             HRESULT h = m_device->CreateRasterizerState(&rasterizer_desc, &rasterizer_state);
             m_deviceContext->RSSetState(rasterizer_state);
-            
+
             // creating sampler 
             D3D11_SAMPLER_DESC sampler;
             ZeroMemory(&sampler, sizeof(sampler));
@@ -594,21 +594,21 @@ namespace {
         }
 
         void RenderView(const XrRect2Di& imageRect,
-                        const float renderTargetClearColor[4],
-                        const std::vector<xr::math::ViewProjection>& viewProjections,
-                        DXGI_FORMAT colorSwapchainFormat,
-                        ID3D11Texture2D* colorTexture,
-                        DXGI_FORMAT depthSwapchainFormat,
-                        ID3D11Texture2D* depthTexture,
-                        const std::vector<const sample::Cube*>& cubes,
-                        const std::vector<const sample::Cube*>& quads,
-                        const sample::Cube& light) override {
+            const float renderTargetClearColor[4],
+            const std::vector<xr::math::ViewProjection>& viewProjections,
+            DXGI_FORMAT colorSwapchainFormat,
+            ID3D11Texture2D* colorTexture,
+            DXGI_FORMAT depthSwapchainFormat,
+            ID3D11Texture2D* depthTexture,
+            const std::vector<const sample::Cube*>& cubes,
+            const std::vector<const sample::Cube*>& quads,
+            const sample::Cube& light) override {
             const uint32_t viewInstanceCount = (uint32_t)viewProjections.size();
             CHECK_MSG(viewInstanceCount <= CubeShader::MaxViewInstance,
-                      "Sample shader supports 2 or fewer view instances. Adjust shader to accommodate more.")
+                "Sample shader supports 2 or fewer view instances. Adjust shader to accommodate more.")
 
-            CD3D11_VIEWPORT viewport(
-                (float)imageRect.offset.x, (float)imageRect.offset.y, (float)imageRect.extent.width, (float)imageRect.extent.height);
+                CD3D11_VIEWPORT viewport(
+                    (float)imageRect.offset.x, (float)imageRect.offset.y, (float)imageRect.extent.width, (float)imageRect.extent.height);
             m_deviceContext->RSSetViewports(1, &viewport);
 
             // Create RenderTargetView with the original swapchain format (swapchain image is typeless).
@@ -629,14 +629,14 @@ namespace {
             m_deviceContext->ClearDepthStencilView(depthStencilView.get(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, depthClearValue, 0);
             m_deviceContext->OMSetDepthStencilState(reversedZ ? m_reversedZDepthNoStencilTest.get() : nullptr, 0);
 
-            ID3D11RenderTargetView* renderTargets[] = {renderTargetView.get()};
+            ID3D11RenderTargetView* renderTargets[] = { renderTargetView.get() };
             m_deviceContext->OMSetRenderTargets((UINT)std::size(renderTargets), renderTargets, depthStencilView.get());
 
             CubeShader::ColorBuffer colorCBuffer;
             colorCBuffer.Color = DirectX::XMFLOAT4(0.8f, 0.0f, 0.0f, 1.0f);
             CubeShader::LightPosBuffer lightPosCBuffer;
             lightPosCBuffer.lightPos = DirectX::XMFLOAT4(light.PoseInAppSpace.position.x, light.PoseInAppSpace.position.y, light.PoseInAppSpace.position.z, 1.0f);
-            
+
 
             m_deviceContext->UpdateSubresource(m_colorCBuffer.get(), 0, nullptr, &colorCBuffer, 0, 0);
             m_deviceContext->UpdateSubresource(m_lightPosCBuffer.get(), 0, nullptr, &lightPosCBuffer, 0, 0);
@@ -653,7 +653,7 @@ namespace {
 
                 // Set view projection matrix for each view, transpose for shader usage.
                 DirectX::XMStoreFloat4x4(&viewProjectionCBufferData.ViewProjection[k],
-                                         DirectX::XMMatrixTranspose(spaceToView * projectionMatrix));
+                    DirectX::XMMatrixTranspose(spaceToView * projectionMatrix));
             }
             m_deviceContext->UpdateSubresource(m_viewProjectionCBuffer.get(), 0, nullptr, &viewProjectionCBufferData, 0, 0);
 

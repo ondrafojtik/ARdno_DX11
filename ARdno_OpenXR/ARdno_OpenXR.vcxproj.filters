@@ -85,6 +85,7 @@
   <ItemGroup>
     <None Include="packages.config" />
     <None Include="$(OpenXRLoaderBinaryRoot)\bin\openxr_loader.dll" />
+    <None Include="html1.htm" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="Assets\SmallTile.scale-100.png">
@@ -249,5 +250,8 @@
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="ARdno_OpenXR.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="Text.txt" />
   </ItemGroup>
 </Project>
