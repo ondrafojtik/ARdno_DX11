@@ -25,6 +25,65 @@
 #include "XrUtility/XrSceneUnderstanding.h"
 #include "XrUtility/XrSceneUnderstanding.hpp"
 
+namespace util
+{
+    XrVector3f convert_to_app_space(XrVector3f position, XrPosef pose)
+    {
+        //DirectX::XMMATRIX m = DirectX::XMMatrixRotationQuaternion(xr::math::LoadXrQuaternion(pose.orientation));
+        /* XMMATRIX STRUCTURE
+        _11 _12 _13 _14
+        _21 _22 _23 _24
+        _31 _32 _33 _34
+        _41 _42 _43 _44
+        */
+
+        XrQuaternionf q = pose.orientation;
+
+        float roll = atan2(2.0 * (q.w * q.z + q.x * q.y), 1.0 - 2.0 * (q.y * q.y + q.z * q.z));
+        float pitch = asin(2.0 * (q.z * q.x - q.w * q.y));
+        float yaw = atan2(2.0 * (q.w * q.x + q.y * q.z), -1.0 + 2.0 * (q.x * q.x + q.y * q.y));
+
+        yaw = yaw * (-1);
+
+		XrVector3f new_position_ = {
+		position.x * cos(yaw) + position.z * sin(yaw),
+		position.y,
+		position.z * cos(yaw) - position.x * sin(yaw),
+		};
+
+		new_position_.x += pose.position.x;
+		new_position_.y += pose.position.y;
+		new_position_.z += pose.position.z;
+
+        return new_position_;
+    }
+
+	XrVector3f convert_to_local_space(XrVector3f position, XrPosef pose)
+	{
+		XrQuaternionf q = pose.orientation;
+
+		float roll = atan2(2.0 * (q.w * q.z + q.x * q.y), 1.0 - 2.0 * (q.y * q.y + q.z * q.z));
+		float pitch = asin(2.0 * (q.z * q.x - q.w * q.y));
+		float yaw = atan2(2.0 * (q.w * q.x + q.y * q.z), -1.0 + 2.0 * (q.x * q.x + q.y * q.y));
+        
+		XrVector3f old_position = {
+		position.x - pose.position.x,
+		position.y - pose.position.y,
+		position.z - pose.position.z
+		};
+
+		XrVector3f final_position = {
+			old_position.x * cos(yaw) + old_position.z * sin(yaw),
+			old_position.y,
+			old_position.z * cos(yaw) - old_position.x * sin(yaw),
+		};
+
+		return final_position;
+
+	}
+
+}
+
 namespace {
     struct ImplementOpenXrProgram : sample::IOpenXrProgram {
         ImplementOpenXrProgram(std::string applicationName, std::unique_ptr<sample::IGraphicsPluginD3D11> graphicsPlugin)
@@ -320,6 +379,7 @@ namespace {
 
             for (LocalSaveObject o : _objects)
             {
+                //o.position = util::convert_to_app_space(o.position, space_origin);
                 create_hologram(o.scale.x, { o.position.x, o.position.y, o.position.z }, { o.orientation.x, o.orientation.y, o.orientation.z }, o.type, o.text);
             }
 
@@ -335,7 +395,7 @@ namespace {
             for (int i = 0; i < m_holograms.size(); i++)
             {
                 LocalSaveObject o{};
-                o.position = m_holograms[i].Cube.position;
+                o.position = util::convert_to_local_space(m_holograms[i].Cube.position, space_origin);
                 o.orientation = m_holograms[i].Cube.orientation;
                 o.scale = m_holograms[i].Cube.Scale;
                 o.type = m_holograms[i].type;
@@ -350,13 +410,13 @@ namespace {
             {
                 std::string data = "\n";
 
-                XrVector3f position = convert_to_local_space(object.position, space_origin);
+                //XrVector3f position = convert_to_local_space(object.position, space_origin);
 
-                data += std::to_string(position.x);
+                data += std::to_string(object.position.x);
                 data += ";";
-                data += std::to_string(position.y);
+                data += std::to_string(object.position.y);
                 data += ";";
-                data += std::to_string(position.z);
+                data += std::to_string(object.position.z);
                 data += ";";
 
                 data += std::to_string(object.orientation.x);
@@ -401,53 +461,6 @@ namespace {
 
         }
 
-        XrVector3f convert_to_app_space(XrVector3f position, XrPosef pose)
-        {
-            //DirectX::XMMATRIX m = DirectX::XMMatrixRotationQuaternion(xr::math::LoadXrQuaternion(pose.orientation));
-            /* XMMATRIX STRUCTURE
-            _11 _12 _13 _14
-            _21 _22 _23 _24
-            _31 _32 _33 _34
-            _41 _42 _43 _44
-            */
-
-            XrQuaternionf q = pose.orientation;
-
-            float roll = atan2(2.0 * (q.w * q.z + q.x * q.y), 1.0 - 2.0 * (q.y * q.y + q.z * q.z));
-            float pitch = asin(2.0 * (q.z * q.x - q.w * q.y));
-            float yaw = atan2(2.0 * (q.w * q.x + q.y * q.z), -1.0 + 2.0 * (q.x * q.x + q.y * q.y));
-
-            yaw = DirectX::XM_PI - yaw; // anti-clockwise
-
-            XrVector3f new_position = {
-                space_origin.position.x + position.x * cos(yaw) + position.z * sin(yaw),
-                space_origin.position.y + position.y,
-                space_origin.position.z + position.z * cos(yaw) - position.x * sin(yaw)
-            };
-
-            return new_position;
-        }
-
-        XrVector3f convert_to_local_space(XrVector3f position, XrPosef pose)
-        {
-            XrQuaternionf q = pose.orientation;
-
-            float roll = atan2(2.0 * (q.w * q.z + q.x * q.y), 1.0 - 2.0 * (q.y * q.y + q.z * q.z));
-            float pitch = asin(2.0 * (q.z * q.x - q.w * q.y));
-            float yaw = atan2(2.0 * (q.w * q.x + q.y * q.z), -1.0 + 2.0 * (q.x * q.x + q.y * q.y));
-
-            yaw = DirectX::XM_PI - yaw; // anti-clockwise
-            yaw *= -1;                  // in reverse
-
-            XrVector3f new_position = {
-                space_origin.position.x + position.x * cos(yaw) + position.z * sin(yaw),
-                space_origin.position.y + position.y,
-                space_origin.position.z + position.z * cos(yaw) - position.x * sin(yaw)
-            };
-
-            return new_position;
-        }
-
         enum ObjectType;
         void create_hologram(float scale, DirectX::XMFLOAT3 position, DirectX::XMFLOAT3 orientation, ObjectType type, std::string text = "")
         {
@@ -461,11 +474,12 @@ namespace {
             };
 
 			Hologram hologram{};
-			hologram.Cube.position = { position.x, position.y, position.z };
-            hologram.Cube.Scale = { 0.25f, 0.25f, 0.25f };
+            hologram.Cube.position = util::convert_to_app_space({ position.x, position.y, position.z }, space_origin);
+            hologram.Cube.orientation = { orientation.x, orientation.y, orientation.z, 1.0f };
+            hologram.Cube.Scale = { scale, scale, scale };
 
             XrPosef _pose = xr::math::Pose::Identity();
-            _pose.position = convert_to_app_space({ position.x, position.y, position.z }, space_origin);
+            _pose.position = util::convert_to_app_space({ position.x, position.y, position.z }, space_origin);
             _pose.orientation = xr::math::Quaternion::RotationRollPitchYaw({ 90, 0, 90 });
 
             hologram.Cube.Space = createReferenceSpace(XR_REFERENCE_SPACE_TYPE_LOCAL, _pose);
@@ -477,8 +491,23 @@ namespace {
         enum ObjectType;
         void InitializeApplication()
         {
-            //m_holograms.clear();
-            std::string d = "0.000000;0.000000;-1.000000;0.000000;0.000000;0.000000;1.000000;0.250000;0.250000;0.250000;1;TEST;0.000000; 0.000000;1.000000; 0.000000; 0.000000; 0.000000; 1.000000; 0.250000; 0.250000; 0.250000; 0; -;1.000000; 0.000000; 0.000000; 0.000000; 0.000000; 0.000000; 1.000000; 0.250000; 0.250000; 0.250000; 0; -;-1.000000; 0.000000; 0.000000; 0.000000; 0.000000; 0.000000; 1.000000; 0.250000; 0.250000; 0.250000; 0; -;";
+            
+            if (m_holograms.size() > 0)
+                save_objects();
+
+            m_holograms.clear();
+
+			//std::string d = "0.0;0.0;-1.0;0.000000;0.000000;0.000000;1.000000;0.250000;0.250000;0.250000;1;1;   "
+			//    "0.0; 0.0; 1.0; 0.000000; 0.000000; 0.000000; 1.000000; 0.250000; 0.250000; 0.250000; 1; 2;         "
+			//    "1.0; 0.0; 0.0; 0.000000; 0.000000; 0.000000; 1.000000; 0.250000; 0.250000; 0.250000; 1; 3;        "
+			//    "-1.0; 0.0; 0.0; 0.000000; 0.000000; 0.000000; 1.000000; 0.250000; 0.250000; 0.250000; 1; 4;        ";
+
+            std::string d = "-0.068453;0.001012;-0.981888;0.000000;0.000000;0.000000;1.000000;0.250000;0.250000;0.250000;1;1;    "
+                "0.072238; 0.001012; 1.013157; 0.000000; 0.000000; 0.000000; 1.000000; 0.250000; 0.250000; 0.250000; 1; 2;           "
+                "0.999415; 0.001012; -0.054711; 0.000000; 0.000000; 0.000000; 1.000000; 0.250000; 0.250000; 0.250000; 1; 3;          "
+                "-0.995630; 0.001012; 0.085980; 0.000000; 0.000000; 0.000000; 1.000000; 0.250000; 0.250000; 0.250000; 1; 4;          ";
+
+
             load_objects(d);
 
 			//create_hologram(0.25f, { 0,  0, -1 }, { 0, 0, 0 }, ObjectType::Quad, "TEST");
@@ -486,8 +515,6 @@ namespace {
 			//create_hologram(0.25f, { 1,  0,  0 }, { 0, 0, 0 }, ObjectType::Cube);
 			//create_hologram(0.25f, { -1,  0,  0 }, { 0, 0, 0 }, ObjectType::Cube);
 
-
-            save_objects();
         }
 
         void CreateSpaces() {
@@ -708,11 +735,14 @@ namespace {
             }
         }
 
+        
         struct Hologram;
         enum ObjectType;
         Hologram CreateHologram(const XrPosef& poseInAppSpace, XrTime placementTime, ObjectType type) const {
             Hologram hologram{};
             hologram.type = type;
+            hologram.Cube.position = poseInAppSpace.position;
+            hologram.Cube.orientation = poseInAppSpace.orientation;
             if (m_optionalExtensions.SpatialAnchorSupported) {
                 // Anchors provide the best stability when moving beyond 5 meters, so if the extension is enabled,
                 // create an anchor at given location and place the hologram at the resulting anchor space.
@@ -800,18 +830,21 @@ namespace {
                             text_buffer.push_back("OBRAZ");
                             text_buffer.push_back("KYTKA");
 
+                            //create_hologram(0.25f, { handLocation.pose.position.x, handLocation.pose.position.y, handLocation.pose.position.z }, { handLocation.pose.orientation.x, handLocation.pose.orientation.y, handLocation.pose.orientation.z }, ObjectType::Quad, "BLANK");
                             m_holograms.push_back(CreateHologram(handLocation.pose, placementTime, ObjectType::Quad));
                             if (text_index < 3)
                                 m_holograms[m_holograms.size() - 1].Cube.text = text_buffer[text_index];
                             else
                                 m_holograms[m_holograms.size() - 1].Cube.text = "SAMPLE TEXT";
                             text_index += 1;
+
                         }
                         else if (side == RightSide)
                         {
                             space_origin = handLocation.pose;
                             
                             InitializeApplication();
+                            
                         }
 
                     }
