@@ -277,21 +277,56 @@ namespace {
             std::string text = "";
         };
 
-        void load_objects_from_file()   // load into m_holograms
+        void load_objects(std::string data)         // load into m_holograms
         {
-            std::vector<LocalSaveObject> _localObjects;
+            std::vector<LocalSaveObject> _objects;
+			std::vector<std::string> _elems;
+			std::string _word = "";
+			for (char c : data)
+			{
+				if (c == ';')
+				{
+					_elems.push_back(_word);
+					_word = "";
+				}
+				else
+					_word += c;
+			}
 
-            // open file stream
+			for (int i = 0; i < _elems.size() / 12; i++)
+			{
+				LocalSaveObject o{};
+				o.position.x = std::stof(_elems[(i * 12) + 0]);
+				o.position.y = std::stof(_elems[(i * 12) + 1]);
+				o.position.z = std::stof(_elems[(i * 12) + 2]);
 
-            // parse the data
+				o.orientation.x = std::stof(_elems[(i * 12) + 3]);
+				o.orientation.y = std::stof(_elems[(i * 12) + 4]);
+				o.orientation.z = std::stof(_elems[(i * 12) + 5]);
+				o.orientation.w = std::stof(_elems[(i * 12) + 6]);
 
-            // load into the _localObjects
+				o.scale.x = std::stof(_elems[(i * 12) + 7]);
+				o.scale.y = std::stof(_elems[(i * 12) + 8]);
+				o.scale.z = std::stof(_elems[(i * 12) + 9]);
 
-            // save into m_holograms
+				o.type = (ObjectType)std::stoi(_elems[(i * 12) + 10]);
+
+				o.text = _elems[(i * 12) + 11];
+				if (o.text == "-")
+					o.text = "";
+
+				_objects.push_back(o);
+			}
+
+            for (LocalSaveObject o : _objects)
+            {
+                create_hologram(o.scale.x, { o.position.x, o.position.y, o.position.z }, { o.orientation.x, o.orientation.y, o.orientation.z }, o.type, o.text);
+            }
+
 
         }
 
-        void save_objects_to_file()     // load from m_holograms
+        void save_objects()                         // load from m_holograms
         {
             std::vector<LocalSaveObject> _localObjects;
             _localObjects.reserve(m_holograms.size());
@@ -300,8 +335,8 @@ namespace {
             for (int i = 0; i < m_holograms.size(); i++)
             {
                 LocalSaveObject o{};
-                o.position = m_holograms[i].Cube.PoseInAppSpace.position;
-                o.orientation = m_holograms[i].Cube.PoseInAppSpace.orientation;
+                o.position = m_holograms[i].Cube.position;
+                o.orientation = m_holograms[i].Cube.orientation;
                 o.scale = m_holograms[i].Cube.Scale;
                 o.type = m_holograms[i].type;
                 o.text = m_holograms[i].Cube.text;
@@ -314,11 +349,14 @@ namespace {
             for (LocalSaveObject object : _localObjects)
             {
                 std::string data = "\n";
-                data += std::to_string(object.position.x);
+
+                XrVector3f position = convert_to_local_space(object.position, space_origin);
+
+                data += std::to_string(position.x);
                 data += ";";
-                data += std::to_string(object.position.y);
+                data += std::to_string(position.y);
                 data += ";";
-                data += std::to_string(object.position.z);
+                data += std::to_string(position.z);
                 data += ";";
 
                 data += std::to_string(object.orientation.x);
@@ -422,7 +460,8 @@ namespace {
                 return space;
             };
 
-            Hologram hologram{};
+			Hologram hologram{};
+			hologram.Cube.position = { position.x, position.y, position.z };
             hologram.Cube.Scale = { 0.25f, 0.25f, 0.25f };
 
             XrPosef _pose = xr::math::Pose::Identity();
@@ -438,15 +477,17 @@ namespace {
         enum ObjectType;
         void InitializeApplication()
         {
-            m_holograms.clear();
+            //m_holograms.clear();
+            std::string d = "0.000000;0.000000;-1.000000;0.000000;0.000000;0.000000;1.000000;0.250000;0.250000;0.250000;1;TEST;0.000000; 0.000000;1.000000; 0.000000; 0.000000; 0.000000; 1.000000; 0.250000; 0.250000; 0.250000; 0; -;1.000000; 0.000000; 0.000000; 0.000000; 0.000000; 0.000000; 1.000000; 0.250000; 0.250000; 0.250000; 0; -;-1.000000; 0.000000; 0.000000; 0.000000; 0.000000; 0.000000; 1.000000; 0.250000; 0.250000; 0.250000; 0; -;";
+            load_objects(d);
 
-            create_hologram(0.25f, { 0,  0, -1 }, { 0, 0, 0 }, ObjectType::Quad, "TEST");
-            create_hologram(0.25f, { 0,  0,  1 }, { 0, 0, 0 }, ObjectType::Cube);
-            create_hologram(0.25f, { 1,  0,  0 }, { 0, 0, 0 }, ObjectType::Cube);
-            create_hologram(0.25f, { -1,  0,  0 }, { 0, 0, 0 }, ObjectType::Cube);
+			//create_hologram(0.25f, { 0,  0, -1 }, { 0, 0, 0 }, ObjectType::Quad, "TEST");
+			//create_hologram(0.25f, { 0,  0,  1 }, { 0, 0, 0 }, ObjectType::Cube);
+			//create_hologram(0.25f, { 1,  0,  0 }, { 0, 0, 0 }, ObjectType::Cube);
+			//create_hologram(0.25f, { -1,  0,  0 }, { 0, 0, 0 }, ObjectType::Cube);
 
 
-            save_objects_to_file();
+            save_objects();
         }
 
         void CreateSpaces() {
