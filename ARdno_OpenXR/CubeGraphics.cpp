@@ -26,6 +26,7 @@
 #include <fstream>
 
 #include "liver.h"
+#include "arrow.h"
 
 namespace {
     namespace CubeShader {
@@ -477,16 +478,27 @@ namespace {
             //    const CD3D11_BUFFER_DESC indexBufferDesc(sizeof(CubeShader::c_cubeIndices), D3D11_BIND_INDEX_BUFFER);
             //    CHECK_HRCMD(m_device->CreateBuffer(&indexBufferDesc, &indexBufferData, m_cubeIndexBuffer.put()));
             //}
-            // liver
+            // arrow
             {
-                const D3D11_SUBRESOURCE_DATA vertexBufferData{ sample::liver::vb };
-                const CD3D11_BUFFER_DESC vertexBufferDesc(sizeof(sample::liver::vb), D3D11_BIND_VERTEX_BUFFER);
-                CHECK_HRCMD(m_device->CreateBuffer(&vertexBufferDesc, &vertexBufferData, m_cubeVertexBuffer.put()));
+				const D3D11_SUBRESOURCE_DATA vertexBufferData{ sample::arrow::vb };
+				const CD3D11_BUFFER_DESC vertexBufferDesc(sizeof(sample::arrow::vb), D3D11_BIND_VERTEX_BUFFER);
+				CHECK_HRCMD(m_device->CreateBuffer(&vertexBufferDesc, &vertexBufferData, m_cubeVertexBuffer.put()));
 
-                const D3D11_SUBRESOURCE_DATA indexBufferData{ sample::liver::ib };
-                const CD3D11_BUFFER_DESC indexBufferDesc(sizeof(sample::liver::ib), D3D11_BIND_INDEX_BUFFER);
-                CHECK_HRCMD(m_device->CreateBuffer(&indexBufferDesc, &indexBufferData, m_cubeIndexBuffer.put()));
+				const D3D11_SUBRESOURCE_DATA indexBufferData{ sample::arrow::ib };
+				const CD3D11_BUFFER_DESC indexBufferDesc(sizeof(sample::arrow::ib), D3D11_BIND_INDEX_BUFFER);
+				CHECK_HRCMD(m_device->CreateBuffer(&indexBufferDesc, &indexBufferData, m_cubeIndexBuffer.put()));
+
             }
+            // liver
+            //{
+            //    const D3D11_SUBRESOURCE_DATA vertexBufferData{ sample::liver::vb };
+            //    const CD3D11_BUFFER_DESC vertexBufferDesc(sizeof(sample::liver::vb), D3D11_BIND_VERTEX_BUFFER);
+            //    CHECK_HRCMD(m_device->CreateBuffer(&vertexBufferDesc, &vertexBufferData, m_cubeVertexBuffer.put()));
+            //
+            //    const D3D11_SUBRESOURCE_DATA indexBufferData{ sample::liver::ib };
+            //    const CD3D11_BUFFER_DESC indexBufferDesc(sizeof(sample::liver::ib), D3D11_BIND_INDEX_BUFFER);
+            //    CHECK_HRCMD(m_device->CreateBuffer(&indexBufferDesc, &indexBufferData, m_cubeIndexBuffer.put()));
+            //}
             // quad
             {
                 // Dynamic VB
@@ -674,9 +686,11 @@ namespace {
                 // Compute and update the model transform for each cube, transpose for shader usage.
                 CubeShader::ModelConstantBuffer model;
                 //const DirectX::XMMATRIX scaleMatrix = DirectX::XMMatrixScaling(cube->Scale.x, cube->Scale.y, cube->Scale.z);
-                const DirectX::XMMATRIX scaleMatrix = DirectX::XMMatrixScaling(1.0f, 1.0f, 1.0f);
+                const DirectX::XMMATRIX scaleMatrix = DirectX::XMMatrixScaling(0.2f, 0.2f, 0.2f);
                 DirectX::XMStoreFloat4x4(&model.Model, DirectX::XMMatrixTranspose(scaleMatrix * xr::math::LoadXrPose(cube->PoseInAppSpace)));
                 m_deviceContext->UpdateSubresource(m_modelCBuffer.get(), 0, nullptr, &model, 0, 0);
+				DirectX::XMStoreFloat4x4(&model.Model, DirectX::XMMatrixTranspose(DirectX::XMMatrixRotationRollPitchYaw(DirectX::XM_PIDIV2, DirectX::XM_PIDIV2, 0) * scaleMatrix * xr::math::LoadXrPose(cube->PoseInAppSpace)));
+				m_deviceContext->UpdateSubresource(m_modelCBuffer.get(), 0, nullptr, &model, 0, 0);
 
                 m_deviceContext->DrawIndexedInstanced((UINT)std::size(sample::liver::ib), viewInstanceCount, 0, 0, 0);
             }
@@ -698,6 +712,7 @@ namespace {
                 DirectX::XMStoreFloat4x4(&model.Model, DirectX::XMMatrixTranspose(scaleMatrix * xr::math::LoadXrPose(quad->PoseInAppSpace)));
                 DirectX::XMStoreFloat4x4(&model.Model, DirectX::XMMatrixTranspose(DirectX::XMMatrixRotationRollPitchYaw(DirectX::XM_PIDIV2, DirectX::XM_PIDIV2, 0) * scaleMatrix * xr::math::LoadXrPose(quad->PoseInAppSpace)));
                 m_deviceContext->UpdateSubresource(m_modelCBuffer.get(), 0, nullptr, &model, 0, 0);
+
 
                 std::vector<QuadShader::Vertex> cc = QuadShader::get_vb_with_text("OLA");
                 std::string word_to_render = quad->text;

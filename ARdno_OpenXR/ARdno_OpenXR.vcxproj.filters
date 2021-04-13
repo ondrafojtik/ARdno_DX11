@@ -78,6 +78,7 @@
     <ClInclude Include="OpenXrProgram.h" />
     <ClInclude Include="DxUtility.h" />
     <ClInclude Include="resource.h" />
+    <ClInclude Include="arrow.h" />
   </ItemGroup>
   <ItemGroup>
     <AppxManifest Include="Package.appxmanifest" />

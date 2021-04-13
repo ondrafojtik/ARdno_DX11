@@ -478,9 +478,13 @@ namespace {
             hologram.Cube.orientation = { orientation.x, orientation.y, orientation.z, 1.0f };
             hologram.Cube.Scale = { scale, scale, scale };
 
+
             XrPosef _pose = xr::math::Pose::Identity();
             _pose.position = util::convert_to_app_space({ position.x, position.y, position.z }, space_origin);
-            _pose.orientation = xr::math::Quaternion::RotationRollPitchYaw({ 90, 0, 90 });
+            //_pose.orientation = { orientation.x, orientation.y, orientation.z, 1.0f };
+
+
+			XrPosef pose__ = xr::math::Pose::MakePose(_pose.orientation, _pose.position);
 
             hologram.Cube.Space = createReferenceSpace(XR_REFERENCE_SPACE_TYPE_LOCAL, _pose);
             hologram.type = type;
@@ -503,11 +507,15 @@ namespace {
 			//    "-1.0; 0.0; 0.0; 0.000000; 0.000000; 0.000000; 1.000000; 0.250000; 0.250000; 0.250000; 1; 4;        ";
 
             // TODO: ORIENTATION (its prob. just the other way around..) (180)
-			std::string d = "-0.071672;-0.011790;-0.955169;0.000000;0.000000;0.000000;1.000000;0.250000;0.250000;0.250000;1;1;"
-				"0.051789; -0.011790; 1.041017; 0.000000; 0.000000; 0.000000; 1.000000; 0.250000; 0.250000; 0.250000; 1; 2;       "
-				"0.988151; -0.011790; -0.018807; 0.000000; 0.000000; 0.000000; 1.000000; 0.250000; 0.250000; 0.250000; 1; 3;      "
-				"-1.008034; -0.011790; 0.104655; 0.000000; 0.000000; 0.000000; 1.000000; 0.250000; 0.250000; 0.250000; 1; 4;      "
-			"0.147310; 0.057091; 1.014287; -0.017768; -0.339529; 0.787709; -0.513730; 0.100000; 0.100000; 0.100000; 1; KYTKA; ";
+			std::string d = 
+			"-0.172777;-0.008292;-0.949245;0.011540;0.006631;0.058376;1.000000;0.250000;0.250000;0.250000;1;1;                     "
+			"0.113065; -0.008292; 1.030224; 0.011540; 0.006631; 0.058376; 1.000000; 0.250000; 0.250000; 0.250000; 1; 2;            "
+			"0.959877; -0.008292; -0.102433; 0.011540; 0.006631; 0.058376; 1.000000; 0.250000; 0.250000; 0.250000; 1; 3;           "
+			"-1.019590; -0.008292; 0.183411; 0.011540; 0.006631; 0.058376; 1.000000; 0.250000; 0.250000; 0.250000; 1; 4;           "
+			"0.206088; 0.060589; 0.995792; -0.006228; -0.332898; 0.846085; 1.000000; 0.100000; 0.100000; 0.100000; 1; KYTKA;       "
+			"-0.292458; 0.197242; 0.505626; -0.866799; -0.496889; 0.898982; 1.000000; 0.100000; 0.100000; 0.100000; 1; OBRAZ;      "
+			"-0.261393; 0.329705; 0.714491; -0.666839; -0.748825; 0.924067; 1.000000; 0.100000; 0.100000; 0.100000; 1; KYTKA;      "
+			"-0.148814; 0.177226; 0.482910; 0.883049; -0.449411; 0.115015; 0.070892; 0.100000; 0.100000; 0.100000; 1; SAMPLE TEXT; ";
 
 
             load_objects(d);
@@ -845,6 +853,8 @@ namespace {
                         {
                             space_origin = handLocation.pose;
                             
+                            hologram_space_origin = CreateHologram(handLocation.pose, placementTime, ObjectType::Cube);
+
                             InitializeApplication();
                             
                         }
@@ -1099,9 +1109,14 @@ namespace {
             }*/
 
 
+            //UpdateVisibleCube(m_cubesInHand[LeftSide]);
+            //m_cubesInHand[LeftSide].text = "SAMPLE";
             UpdateVisibleCube(m_cubesInHand[LeftSide]);
-            UpdateVisibleCube(m_cubesInHand[RightSide]);
+			UpdateVisibleCube(m_cubesInHand[RightSide]);
 
+            UpdateVisibleCube(hologram_space_origin.Cube);
+            
+            
             for (auto& hologram : m_holograms) {
                 if (hologram.type == ObjectType::Cube)
                     UpdateVisibleCube(hologram.Cube);
@@ -1238,6 +1253,7 @@ namespace {
         //};
 
         std::vector<Hologram> m_holograms;
+        Hologram hologram_space_origin;
         //sample::Light m_light;
         XrPosef space_origin = xr::math::Pose::Identity();
         XrPosef test = xr::math::Pose::Identity();

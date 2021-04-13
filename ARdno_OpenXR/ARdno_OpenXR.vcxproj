@@ -321,6 +321,7 @@
     <Image Include="Assets\Wide310x150Logo.scale-400.png" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="arrow.h" />
     <ClInclude Include="Common\DeviceResources.h" />
     <ClInclude Include="ARdno_OpenXRMain.h" />
     <ClInclude Include="Common\DirectXHelper.h" />
