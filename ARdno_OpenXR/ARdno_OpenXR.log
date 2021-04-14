@@ -1,0 +1,1 @@
+﻿C:\dev\ARdno_OpenXR\ARdno_OpenXR\ARdno_OpenXR.vcxproj(105,5): error MSB4019: The imported project "C:\Common7\IDE\Extensions\Microsoft\VsGraphics\ImageContentTask.props" was not found. Confirm that the expression in the Import declaration "\Common7\IDE\Extensions\Microsoft\VsGraphics\ImageContentTask.props" is correct, and that the file exists on disk.

@@ -16,7 +16,7 @@
     <DebuggerRequireAuthentication>Universal</DebuggerRequireAuthentication>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">
-    <DebuggerMachineName>192.168.1.105</DebuggerMachineName>
+    <DebuggerMachineName>192.168.137.227</DebuggerMachineName>
     <DebuggerFlavor>UWPRemoteDebugger</DebuggerFlavor>
     <DebuggerRequireAuthentication>Universal</DebuggerRequireAuthentication>
   </PropertyGroup>

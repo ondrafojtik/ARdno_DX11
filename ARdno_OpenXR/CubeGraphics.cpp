@@ -1,19 +1,3 @@
-//*********************************************************
-//    Copyright (c) Microsoft. All rights reserved.
-//
-//    Apache 2.0 License
-//
-//    You may obtain a copy of the License at
-//    http://www.apache.org/licenses/LICENSE-2.0
-//
-//    Unless required by applicable law or agreed to in writing, software
-//    distributed under the License is distributed on an "AS IS" BASIS,
-//    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
-//    implied. See the License for the specific language governing
-//    permissions and limitations under the License.
-//
-//*********************************************************
-
 #include "pch.h"
 #include "OpenXrProgram.h"
 #include "DxUtility.h"
@@ -356,6 +340,7 @@ namespace {
             return _indices;
         }
 
+
         // TODO: inconsistency. Why is one a vector and the other float* (&indices[0]?...)
         float* c_quadVertices = convert_to_float_arr(get_vb_with_text("CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC")); // max 32chars..
         std::vector<unsigned short> c_quadIndices = get_ib_with_text("CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC");
@@ -501,25 +486,25 @@ namespace {
             //}
             // quad
             {
-                // Dynamic VB
-                D3D11_BUFFER_DESC vertexBufferDesc;
-                ZeroMemory(&vertexBufferDesc, sizeof(vertexBufferDesc));
-                vertexBufferDesc.Usage = D3D11_USAGE_DYNAMIC;
-                vertexBufferDesc.ByteWidth = sizeof(QuadShader::Vertex) * QuadShader::get_vb_with_text("CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC").size(); // 8 * 32
-                vertexBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
-                vertexBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
-                D3D11_SUBRESOURCE_DATA initial_data{ QuadShader::c_quadVertices };
-                HRESULT hr = m_device->CreateBuffer(&vertexBufferDesc, &initial_data, m_quadVertexBuffer.put());
+				// Dynamic VB
+				D3D11_BUFFER_DESC vertexBufferDesc;
+				ZeroMemory(&vertexBufferDesc, sizeof(vertexBufferDesc));
+				vertexBufferDesc.Usage = D3D11_USAGE_DYNAMIC;
+				vertexBufferDesc.ByteWidth = sizeof(QuadShader::Vertex) * QuadShader::get_vb_with_text("CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC").size(); // 8 * 32
+				vertexBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+				vertexBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+				D3D11_SUBRESOURCE_DATA initial_data{ QuadShader::c_quadVertices };
+				HRESULT hr = m_device->CreateBuffer(&vertexBufferDesc, &initial_data, m_quadVertexBuffer.put());
 
-                // Dynamic IB
-                D3D11_BUFFER_DESC indexBufferDesc;
-                ZeroMemory(&indexBufferDesc, sizeof(indexBufferDesc));
-                indexBufferDesc.Usage = D3D11_USAGE_DYNAMIC;
-                indexBufferDesc.ByteWidth = sizeof(unsigned short) * QuadShader::get_ib_with_text("CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC").size();;
-                indexBufferDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
-                indexBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
-                D3D11_SUBRESOURCE_DATA data{ QuadShader::c_quadIndices.data() };
-                hr = m_device->CreateBuffer(&indexBufferDesc, &data, m_quadIndexBuffer.put());
+				// Dynamic IB
+				D3D11_BUFFER_DESC indexBufferDesc;
+				ZeroMemory(&indexBufferDesc, sizeof(indexBufferDesc));
+				indexBufferDesc.Usage = D3D11_USAGE_DYNAMIC;
+				indexBufferDesc.ByteWidth = sizeof(unsigned short) * QuadShader::get_ib_with_text("CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC").size();;
+				indexBufferDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
+				indexBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+				D3D11_SUBRESOURCE_DATA data{ QuadShader::c_quadIndices.data() };
+				hr = m_device->CreateBuffer(&indexBufferDesc, &data, m_quadIndexBuffer.put());
             }
             D3D11_FEATURE_DATA_D3D11_OPTIONS3 options;
             m_device->CheckFeatureSupport(D3D11_FEATURE_D3D11_OPTIONS3, &options, sizeof(options));
@@ -692,7 +677,8 @@ namespace {
 				DirectX::XMStoreFloat4x4(&model.Model, DirectX::XMMatrixTranspose(DirectX::XMMatrixRotationRollPitchYaw(DirectX::XM_PIDIV2, DirectX::XM_PIDIV2, 0) * scaleMatrix * xr::math::LoadXrPose(cube->PoseInAppSpace)));
 				m_deviceContext->UpdateSubresource(m_modelCBuffer.get(), 0, nullptr, &model, 0, 0);
 
-                m_deviceContext->DrawIndexedInstanced((UINT)std::size(sample::liver::ib), viewInstanceCount, 0, 0, 0);
+                // FIX _nocheck
+                m_deviceContext->DrawIndexedInstanced((UINT)std::size(sample::arrow::ib), viewInstanceCount, 0, 0, 0);
             }
 
             m_deviceContext->VSSetShader(m_QuadVertexShader.get(), nullptr, 0);
@@ -707,10 +693,23 @@ namespace {
             m_deviceContext->PSSetShaderResources(0, 1, font_texture.GetAddressOf());
             for (const sample::Cube* quad : quads) {
                 // Compute and update the model transform for each cube, transpose for shader usage.
+                XrQuaternionf q = quad->orientation;
+                XrPosef p = quad->PoseInAppSpace;
+                p.orientation = { 1, 1, 1, 1 };
+
+				float roll = atan2(2.0 * (q.w * q.z + q.x * q.y), 1.0 - 2.0 * (q.y * q.y + q.z * q.z));
+				float pitch = asin(2.0 * (q.z * q.x - q.w * q.y));
+				float yaw = atan2(2.0 * (q.w * q.x + q.y * q.z), -1.0 + 2.0 * (q.x * q.x + q.y * q.y));
+
                 QuadShader::ModelConstantBuffer model;
                 const DirectX::XMMATRIX scaleMatrix = DirectX::XMMatrixScaling(quad->Scale.x * 2, quad->Scale.y * 2, quad->Scale.z * 2);
-                DirectX::XMStoreFloat4x4(&model.Model, DirectX::XMMatrixTranspose(scaleMatrix * xr::math::LoadXrPose(quad->PoseInAppSpace)));
-                DirectX::XMStoreFloat4x4(&model.Model, DirectX::XMMatrixTranspose(DirectX::XMMatrixRotationRollPitchYaw(DirectX::XM_PIDIV2, DirectX::XM_PIDIV2, 0) * scaleMatrix * xr::math::LoadXrPose(quad->PoseInAppSpace)));
+				//DirectX::XMStoreFloat4x4(&model.Model, DirectX::XMMatrixTranspose(scaleMatrix * xr::math::LoadXrPose(cube->PoseInAppSpace)));
+                //DirectX::XMStoreFloat4x4(&model.Model, DirectX::XMMatrixTranspose(scaleMatrix * xr::math::LoadXrPose(quad->PoseInAppSpace)));
+                //m_deviceContext->UpdateSubresource(m_modelCBuffer.get(), 0, nullptr, &model, 0, 0);
+				//DirectX::XMStoreFloat4x4(&model.Model, DirectX::XMMatrixTranspose(scaleMatrix * DirectX::XMMatrixRotationRollPitchYaw(roll + DirectX::XM_PIDIV2, pitch + DirectX::XM_PIDIV2, yaw) * xr::math::LoadXrPose(quad->PoseInAppSpace)));
+
+                DirectX::XMStoreFloat4x4(&model.Model, DirectX::XMMatrixTranspose(scaleMatrix * DirectX::XMMatrixRotationQuaternion({ q.x, q.y, -q.z, q.w }) * xr::math::LoadXrPose(quad->PoseInAppSpace)));
+
                 m_deviceContext->UpdateSubresource(m_modelCBuffer.get(), 0, nullptr, &model, 0, 0);
 
 

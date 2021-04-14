@@ -45,42 +45,42 @@ namespace util
 
         yaw = yaw * (-1);
 
-		XrVector3f new_position_ = {
-		position.x * cos(yaw) + position.z * sin(yaw),
-		position.y,
-		position.z * cos(yaw) - position.x * sin(yaw),
-		};
+        XrVector3f new_position_ = {
+        position.x * cos(yaw) + position.z * sin(yaw),
+        position.y,
+        position.z * cos(yaw) - position.x * sin(yaw),
+        };
 
-		new_position_.x += pose.position.x;
-		new_position_.y += pose.position.y;
-		new_position_.z += pose.position.z;
+        new_position_.x += pose.position.x;
+        new_position_.y += pose.position.y;
+        new_position_.z += pose.position.z;
 
         return new_position_;
     }
 
-	XrVector3f convert_to_local_space(XrVector3f position, XrPosef pose)
-	{
-		XrQuaternionf q = pose.orientation;
+    XrVector3f convert_to_local_space(XrVector3f position, XrPosef pose)
+    {
+        XrQuaternionf q = pose.orientation;
 
-		float roll = atan2(2.0 * (q.w * q.z + q.x * q.y), 1.0 - 2.0 * (q.y * q.y + q.z * q.z));
-		float pitch = asin(2.0 * (q.z * q.x - q.w * q.y));
-		float yaw = atan2(2.0 * (q.w * q.x + q.y * q.z), -1.0 + 2.0 * (q.x * q.x + q.y * q.y));
-        
-		XrVector3f old_position = {
-		position.x - pose.position.x,
-		position.y - pose.position.y,
-		position.z - pose.position.z
-		};
+        float roll = atan2(2.0 * (q.w * q.z + q.x * q.y), 1.0 - 2.0 * (q.y * q.y + q.z * q.z));
+        float pitch = asin(2.0 * (q.z * q.x - q.w * q.y));
+        float yaw = atan2(2.0 * (q.w * q.x + q.y * q.z), -1.0 + 2.0 * (q.x * q.x + q.y * q.y));
 
-		XrVector3f final_position = {
-			old_position.x * cos(yaw) + old_position.z * sin(yaw),
-			old_position.y,
-			old_position.z * cos(yaw) - old_position.x * sin(yaw),
-		};
+        XrVector3f old_position = {
+        position.x - pose.position.x,
+        position.y - pose.position.y,
+        position.z - pose.position.z
+        };
 
-		return final_position;
+        XrVector3f final_position = {
+            old_position.x * cos(yaw) + old_position.z * sin(yaw),
+            old_position.y,
+            old_position.z * cos(yaw) - old_position.x * sin(yaw),
+        };
 
-	}
+        return final_position;
+
+    }
 
 }
 
@@ -172,10 +172,10 @@ namespace {
             CHECK(EnableExtensionIfSupported(XR_KHR_D3D11_ENABLE_EXTENSION_NAME));
             CHECK(EnableExtensionIfSupported(XR_MSFT_SCENE_UNDERSTANDING_PREVIEW2_EXTENSION_NAME));
             CHECK(EnableExtensionIfSupported(XR_MSFT_SCENE_UNDERSTANDING_SERIALIZATION_PREVIEW_EXTENSION_NAME));
-            #if UWP
+#if UWP
             // Require XR_EXT_win32_appcontainer_compatible extension when building in UWP context.
             CHECK(EnableExtensionIfSupported(XR_EXT_WIN32_APPCONTAINER_COMPATIBLE_EXTENSION_NAME));
-            #endif
+#endif
 
             // Additional optional extensions for enhanced functionality. Track whether enabled in m_optionalExtensions.
             m_optionalExtensions.DepthExtensionSupported = EnableExtensionIfSupported(XR_KHR_COMPOSITION_LAYER_DEPTH_EXTENSION_NAME);
@@ -339,43 +339,43 @@ namespace {
         void load_objects(std::string data)         // load into m_holograms
         {
             std::vector<LocalSaveObject> _objects;
-			std::vector<std::string> _elems;
-			std::string _word = "";
-			for (char c : data)
-			{
-				if (c == ';')
-				{
-					_elems.push_back(_word);
-					_word = "";
-				}
-				else
-					_word += c;
-			}
+            std::vector<std::string> _elems;
+            std::string _word = "";
+            for (char c : data)
+            {
+                if (c == ';')
+                {
+                    _elems.push_back(_word);
+                    _word = "";
+                }
+                else
+                    _word += c;
+            }
 
-			for (int i = 0; i < _elems.size() / 12; i++)
-			{
-				LocalSaveObject o{};
-				o.position.x = std::stof(_elems[(i * 12) + 0]);
-				o.position.y = std::stof(_elems[(i * 12) + 1]);
-				o.position.z = std::stof(_elems[(i * 12) + 2]);
+            for (int i = 0; i < _elems.size() / 12; i++)
+            {
+                LocalSaveObject o{};
+                o.position.x = std::stof(_elems[(i * 12) + 0]);
+                o.position.y = std::stof(_elems[(i * 12) + 1]);
+                o.position.z = std::stof(_elems[(i * 12) + 2]);
 
-				o.orientation.x = std::stof(_elems[(i * 12) + 3]);
-				o.orientation.y = std::stof(_elems[(i * 12) + 4]);
-				o.orientation.z = std::stof(_elems[(i * 12) + 5]);
-				o.orientation.w = std::stof(_elems[(i * 12) + 6]);
+                o.orientation.x = std::stof(_elems[(i * 12) + 3]);
+                o.orientation.y = std::stof(_elems[(i * 12) + 4]);
+                o.orientation.z = std::stof(_elems[(i * 12) + 5]);
+                o.orientation.w = std::stof(_elems[(i * 12) + 6]);
 
-				o.scale.x = std::stof(_elems[(i * 12) + 7]);
-				o.scale.y = std::stof(_elems[(i * 12) + 8]);
-				o.scale.z = std::stof(_elems[(i * 12) + 9]);
+                o.scale.x = std::stof(_elems[(i * 12) + 7]);
+                o.scale.y = std::stof(_elems[(i * 12) + 8]);
+                o.scale.z = std::stof(_elems[(i * 12) + 9]);
 
-				o.type = (ObjectType)std::stoi(_elems[(i * 12) + 10]);
+                o.type = (ObjectType)std::stoi(_elems[(i * 12) + 10]);
 
-				o.text = _elems[(i * 12) + 11];
-				if (o.text == "-")
-					o.text = "";
+                o.text = _elems[(i * 12) + 11];
+                if (o.text == "-")
+                    o.text = "";
 
-				_objects.push_back(o);
-			}
+                _objects.push_back(o);
+            }
 
             for (LocalSaveObject o : _objects)
             {
@@ -404,7 +404,7 @@ namespace {
                 _localObjects.push_back(o);
             }
 
-			OutputDebugString(L"\nOBJECT DATA START");
+            OutputDebugString(L"\nOBJECT DATA START");
 
             for (LocalSaveObject object : _localObjects)
             {
@@ -443,20 +443,20 @@ namespace {
                     data += object.text;
                 data += ";";
 
-				std::string s = data;
-				int len;
-				int slength = (int)s.length() + 1;
-				len = MultiByteToWideChar(CP_ACP, 0, s.c_str(), slength, 0, 0);
-				wchar_t* buf = new wchar_t[len];
-				MultiByteToWideChar(CP_ACP, 0, s.c_str(), slength, buf, len);
-				std::wstring r(buf);
-				delete[] buf;
+                std::string s = data;
+                int len;
+                int slength = (int)s.length() + 1;
+                len = MultiByteToWideChar(CP_ACP, 0, s.c_str(), slength, 0, 0);
+                wchar_t* buf = new wchar_t[len];
+                MultiByteToWideChar(CP_ACP, 0, s.c_str(), slength, buf, len);
+                std::wstring r(buf);
+                delete[] buf;
 
-				LPCWSTR _final_string = r.c_str();
-				OutputDebugString(_final_string);
+                LPCWSTR _final_string = r.c_str();
+                OutputDebugString(_final_string);
 
             }
-			
+
             OutputDebugString(L"\nOBJECT DATA END");
 
         }
@@ -469,25 +469,23 @@ namespace {
                 XrReferenceSpaceCreateInfo createInfo{ XR_TYPE_REFERENCE_SPACE_CREATE_INFO };
                 createInfo.referenceSpaceType = referenceSpaceType;
                 createInfo.poseInReferenceSpace = poseInReferenceSpace;
+                //XrResult r = xrCreateReferenceSpace(session, &createInfo, space.Put());
                 CHECK_XRCMD(xrCreateReferenceSpace(session, &createInfo, space.Put()));
                 return space;
             };
 
-			Hologram hologram{};
+            Hologram hologram{};
             hologram.Cube.position = util::convert_to_app_space({ position.x, position.y, position.z }, space_origin);
             hologram.Cube.orientation = { orientation.x, orientation.y, orientation.z, 1.0f };
             hologram.Cube.Scale = { scale, scale, scale };
 
-
             XrPosef _pose = xr::math::Pose::Identity();
             _pose.position = util::convert_to_app_space({ position.x, position.y, position.z }, space_origin);
-            //_pose.orientation = { orientation.x, orientation.y, orientation.z, 1.0f };
-
-
-			XrPosef pose__ = xr::math::Pose::MakePose(_pose.orientation, _pose.position);
-
-            hologram.Cube.Space = createReferenceSpace(XR_REFERENCE_SPACE_TYPE_LOCAL, _pose);
-            hologram.type = type;
+            _pose.orientation = { orientation.x, orientation.y, orientation.z, 1.0f };
+            
+			hologram.Cube.Space = createReferenceSpace(XR_REFERENCE_SPACE_TYPE_LOCAL, _pose);
+			//hologram.Cube.Space = createReferenceSpace(XR_REFERENCE_SPACE_TYPE_LOCAL, xr::math::Pose::Invert(_pose));
+			hologram.type = type;
             hologram.Cube.text = text;
             m_holograms.push_back(std::move(hologram));
         }
@@ -495,35 +493,32 @@ namespace {
         enum ObjectType;
         void InitializeApplication()
         {
-            
+
             if (m_holograms.size() > 0)
                 save_objects();
 
             m_holograms.clear();
 
-			//std::string d = "0.0;0.0;-1.0;0.000000;0.000000;0.000000;1.000000;0.250000;0.250000;0.250000;1;1;   "
-			//    "0.0; 0.0; 1.0; 0.000000; 0.000000; 0.000000; 1.000000; 0.250000; 0.250000; 0.250000; 1; 2;         "
-			//    "1.0; 0.0; 0.0; 0.000000; 0.000000; 0.000000; 1.000000; 0.250000; 0.250000; 0.250000; 1; 3;        "
-			//    "-1.0; 0.0; 0.0; 0.000000; 0.000000; 0.000000; 1.000000; 0.250000; 0.250000; 0.250000; 1; 4;        ";
-
-            // TODO: ORIENTATION (its prob. just the other way around..) (180)
 			std::string d = 
-			"-0.172777;-0.008292;-0.949245;0.011540;0.006631;0.058376;1.000000;0.250000;0.250000;0.250000;1;1;                     "
-			"0.113065; -0.008292; 1.030224; 0.011540; 0.006631; 0.058376; 1.000000; 0.250000; 0.250000; 0.250000; 1; 2;            "
-			"0.959877; -0.008292; -0.102433; 0.011540; 0.006631; 0.058376; 1.000000; 0.250000; 0.250000; 0.250000; 1; 3;           "
-			"-1.019590; -0.008292; 0.183411; 0.011540; 0.006631; 0.058376; 1.000000; 0.250000; 0.250000; 0.250000; 1; 4;           "
-			"0.206088; 0.060589; 0.995792; -0.006228; -0.332898; 0.846085; 1.000000; 0.100000; 0.100000; 0.100000; 1; KYTKA;       "
-			"-0.292458; 0.197242; 0.505626; -0.866799; -0.496889; 0.898982; 1.000000; 0.100000; 0.100000; 0.100000; 1; OBRAZ;      "
-			"-0.261393; 0.329705; 0.714491; -0.666839; -0.748825; 0.924067; 1.000000; 0.100000; 0.100000; 0.100000; 1; KYTKA;      "
-			"-0.148814; 0.177226; 0.482910; 0.883049; -0.449411; 0.115015; 0.070892; 0.100000; 0.100000; 0.100000; 1; SAMPLE TEXT; ";
+                "0.0;0.0;-1.0;0.000000;0.000000;0.000000;1.000000;0.250000;0.250000;0.250000;1;1;   "
+			    "0.0; 0.0; 1.0; 0.000000; 0.000000; 0.000000; 1.000000; 0.250000; 0.250000; 0.250000; 1; 2;         "
+			    "1.0; 0.0; 0.0; 0.000000; 0.000000; 0.000000; 1.000000; 0.250000; 0.250000; 0.250000; 1; 3;        "
+			    "-1.0; 0.0; 0.0; 0.000000; 0.000000; 0.000000; 1.000000; 0.250000; 0.250000; 0.250000; 1; 4;        ";
+            // //std::string d =
+            //    "0.152197; -0.006460; -0.975410; 0.000000; 0.000000; 0.000000; 1.000000; 0.250000; 0.250000; 0.250000; 1; 1;          "
+            //    "-0.154794; -0.006460; 1.000888; 0.000000; 0.000000; 0.000000; 1.000000; 0.250000; 0.250000; 0.250000; 1; 2;          "
+            //    "0.986850; -0.006460; 0.166235; 0.000000; 0.000000; 0.000000; 1.000000; 0.250000; 0.250000; 0.250000; 1; 3;           "
+            //    "-0.989448; -0.006460; -0.140757; 0.000000; 0.000000; 0.000000; 1.000000; 0.250000; 0.250000; 0.250000; 1; 4;         "
+            //    "0.002528; 0.234092; -0.186516; 0.678254; -0.346272; -0.577634; 1.000000; 0.100000; 0.100000; 0.100000; 1; OBRAZ;     "
+            //    "0.048502; 0.122783; 0.317295; -0.570917; 0.076286; 0.683824; -0.447904; 0.100000; 0.100000; 0.100000; 1; SAMPLE TEXT;";
 
 
             load_objects(d);
 
-			//create_hologram(0.25f, { 0,  0, -1 }, { 0, 0, 0 }, ObjectType::Quad, "TEST");
-			//create_hologram(0.25f, { 0,  0,  1 }, { 0, 0, 0 }, ObjectType::Cube);
-			//create_hologram(0.25f, { 1,  0,  0 }, { 0, 0, 0 }, ObjectType::Cube);
-			//create_hologram(0.25f, { -1,  0,  0 }, { 0, 0, 0 }, ObjectType::Cube);
+            //create_hologram(0.25f, { 0,  0, -1 }, { 0, 0, 0 }, ObjectType::Quad, "TEST");
+            //create_hologram(0.25f, { 0,  0,  1 }, { 0, 0, 0 }, ObjectType::Cube);
+            //create_hologram(0.25f, { 1,  0,  0 }, { 0, 0, 0 }, ObjectType::Cube);
+            //create_hologram(0.25f, { -1,  0,  0 }, { 0, 0, 0 }, ObjectType::Cube);
 
         }
 
@@ -745,7 +740,7 @@ namespace {
             }
         }
 
-        
+
         struct Hologram;
         enum ObjectType;
         Hologram CreateHologram(const XrPosef& poseInAppSpace, XrTime placementTime, ObjectType type) const {
@@ -852,11 +847,11 @@ namespace {
                         else if (side == RightSide)
                         {
                             space_origin = handLocation.pose;
-                            
+
                             hologram_space_origin = CreateHologram(handLocation.pose, placementTime, ObjectType::Cube);
 
                             InitializeApplication();
-                            
+
                         }
 
                     }
@@ -1109,14 +1104,12 @@ namespace {
             }*/
 
 
-            //UpdateVisibleCube(m_cubesInHand[LeftSide]);
-            //m_cubesInHand[LeftSide].text = "SAMPLE";
-            UpdateVisibleCube(m_cubesInHand[LeftSide]);
-			UpdateVisibleCube(m_cubesInHand[RightSide]);
+            m_cubesInHand[LeftSide].text = "SAMPLE";
+            UpdateVisibleQuad(m_cubesInHand[LeftSide]);
+            UpdateVisibleCube(m_cubesInHand[RightSide]);
 
             UpdateVisibleCube(hologram_space_origin.Cube);
-            
-            
+
             for (auto& hologram : m_holograms) {
                 if (hologram.type == ObjectType::Cube)
                     UpdateVisibleCube(hologram.Cube);
