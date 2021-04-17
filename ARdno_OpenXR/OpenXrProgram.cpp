@@ -82,6 +82,22 @@ namespace util
 
     }
 
+	XrQuaternionf orientation_save(XrQuaternionf q1, XrQuaternionf q2)
+	{
+		XrQuaternionf _final;
+		xr::math::StoreXrQuaternion(&_final, DirectX::XMQuaternionMultiply(xr::math::LoadXrQuaternion(q1), xr::math::LoadXrQuaternion(q2)));
+
+		return _final;
+	}
+
+	XrQuaternionf orientation_load(XrQuaternionf q1, XrQuaternionf q2)
+	{
+		XrQuaternionf _final;
+		xr::math::StoreXrQuaternion(&_final, DirectX::XMQuaternionMultiply(xr::math::LoadXrQuaternion(q1), DirectX::XMQuaternionInverse(xr::math::LoadXrQuaternion(q2))));
+
+		return _final;
+	}
+
 }
 
 namespace {
@@ -330,6 +346,7 @@ namespace {
         struct LocalSaveObject
         {
             XrVector3f position;
+            // orientation is vector of roll, pitch and yaw
             XrQuaternionf orientation;
             XrVector3f scale;
             ObjectType type;
@@ -361,9 +378,9 @@ namespace {
 
                 o.orientation.x = std::stof(_elems[(i * 12) + 3]);
                 o.orientation.y = std::stof(_elems[(i * 12) + 4]);
-                o.orientation.z = std::stof(_elems[(i * 12) + 5]);
-                o.orientation.w = std::stof(_elems[(i * 12) + 6]);
-
+				o.orientation.z = std::stof(_elems[(i * 12) + 5]);
+				o.orientation.w = std::stof(_elems[(i * 12) + 6]);
+                
                 o.scale.x = std::stof(_elems[(i * 12) + 7]);
                 o.scale.y = std::stof(_elems[(i * 12) + 8]);
                 o.scale.z = std::stof(_elems[(i * 12) + 9]);
@@ -380,13 +397,14 @@ namespace {
             for (LocalSaveObject o : _objects)
             {
                 //o.position = util::convert_to_app_space(o.position, space_origin);
-                create_hologram(o.scale.x, { o.position.x, o.position.y, o.position.z }, { o.orientation.x, o.orientation.y, o.orientation.z }, o.type, o.text);
+                create_hologram(o.scale.x, { o.position.x, o.position.y, o.position.z }, { o.orientation.x, o.orientation.y, o.orientation.z, o.orientation.w }, o.type, o.text);
             }
 
 
         }
 
-        void save_objects()                         // load from m_holograms
+        // saving orientation as roll, pitch, yaw which I later convert to Quaternion via DX
+        void save_objects()                         
         {
             std::vector<LocalSaveObject> _localObjects;
             _localObjects.reserve(m_holograms.size());
@@ -396,7 +414,7 @@ namespace {
             {
                 LocalSaveObject o{};
                 o.position = util::convert_to_local_space(m_holograms[i].Cube.position, space_origin);
-                o.orientation = m_holograms[i].Cube.orientation;
+                o.orientation = util::orientation_save(m_holograms[i].Cube.orientation, space_origin.orientation);
                 o.scale = m_holograms[i].Cube.Scale;
                 o.type = m_holograms[i].type;
                 o.text = m_holograms[i].Cube.text;
@@ -410,8 +428,6 @@ namespace {
             {
                 std::string data = "\n";
 
-                //XrVector3f position = convert_to_local_space(object.position, space_origin);
-
                 data += std::to_string(object.position.x);
                 data += ";";
                 data += std::to_string(object.position.y);
@@ -424,10 +440,10 @@ namespace {
                 data += std::to_string(object.orientation.y);
                 data += ";";
                 data += std::to_string(object.orientation.z);
-                data += ";";
-                data += std::to_string(object.orientation.w);
-                data += ";";
-
+				data += ";";
+				data += std::to_string(object.orientation.w);
+				data += ";";
+                
                 data += std::to_string(object.scale.x);
                 data += ";";
                 data += std::to_string(object.scale.y);
@@ -462,30 +478,30 @@ namespace {
         }
 
         enum ObjectType;
-        void create_hologram(float scale, DirectX::XMFLOAT3 position, DirectX::XMFLOAT3 orientation, ObjectType type, std::string text = "")
+        void create_hologram(float scale, DirectX::XMFLOAT3 position, XrQuaternionf orientation, ObjectType type, std::string text = "")
         {
             auto createReferenceSpace = [session = m_session.Get()](XrReferenceSpaceType referenceSpaceType, XrPosef poseInReferenceSpace) {
                 xr::SpaceHandle space;
                 XrReferenceSpaceCreateInfo createInfo{ XR_TYPE_REFERENCE_SPACE_CREATE_INFO };
                 createInfo.referenceSpaceType = referenceSpaceType;
                 createInfo.poseInReferenceSpace = poseInReferenceSpace;
-                //XrResult r = xrCreateReferenceSpace(session, &createInfo, space.Put());
                 CHECK_XRCMD(xrCreateReferenceSpace(session, &createInfo, space.Put()));
                 return space;
             };
 
             Hologram hologram{};
             hologram.Cube.position = util::convert_to_app_space({ position.x, position.y, position.z }, space_origin);
-            hologram.Cube.orientation = { orientation.x, orientation.y, orientation.z, 1.0f };
+            hologram.Cube.orientation = util::orientation_load(orientation, space_origin.orientation);
             hologram.Cube.Scale = { scale, scale, scale };
+
 
             XrPosef _pose = xr::math::Pose::Identity();
             _pose.position = util::convert_to_app_space({ position.x, position.y, position.z }, space_origin);
-            _pose.orientation = { orientation.x, orientation.y, orientation.z, 1.0f };
-            
-			hologram.Cube.Space = createReferenceSpace(XR_REFERENCE_SPACE_TYPE_LOCAL, _pose);
-			//hologram.Cube.Space = createReferenceSpace(XR_REFERENCE_SPACE_TYPE_LOCAL, xr::math::Pose::Invert(_pose));
-			hologram.type = type;
+            // TODO: check, mb load pose inverted? 
+            _pose.orientation = util::orientation_load(orientation, space_origin.orientation);
+
+            hologram.Cube.Space = createReferenceSpace(XR_REFERENCE_SPACE_TYPE_LOCAL, _pose);
+            hologram.type = type;
             hologram.Cube.text = text;
             m_holograms.push_back(std::move(hologram));
         }
@@ -499,19 +515,13 @@ namespace {
 
             m_holograms.clear();
 
-			std::string d = 
-                "0.0;0.0;-1.0;0.000000;0.000000;0.000000;1.000000;0.250000;0.250000;0.250000;1;1;   "
-			    "0.0; 0.0; 1.0; 0.000000; 0.000000; 0.000000; 1.000000; 0.250000; 0.250000; 0.250000; 1; 2;         "
-			    "1.0; 0.0; 0.0; 0.000000; 0.000000; 0.000000; 1.000000; 0.250000; 0.250000; 0.250000; 1; 3;        "
-			    "-1.0; 0.0; 0.0; 0.000000; 0.000000; 0.000000; 1.000000; 0.250000; 0.250000; 0.250000; 1; 4;        ";
-            // //std::string d =
-            //    "0.152197; -0.006460; -0.975410; 0.000000; 0.000000; 0.000000; 1.000000; 0.250000; 0.250000; 0.250000; 1; 1;          "
-            //    "-0.154794; -0.006460; 1.000888; 0.000000; 0.000000; 0.000000; 1.000000; 0.250000; 0.250000; 0.250000; 1; 2;          "
-            //    "0.986850; -0.006460; 0.166235; 0.000000; 0.000000; 0.000000; 1.000000; 0.250000; 0.250000; 0.250000; 1; 3;           "
-            //    "-0.989448; -0.006460; -0.140757; 0.000000; 0.000000; 0.000000; 1.000000; 0.250000; 0.250000; 0.250000; 1; 4;         "
-            //    "0.002528; 0.234092; -0.186516; 0.678254; -0.346272; -0.577634; 1.000000; 0.100000; 0.100000; 0.100000; 1; OBRAZ;     "
-            //    "0.048502; 0.122783; 0.317295; -0.570917; 0.076286; 0.683824; -0.447904; 0.100000; 0.100000; 0.100000; 1; SAMPLE TEXT;";
-
+			//std::string d = "0.0;0.0;-1.0;0.000000;0.000000;1.000000;0.000000;0.250000;0.250000;0.250000;1;1;   "
+			//    "0.0; 0.0; 1.0;0.000000;0.000000;1.000000;0.000000;0.250000; 0.250000; 0.250000; 1; 2;         "
+			//    "1.0; 0.0; 0.0;0.000000;0.000000;1.000000;0.000000;0.250000; 0.250000; 0.250000; 1; 3;        "
+			//    "-1.0; 0.0; 0.0;0.000000;0.000000;1.000000;0.000000;0.250000; 0.250000; 0.250000; 1; 4;        ";
+            
+            std::string d =
+                "-0.240332; 0.296941; -0.019900; 0.314183; -0.857070; 0.312367; 0.262958; 0.100000; 0.100000; 0.100000; 1; SAMPLE;";
 
             load_objects(d);
 
@@ -1104,11 +1114,12 @@ namespace {
             }*/
 
 
-            m_cubesInHand[LeftSide].text = "SAMPLE";
             UpdateVisibleQuad(m_cubesInHand[LeftSide]);
+            m_cubesInHand[LeftSide].text = "SAMPLE";
             UpdateVisibleCube(m_cubesInHand[RightSide]);
 
             UpdateVisibleCube(hologram_space_origin.Cube);
+
 
             for (auto& hologram : m_holograms) {
                 if (hologram.type == ObjectType::Cube)
