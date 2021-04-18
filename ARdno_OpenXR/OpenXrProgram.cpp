@@ -14,6 +14,9 @@
 //
 //*********************************************************
 
+// TODO: nasobit tim space_originem (pak bych asi mohl dostat konzistentni rotace) 
+
+
 #include "pch.h"
 #include "OpenXrProgram.h"
 #include "DxUtility.h"
@@ -97,6 +100,23 @@ namespace util
 
 		return _final;
 	}
+
+    XrQuaternionf q_multiply(XrQuaternionf q1, XrQuaternionf q2)
+    {
+		XrQuaternionf _final;
+		xr::math::StoreXrQuaternion(&_final, DirectX::XMQuaternionMultiply(xr::math::LoadXrQuaternion(q1), xr::math::LoadXrQuaternion(q2)));
+
+		return _final;
+    }
+
+    XrQuaternionf q_divide(XrQuaternionf q1, XrQuaternionf q2)
+    {
+		XrQuaternionf _final;
+		xr::math::StoreXrQuaternion(&_final, DirectX::XMQuaternionMultiply(xr::math::LoadXrQuaternion(q1), DirectX::XMQuaternionInverse(xr::math::LoadXrQuaternion(q2))));
+
+		return _final;
+    }
+
 
 }
 
@@ -414,7 +434,8 @@ namespace {
             {
                 LocalSaveObject o{};
                 o.position = util::convert_to_local_space(m_holograms[i].Cube.position, space_origin);
-                o.orientation = util::orientation_save(m_holograms[i].Cube.orientation, space_origin.orientation);
+                //o.orientation = util::orientation_save(m_holograms[i].Cube.orientation, space_origin.orientation);
+                o.orientation = util::q_divide(m_holograms[i].Cube.orientation, space_origin.orientation);
                 o.scale = m_holograms[i].Cube.Scale;
                 o.type = m_holograms[i].type;
                 o.text = m_holograms[i].Cube.text;
@@ -491,14 +512,15 @@ namespace {
 
             Hologram hologram{};
             hologram.Cube.position = util::convert_to_app_space({ position.x, position.y, position.z }, space_origin);
-            hologram.Cube.orientation = util::orientation_load(orientation, space_origin.orientation);
+            //hologram.Cube.orientation = util::orientation_load(orientation, space_origin.orientation);
+            hologram.Cube.orientation = util::q_multiply(orientation, space_origin.orientation);
             hologram.Cube.Scale = { scale, scale, scale };
 
 
             XrPosef _pose = xr::math::Pose::Identity();
             _pose.position = util::convert_to_app_space({ position.x, position.y, position.z }, space_origin);
-            // TODO: check, mb load pose inverted? 
-            _pose.orientation = util::orientation_load(orientation, space_origin.orientation);
+            //_pose.orientation = util::orientation_load(orientation, space_origin.orientation);
+            _pose.orientation = util::q_multiply(orientation, space_origin.orientation);
 
             hologram.Cube.Space = createReferenceSpace(XR_REFERENCE_SPACE_TYPE_LOCAL, _pose);
             hologram.type = type;
@@ -521,7 +543,10 @@ namespace {
 			//    "-1.0; 0.0; 0.0;0.000000;0.000000;1.000000;0.000000;0.250000; 0.250000; 0.250000; 1; 4;        ";
             
             std::string d =
-                "-0.240332; 0.296941; -0.019900; 0.314183; -0.857070; 0.312367; 0.262958; 0.100000; 0.100000; 0.100000; 1; SAMPLE;";
+                "-0.190307; 0.323309; -0.066512; -0.114290; 0.857111; -0.466330; -0.186641; 0.100000; 0.100000; 0.100000; 1; SAMPLE;"
+                "0.164671; 0.344280; -0.253018; 0.058643; -0.657776; 0.729856; 0.176639; 0.100000; 0.100000; 0.100000; 1; OBRAZ;    "
+                "0.588551; 0.322732; -0.175846; 0.000186; -0.331405; 0.921820; 0.201042; 0.100000; 0.100000; 0.100000; 1; KYTKA;    ";
+
 
             load_objects(d);
 
