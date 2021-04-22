@@ -279,6 +279,7 @@
     <Image Include="Assets\SmallTile.scale-150.png" />
     <Image Include="Assets\SmallTile.scale-200.png" />
     <Image Include="Assets\SmallTile.scale-400.png" />
+    <Image Include="Assets\space_origin_diffuse.png" />
     <Image Include="Assets\SplashScreen.scale-100.png" />
     <Image Include="Assets\SplashScreen.scale-125.png" />
     <Image Include="Assets\SplashScreen.scale-150.png" />
@@ -319,9 +320,11 @@
     <Image Include="Assets\Wide310x150Logo.scale-150.png" />
     <Image Include="Assets\Wide310x150Logo.scale-200.png" />
     <Image Include="Assets\Wide310x150Logo.scale-400.png" />
+    <Image Include="bitmap1.bmp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="arrow.h" />
+    <ClInclude Include="cancer_mesh.h" />
     <ClInclude Include="Common\DeviceResources.h" />
     <ClInclude Include="ARdno_OpenXRMain.h" />
     <ClInclude Include="Common\DirectXHelper.h" />
@@ -329,7 +332,9 @@
     <ClInclude Include="Content\Sample3DSceneRenderer.h" />
     <ClInclude Include="Content\SampleFpsTextRenderer.h" />
     <ClInclude Include="Content\ShaderStructures.h" />
+    <ClInclude Include="coord_space_model.h" />
     <ClInclude Include="DxUtility.h" />
+    <ClInclude Include="new_liver.h" />
     <ClInclude Include="OpenXrProgram.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="resource.h" />

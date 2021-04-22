@@ -27,6 +27,11 @@
 
 #include "liver.h"
 #include "arrow.h"
+#include "coord_space_model.h"
+
+// new ones
+//#include "new_liver.h"
+//#include "cancer_mesh.h"
 
 namespace {
     namespace CubeShader {
@@ -185,7 +190,7 @@ namespace {
             SamplerState objSamplerState : SAMPLER : register(s0);
 
             float4 MainPS(VSOutput input) : SV_TARGET {
-                float4 albedo = float4(input.Color, 1.0f);//objTexture.Sample(objSamplerState, input.texCoord); * float4(input.Color.x, input.Color.y, input.Color.z, 1.0f);
+                float4 albedo = objTexture.Sample(objSamplerState, input.texCoord) * float4(input.Color.x, input.Color.y, input.Color.z, 1.0f);
                 float ambientStrength = 0.1f;
                 float3 norm = normalize(input.normal);
                 float3 lightDir = normalize(input.lightPos - input.Pos.xyz);
@@ -483,12 +488,23 @@ namespace {
                 const D3D11_SUBRESOURCE_DATA vertexBufferData{ sample::arrow::vb };
                 const CD3D11_BUFFER_DESC vertexBufferDesc(sizeof(sample::arrow::vb), D3D11_BIND_VERTEX_BUFFER);
                 CHECK_HRCMD(m_device->CreateBuffer(&vertexBufferDesc, &vertexBufferData, m_cubeVertexBuffer.put()));
-
+            
                 const D3D11_SUBRESOURCE_DATA indexBufferData{ sample::arrow::ib };
                 const CD3D11_BUFFER_DESC indexBufferDesc(sizeof(sample::arrow::ib), D3D11_BIND_INDEX_BUFFER);
                 CHECK_HRCMD(m_device->CreateBuffer(&indexBufferDesc, &indexBufferData, m_cubeIndexBuffer.put()));
-
-            }
+            
+			}
+            // coord space model
+			//{
+			//	const D3D11_SUBRESOURCE_DATA vertexBufferData{ sample::coord_space_model::vb };
+			//	const CD3D11_BUFFER_DESC vertexBufferDesc(sizeof(sample::coord_space_model::vb), D3D11_BIND_VERTEX_BUFFER);
+			//	CHECK_HRCMD(m_device->CreateBuffer(&vertexBufferDesc, &vertexBufferData, m_cubeVertexBuffer.put()));
+            //
+			//	const D3D11_SUBRESOURCE_DATA indexBufferData{ sample::coord_space_model::ib };
+			//	const CD3D11_BUFFER_DESC indexBufferDesc(sizeof(sample::coord_space_model::ib), D3D11_BIND_INDEX_BUFFER);
+			//	CHECK_HRCMD(m_device->CreateBuffer(&indexBufferDesc, &indexBufferData, m_cubeIndexBuffer.put()));
+            //
+			//}
             // liver
             //{
             //    const D3D11_SUBRESOURCE_DATA vertexBufferData{ sample::liver::vb };
@@ -582,6 +598,8 @@ namespace {
             hr = DirectX::CreateWICTextureFromFile(m_device.get(), L"Assets\\font_sheet_5.png", nullptr, font_texture.GetAddressOf());
             hr = DirectX::CreateWICTextureFromFile(m_device.get(), L"Assets\\StoreLogo.png", nullptr, cube_texture.GetAddressOf());
             hr = DirectX::CreateWICTextureFromFile(m_device.get(), L"Assets\\Blank.png", nullptr, blank_texture.GetAddressOf());
+			hr = DirectX::CreateWICTextureFromFile(m_device.get(), L"Assets\\space_origin_diffuse.png", nullptr, space_origin_texture.GetAddressOf());
+
 
         }
 
@@ -645,8 +663,9 @@ namespace {
             m_deviceContext->OMSetRenderTargets((UINT)std::size(renderTargets), renderTargets, depthStencilView.get());
 
             CubeShader::ColorBuffer colorCBuffer;
-            colorCBuffer.Color = DirectX::XMFLOAT4(0.8f, 0.0f, 0.0f, 1.0f);
-            CubeShader::LightPosBuffer lightPosCBuffer;
+            //colorCBuffer.Color = DirectX::XMFLOAT4(0.8f, 0.0f, 0.0f, 1.0f);
+			colorCBuffer.Color = DirectX::XMFLOAT4(0.8f, 0.1f, 0.1f, 1.0f);
+			CubeShader::LightPosBuffer lightPosCBuffer;
             lightPosCBuffer.lightPos = DirectX::XMFLOAT4(light.PoseInAppSpace.position.x, light.PoseInAppSpace.position.y, light.PoseInAppSpace.position.z, 1.0f);
 
 
@@ -680,6 +699,7 @@ namespace {
             m_deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
             m_deviceContext->IASetInputLayout(m_CubeInputLayout.get());
             m_deviceContext->PSSetShaderResources(0, 1, blank_texture.GetAddressOf());
+			//m_deviceContext->PSSetShaderResources(0, 1, space_origin_texture.GetAddressOf());
 
             // Render each cube
             for (const sample::Cube* cube : cubes) {
@@ -768,7 +788,7 @@ namespace {
         Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> font_texture;
         Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> cube_texture;
         Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> blank_texture;
-
+        Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> space_origin_texture;
     };
 } // namespace
 

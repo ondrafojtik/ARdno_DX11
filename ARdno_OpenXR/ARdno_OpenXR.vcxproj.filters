@@ -79,6 +79,9 @@
     <ClInclude Include="DxUtility.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="arrow.h" />
+    <ClInclude Include="coord_space_model.h" />
+    <ClInclude Include="new_liver.h" />
+    <ClInclude Include="cancer_mesh.h" />
   </ItemGroup>
   <ItemGroup>
     <AppxManifest Include="Package.appxmanifest" />
@@ -246,6 +249,12 @@
       <Filter>Assets</Filter>
     </Image>
     <Image Include="Assets\bojack.PNG">
+      <Filter>Assets</Filter>
+    </Image>
+    <Image Include="bitmap1.bmp">
+      <Filter>Assets</Filter>
+    </Image>
+    <Image Include="Assets\space_origin_diffuse.png">
       <Filter>Assets</Filter>
     </Image>
   </ItemGroup>
