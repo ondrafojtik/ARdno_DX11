@@ -206,8 +206,8 @@ namespace {
 
             // D3D11 extension is required for this sample, so check if it's supported.
             CHECK(EnableExtensionIfSupported(XR_KHR_D3D11_ENABLE_EXTENSION_NAME));
-            CHECK(EnableExtensionIfSupported(XR_MSFT_SCENE_UNDERSTANDING_PREVIEW2_EXTENSION_NAME));
-            CHECK(EnableExtensionIfSupported(XR_MSFT_SCENE_UNDERSTANDING_SERIALIZATION_PREVIEW_EXTENSION_NAME));
+            //CHECK(EnableExtensionIfSupported(XR_MSFT_SCENE_UNDERSTANDING_PREVIEW2_EXTENSION_NAME));
+            //CHECK(EnableExtensionIfSupported(XR_MSFT_SCENE_UNDERSTANDING_SERIALIZATION_PREVIEW_EXTENSION_NAME));
 #if UWP
             // Require XR_EXT_win32_appcontainer_compatible extension when building in UWP context.
             CHECK(EnableExtensionIfSupported(XR_EXT_WIN32_APPCONTAINER_COMPATIBLE_EXTENSION_NAME));

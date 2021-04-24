@@ -22,12 +22,21 @@
 #include <wincodec.h>
 #include <WICTextureLoader.h>
 
+
 #include <iostream>
 #include <fstream>
 
 #include "liver.h"
 #include "arrow.h"
 #include "coord_space_model.h"
+
+#include "Bly7/OBJ_Loader.h"
+
+#include "winrt/windows.Storage.h"
+#include "winrt/windows.Foundation.h"
+#include "winrt/windows.Foundation.Collections.h"
+
+#include <filesystem>
 
 // new ones
 //#include "new_liver.h"
@@ -406,6 +415,85 @@ namespace {
 
     } // namespace QuadShader
 
+    struct Model
+    {
+        winrt::com_ptr<ID3D11Device> m_device;
+        winrt::com_ptr<ID3D11DeviceContext> m_deviceContext;
+
+        winrt::com_ptr<ID3D11Buffer> m_vertexBuffer;
+        winrt::com_ptr<ID3D11Buffer> m_indexBuffer;
+
+        void init(std::string path)
+        {
+            load_model(path);
+            create_buffers();
+        }
+
+        void bind()
+        {
+            const UINT strides_cube[] = { sizeof(CubeShader::Vertex) };
+            ID3D11Buffer* vb_cube[] = { m_vertexBuffer.get() };
+            const UINT offsets[] = { 0 };
+            m_deviceContext->IASetVertexBuffers(0, (UINT)std::size({ m_vertexBuffer.get() }), vb_cube, strides_cube, offsets);
+            m_deviceContext->IASetIndexBuffer(m_indexBuffer.get(), DXGI_FORMAT_R16_UINT, 0);
+
+        }
+
+
+    private:
+        void load_model(std::string path)
+        {
+            objl::Loader loader;
+            loader.LoadFile(path);
+        }
+
+        void create_buffers()
+        {
+            // creating vb
+            const D3D11_SUBRESOURCE_DATA vertexBufferData{ sample::arrow::vb };
+            const CD3D11_BUFFER_DESC vertexBufferDesc(sizeof(sample::arrow::vb), D3D11_BIND_VERTEX_BUFFER);
+            CHECK_HRCMD(m_device->CreateBuffer(&vertexBufferDesc, &vertexBufferData, m_vertexBuffer.put()));
+
+            // creating ib
+            const D3D11_SUBRESOURCE_DATA indexBufferData{ sample::arrow::ib };
+            const CD3D11_BUFFER_DESC indexBufferDesc(sizeof(sample::arrow::ib), D3D11_BIND_INDEX_BUFFER);
+            CHECK_HRCMD(m_device->CreateBuffer(&indexBufferDesc, &indexBufferData, m_indexBuffer.put()));
+        }
+
+    };
+
+    struct objLoader
+    {
+        std::vector<std::string> paths;
+        std::vector<Model*> models;
+
+        void init()
+        {
+			using namespace winrt;
+			using namespace winrt::Windows::Foundation;
+			using namespace winrt::Windows::Storage;
+
+            // acces the dir
+			StorageFolder storage = winrt::Windows::Storage::KnownFolders::GetFolderForUserAsync(nullptr, winrt::Windows::Storage::KnownFolderId::Objects3D).get();
+            
+            // get list of files
+            std::vector<std::string> paths;
+            auto files = storage.GetFilesAsync().get();
+            for (auto file : files) 
+            {
+                std::string path_ = winrt::to_string(file.Path());
+                paths.push_back(path_);
+            }
+            // loading .obj stuff
+            
+            for (std::string path : paths)
+            {
+                ;
+            }
+
+
+        }
+    };
 
     struct CubeGraphics : sample::IGraphicsPluginD3D11 {
         ID3D11Device* InitializeDevice(LUID adapterLuid, const std::vector<D3D_FEATURE_LEVEL>& featureLevels) override {
@@ -473,6 +561,13 @@ namespace {
             CHECK_HRCMD(m_device->CreateBuffer(&lightPosConstantBufferDesc, nullptr, m_lightPosCBuffer.put()));
 
 
+            objLoader loader{};
+            loader.init();
+
+            model->m_device = m_device;
+            model->m_deviceContext = m_deviceContext;
+            model->init("c:\\ardno\\models\\arrow.obj");
+
             // cube
             //{
             //    const D3D11_SUBRESOURCE_DATA vertexBufferData{CubeShader::c_cubeVertices};
@@ -484,16 +579,16 @@ namespace {
             //    CHECK_HRCMD(m_device->CreateBuffer(&indexBufferDesc, &indexBufferData, m_cubeIndexBuffer.put()));
             //}
             // arrow
-            {
-                const D3D11_SUBRESOURCE_DATA vertexBufferData{ sample::arrow::vb };
-                const CD3D11_BUFFER_DESC vertexBufferDesc(sizeof(sample::arrow::vb), D3D11_BIND_VERTEX_BUFFER);
-                CHECK_HRCMD(m_device->CreateBuffer(&vertexBufferDesc, &vertexBufferData, m_cubeVertexBuffer.put()));
-            
-                const D3D11_SUBRESOURCE_DATA indexBufferData{ sample::arrow::ib };
-                const CD3D11_BUFFER_DESC indexBufferDesc(sizeof(sample::arrow::ib), D3D11_BIND_INDEX_BUFFER);
-                CHECK_HRCMD(m_device->CreateBuffer(&indexBufferDesc, &indexBufferData, m_cubeIndexBuffer.put()));
-            
-			}
+            //{
+            //    const D3D11_SUBRESOURCE_DATA vertexBufferData{ sample::arrow::vb };
+            //    const CD3D11_BUFFER_DESC vertexBufferDesc(sizeof(sample::arrow::vb), D3D11_BIND_VERTEX_BUFFER);
+            //    CHECK_HRCMD(m_device->CreateBuffer(&vertexBufferDesc, &vertexBufferData, m_cubeVertexBuffer.put()));
+            //
+            //    const D3D11_SUBRESOURCE_DATA indexBufferData{ sample::arrow::ib };
+            //    const CD3D11_BUFFER_DESC indexBufferDesc(sizeof(sample::arrow::ib), D3D11_BIND_INDEX_BUFFER);
+            //    CHECK_HRCMD(m_device->CreateBuffer(&indexBufferDesc, &indexBufferData, m_cubeIndexBuffer.put()));
+            //
+			//}
             // coord space model
 			//{
 			//	const D3D11_SUBRESOURCE_DATA vertexBufferData{ sample::coord_space_model::vb };
@@ -691,11 +786,13 @@ namespace {
             m_deviceContext->VSSetShader(m_CubeVertexShader.get(), nullptr, 0);
             m_deviceContext->PSSetShader(m_CubePixelShader.get(), nullptr, 0);
 
-            const UINT strides_cube[] = { sizeof(CubeShader::Vertex) };
-            ID3D11Buffer* vb_cube[] = { m_cubeVertexBuffer.get() };
-            const UINT offsets[] = { 0 };
-            m_deviceContext->IASetVertexBuffers(0, (UINT)std::size({ m_cubeVertexBuffer.get() }), vb_cube, strides_cube, offsets);
-            m_deviceContext->IASetIndexBuffer(m_cubeIndexBuffer.get(), DXGI_FORMAT_R16_UINT, 0);
+            //const UINT strides_cube[] = { sizeof(CubeShader::Vertex) };
+            //ID3D11Buffer* vb_cube[] = { m_cubeVertexBuffer.get() };
+            //const UINT offsets[] = { 0 };
+            //m_deviceContext->IASetVertexBuffers(0, (UINT)std::size({ m_cubeVertexBuffer.get() }), vb_cube, strides_cube, offsets);
+            //m_deviceContext->IASetIndexBuffer(m_cubeIndexBuffer.get(), DXGI_FORMAT_R16_UINT, 0);
+            model->bind();
+            
             m_deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
             m_deviceContext->IASetInputLayout(m_CubeInputLayout.get());
             m_deviceContext->PSSetShaderResources(0, 1, blank_texture.GetAddressOf());
@@ -719,6 +816,7 @@ namespace {
             m_deviceContext->PSSetShader(m_QuadPixelShader.get(), nullptr, 0);
             const UINT strides_quad[] = { sizeof(CubeShader::Vertex) };
             ID3D11Buffer* vb_quad[] = { m_quadVertexBuffer.get() };
+            const UINT offsets[] = { 0 };
             m_deviceContext->IASetVertexBuffers(0, (UINT)std::size({ m_quadVertexBuffer.get() }), vb_quad, strides_quad, offsets);
             m_deviceContext->IASetIndexBuffer(m_quadIndexBuffer.get(), DXGI_FORMAT_R16_UINT, 0);
             m_deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
@@ -778,8 +876,8 @@ namespace {
         winrt::com_ptr<ID3D11Buffer> m_viewProjectionCBuffer;
         winrt::com_ptr<ID3D11Buffer> m_colorCBuffer;
         winrt::com_ptr<ID3D11Buffer> m_lightPosCBuffer;
-        winrt::com_ptr<ID3D11Buffer> m_cubeVertexBuffer;
-        winrt::com_ptr<ID3D11Buffer> m_cubeIndexBuffer;
+        //winrt::com_ptr<ID3D11Buffer> m_cubeVertexBuffer;
+        //winrt::com_ptr<ID3D11Buffer> m_cubeIndexBuffer;
         winrt::com_ptr<ID3D11Buffer> m_quadVertexBuffer;
         winrt::com_ptr<ID3D11Buffer> m_quadIndexBuffer;
         winrt::com_ptr<ID3D11DepthStencilState> m_reversedZDepthNoStencilTest;
@@ -789,6 +887,10 @@ namespace {
         Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> cube_texture;
         Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> blank_texture;
         Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> space_origin_texture;
+
+        // test 
+        Model* model = new Model();
+
     };
 } // namespace
 
