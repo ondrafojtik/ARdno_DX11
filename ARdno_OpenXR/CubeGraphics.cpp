@@ -36,6 +36,11 @@
 #include "winrt/windows.Foundation.h"
 #include "winrt/windows.Foundation.Collections.h"
 
+#include <experimental/resumable>
+#include <experimental/coroutine>
+#include <ppltasks.h>
+#include <pplawait.h>
+
 #include <filesystem>
 
 // new ones
@@ -473,24 +478,64 @@ namespace {
 			using namespace winrt::Windows::Foundation;
 			using namespace winrt::Windows::Storage;
 
-            // acces the dir
-			StorageFolder storage = winrt::Windows::Storage::KnownFolders::GetFolderForUserAsync(nullptr, winrt::Windows::Storage::KnownFolderId::Objects3D).get();
-            
-            // get list of files
-            std::vector<std::string> paths;
-            auto files = storage.GetFilesAsync().get();
-            for (auto file : files) 
-            {
-                std::string path_ = winrt::to_string(file.Path());
-                paths.push_back(path_);
-            }
-            // loading .obj stuff
-            
-            for (std::string path : paths)
-            {
-                ;
-            }
+            // reading / writing into file (as text)
+			//StorageFolder storage = winrt::Windows::Storage::KnownFolders::GetFolderForUserAsync(nullptr, winrt::Windows::Storage::KnownFolderId::Objects3D).get();
+            //std::string name = winrt::to_string(storage.Path());
+            //auto sampleFile = storage.GetFileAsync(L"sipka__.obj").get();
+            //std::string path = winrt::to_string(sampleFile.Path());
+			//hstring file = FileIO::ReadTextAsync(sampleFile, Streams::UnicodeEncoding::Utf8).get();
+            //
+            //objl::Loader loader;
+            //loader.LoadFile(path);
 
+            // using streams
+            
+            //StorageFolder storage = winrt::Windows::Storage::KnownFolders::GetFolderForUserAsync(nullptr, winrt::Windows::Storage::KnownFolderId::Objects3D).get();
+            //auto sampleFile = storage.GetFileAsync(L"sipka__.obj").get();
+            //Streams::IRandomAccessStream readStream = sampleFile.OpenAsync(FileAccessMode::Read).get();
+            
+
+
+ 			//StorageFolder storage = winrt::Windows::Storage::KnownFolders::GetFolderForUserAsync(nullptr, winrt::Windows::Storage::KnownFolderId::Objects3D).get();
+            
+
+			StorageFolder picturesFolder = KnownFolders::GetFolderForUserAsync(nullptr, KnownFolderId::PicturesLibrary).get();
+			Collections::IVectorView<StorageFolder> folderList = picturesFolder.GetFoldersAsync().get();
+
+            // saved 
+            std::vector<std::string> obj_files_;
+            std::string data_file;
+
+			for (StorageFolder& folder : folderList)
+			{
+                std::string name = winrt::to_string(folder.DisplayName());
+
+
+                // get the world data 
+                if (name == "ARdno_data")
+                {
+                    StorageFolder dataFolder = folder;
+                    Collections::IVectorView<StorageFile> data_files = dataFolder.GetFilesAsync().get();
+                    for (StorageFile const& file : data_files)
+                    {
+                        std::string name = winrt::to_string(file.Name());
+                        data_file = name;
+                    }
+                }
+                // get the objs
+                if (name == "ARdno_obj")
+                {
+					StorageFolder objFolder = folder;
+					Collections::IVectorView<StorageFile> obj_files = objFolder.GetFilesAsync().get();
+					for (StorageFile const& file : obj_files)
+					{
+						std::string name = winrt::to_string(file.Name());
+                        obj_files_.push_back(name);
+					}
+                }
+                
+
+			}
 
         }
     };

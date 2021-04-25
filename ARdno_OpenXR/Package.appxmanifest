@@ -47,5 +47,7 @@
   <Capabilities>
     <Capability Name="internetClient" />
     <uap:Capability Name="objects3D"/>
+    <uap:Capability Name="broadFileSystemAccess" />
+    <uap:Capability Name="picturesLibrary"/>
   </Capabilities>
 </Package>
