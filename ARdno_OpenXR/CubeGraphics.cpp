@@ -205,14 +205,16 @@ namespace {
 
             float4 MainPS(VSOutput input) : SV_TARGET {
                 float4 albedo = objTexture.Sample(objSamplerState, input.texCoord) * float4(input.Color.x, input.Color.y, input.Color.z, 1.0f);
-                float ambientStrength = 0.1f;
+                float ambientStrength = 0.3f;
                 float3 norm = normalize(input.normal);
                 float3 lightDir = normalize(input.lightPos - input.Pos.xyz);
                 float diffuseStrength = max(dot(norm, lightDir), 0.0f);
                 float3 diffuse = mul(diffuseStrength, float3(albedo.x, albedo.y, albedo.z));
-                float3 ambient = albedo.xyz * 0.1f;
+                float3 ambient = albedo.xyz * ambientStrength;
+                float3 result = mul((diffuseStrength + ambientStrength), albedo.xyz);
+                float4 _result = float4(result, 1.0f);
                 float4 _color = float4(ambient, 1.0f) + float4(diffuse, 1.0f);
-                return _color;
+                return _result;
             }
             )_";
 
@@ -428,10 +430,13 @@ namespace {
         winrt::com_ptr<ID3D11Buffer> m_vertexBuffer;
         winrt::com_ptr<ID3D11Buffer> m_indexBuffer;
 
-        void init(std::string path)
+        std::vector<CubeShader::Vertex> vb;
+        std::vector<unsigned short> ib;
+
+        Model(std::vector<CubeShader::Vertex> vb, std::vector<unsigned short> ib)
         {
-            load_model(path);
-            create_buffers();
+            this->vb = vb;
+            this->ib = ib;
         }
 
         void bind()
@@ -444,26 +449,25 @@ namespace {
 
         }
 
+		void create_buffers()
+		{
 
-    private:
-        void load_model(std::string path)
-        {
-            objl::Loader loader;
-            loader.LoadFile(path);
-        }
+			// creating vb
+			D3D11_SUBRESOURCE_DATA vertexBufferData{ 0 };
+            vertexBufferData.pSysMem = &vb[0];
+            CD3D11_BUFFER_DESC vertexBufferDesc(sizeof(CubeShader::Vertex) * vb.size(), D3D11_BIND_VERTEX_BUFFER);
+			CHECK_HRCMD(m_device->CreateBuffer(&vertexBufferDesc, &vertexBufferData, m_vertexBuffer.put()));
 
-        void create_buffers()
-        {
-            // creating vb
-            const D3D11_SUBRESOURCE_DATA vertexBufferData{ sample::arrow::vb };
-            const CD3D11_BUFFER_DESC vertexBufferDesc(sizeof(sample::arrow::vb), D3D11_BIND_VERTEX_BUFFER);
-            CHECK_HRCMD(m_device->CreateBuffer(&vertexBufferDesc, &vertexBufferData, m_vertexBuffer.put()));
+			// creating ib
+			D3D11_SUBRESOURCE_DATA indexBufferData{ 0 };
+            indexBufferData.pSysMem = &ib[0];
+            CD3D11_BUFFER_DESC indexBufferDesc(sizeof(unsigned short) * ib.size(), D3D11_BIND_INDEX_BUFFER);
+			CHECK_HRCMD(m_device->CreateBuffer(&indexBufferDesc, &indexBufferData, m_indexBuffer.put()));
+		}
 
-            // creating ib
-            const D3D11_SUBRESOURCE_DATA indexBufferData{ sample::arrow::ib };
-            const CD3D11_BUFFER_DESC indexBufferDesc(sizeof(sample::arrow::ib), D3D11_BIND_INDEX_BUFFER);
-            CHECK_HRCMD(m_device->CreateBuffer(&indexBufferDesc, &indexBufferData, m_indexBuffer.put()));
-        }
+	private:
+
+
 
     };
 
@@ -531,11 +535,83 @@ namespace {
 					{
 						std::string name = winrt::to_string(file.Name());
                         obj_files_.push_back(name);
+
+                        // read text of file
+                        hstring text = FileIO::ReadTextAsync(file, Streams::UnicodeEncoding::Utf8).get();
+                        std::string _text = winrt::to_string(text);
+
+                        // parser
+						{
+							std::vector<std::string> _vertices;
+							std::vector<std::string> _indices;
+
+							std::string word = "";
+
+							bool after_ast = false;
+							for (char c : _text)
+							{
+								if (c == '*')
+									after_ast = 1;
+
+								if (c == ',')
+								{
+									if (after_ast)
+										_indices.push_back(word);
+									else
+										_vertices.push_back(word);
+
+									word = "";
+								}
+								else
+									word += c;
+							}
+
+							std::vector<CubeShader::Vertex> vertices;
+							std::vector<unsigned short> indices;
+
+							for (int i = 0; i < _vertices.size() / 8; i++)
+							{
+								CubeShader::Vertex v{};
+								v.Position.x = std::stof(_vertices[(i * 8) + 0]);
+								v.Position.y = std::stof(_vertices[(i * 8) + 1]);
+								v.Position.z = std::stof(_vertices[(i * 8) + 2]);
+
+								v.Color.x = std::stof(_vertices[(i * 8) + 3]);
+								v.Color.y = std::stof(_vertices[(i * 8) + 4]);
+								v.Color.z = std::stof(_vertices[(i * 8) + 5]);
+
+								v.TexCoords.x = std::stof(_vertices[(i * 8) + 6]);
+								v.TexCoords.y = std::stof(_vertices[(i * 8) + 7]);
+                                
+								vertices.push_back(v);
+							}
+
+							for (std::string ind : _indices)
+							{
+								unsigned int number = (unsigned short)std::strtoul(ind.c_str(), NULL, 0);
+								indices.push_back(number);
+							}
+
+                            Model* m = new Model(vertices, indices);
+                            models.push_back(m);
+
+
+						}
+
+
+
 					}
                 }
                 
 
 			}
+
+            // parse the IB and VB
+
+
+
+            // create models
+
 
         }
     };
@@ -606,12 +682,15 @@ namespace {
             CHECK_HRCMD(m_device->CreateBuffer(&lightPosConstantBufferDesc, nullptr, m_lightPosCBuffer.put()));
 
 
-            objLoader loader{};
+            
             loader.init();
 
-            model->m_device = m_device;
-            model->m_deviceContext = m_deviceContext;
-            model->init("c:\\ardno\\models\\arrow.obj");
+            for (Model* model_ : loader.models)
+            {
+                model_->m_device = m_device;
+                model_->m_deviceContext = m_deviceContext;
+                model_->create_buffers();
+            }
 
             // cube
             //{
@@ -804,8 +883,9 @@ namespace {
 
             CubeShader::ColorBuffer colorCBuffer;
             //colorCBuffer.Color = DirectX::XMFLOAT4(0.8f, 0.0f, 0.0f, 1.0f);
-			colorCBuffer.Color = DirectX::XMFLOAT4(0.8f, 0.1f, 0.1f, 1.0f);
-			CubeShader::LightPosBuffer lightPosCBuffer;
+			colorCBuffer.Color = DirectX::XMFLOAT4(0.85f, 0.2f, 0.1f, 1.0f);
+			
+            CubeShader::LightPosBuffer lightPosCBuffer;
             lightPosCBuffer.lightPos = DirectX::XMFLOAT4(light.PoseInAppSpace.position.x, light.PoseInAppSpace.position.y, light.PoseInAppSpace.position.z, 1.0f);
 
 
@@ -836,8 +916,13 @@ namespace {
             //const UINT offsets[] = { 0 };
             //m_deviceContext->IASetVertexBuffers(0, (UINT)std::size({ m_cubeVertexBuffer.get() }), vb_cube, strides_cube, offsets);
             //m_deviceContext->IASetIndexBuffer(m_cubeIndexBuffer.get(), DXGI_FORMAT_R16_UINT, 0);
-            model->bind();
+            //model->bind();
+
+            Model* currModel = loader.models[0];
+            currModel->bind();
             
+
+
             m_deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
             m_deviceContext->IASetInputLayout(m_CubeInputLayout.get());
             m_deviceContext->PSSetShaderResources(0, 1, blank_texture.GetAddressOf());
@@ -854,7 +939,7 @@ namespace {
                 DirectX::XMStoreFloat4x4(&model.Model, DirectX::XMMatrixTranspose(DirectX::XMMatrixRotationRollPitchYaw(DirectX::XM_PIDIV2, DirectX::XM_PIDIV2, 0) * scaleMatrix * xr::math::LoadXrPose(cube->PoseInAppSpace)));
                 m_deviceContext->UpdateSubresource(m_modelCBuffer.get(), 0, nullptr, &model, 0, 0);
 
-                m_deviceContext->DrawIndexedInstanced((UINT)std::size(sample::arrow::ib), viewInstanceCount, 0, 0, 0);
+                m_deviceContext->DrawIndexedInstanced((UINT)currModel->ib.size(), viewInstanceCount, 0, 0, 0);
             }
 
             m_deviceContext->VSSetShader(m_QuadVertexShader.get(), nullptr, 0);
@@ -934,7 +1019,7 @@ namespace {
         Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> space_origin_texture;
 
         // test 
-        Model* model = new Model();
+        objLoader loader{};
 
     };
 } // namespace
