@@ -37,7 +37,7 @@
 #include <ppltasks.h>
 #include <pplawait.h>
 
-#define VERSION_D 1
+#define VERSION_D 0
 
 namespace util
 {

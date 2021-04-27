@@ -503,7 +503,7 @@ namespace {
 
 
  			//StorageFolder storage = winrt::Windows::Storage::KnownFolders::GetFolderForUserAsync(nullptr, winrt::Windows::Storage::KnownFolderId::Objects3D).get();
-            
+            models.push_back(new Model());
 
 			StorageFolder picturesFolder = KnownFolders::GetFolderForUserAsync(nullptr, KnownFolderId::PicturesLibrary).get();
 			Collections::IVectorView<StorageFolder> folderList = picturesFolder.GetFoldersAsync().get();
@@ -612,7 +612,10 @@ namespace {
 							}
 						}
 
-                        models.push_back(model);
+                        if (name == "space_origin2.txt")
+                            models[0] = model;
+                        else
+                            models.push_back(model);
 
 					}
                 }
@@ -945,8 +948,9 @@ namespace {
                     id_hologram_to_render += 1;
             }
                 
-            Model* currModel = loader.models[4];
-            
+            //Model* currModel = loader.models[4];
+			Model* currModel = loader.models[0];
+
             m_deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
             m_deviceContext->IASetInputLayout(m_CubeInputLayout.get());
             m_deviceContext->PSSetShaderResources(0, 1, space_origin_texture.GetAddressOf());

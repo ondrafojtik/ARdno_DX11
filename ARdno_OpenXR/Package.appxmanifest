@@ -7,7 +7,7 @@
   IgnorableNamespaces="uap mp">
 
   <Identity
-    Name="6ced5e23-4d0b-4988-8cc6-0c35d8d3d1cd"
+    Name="6ced5e23-4d0b-4988-8cc6-0c35d8d3d1ce"
     Publisher="CN=Ondra-PC"
     Version="1.0.0.0" />
 
@@ -32,7 +32,7 @@
       Executable="$targetnametoken$.exe"
       EntryPoint="ARdno_OpenXR.App">
       <uap:VisualElements
-        DisplayName="ARdno_OpenXR"
+        DisplayName="ARdno_E"
         Square150x150Logo="Assets\Square150x150Logo.png"
         Square44x44Logo="Assets\Square44x44Logo.png"
         Description="ARdno_OpenXR"
