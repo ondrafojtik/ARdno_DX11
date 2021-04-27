@@ -67,7 +67,9 @@ namespace sample {
                                 ID3D11Texture2D* depthTexture,
                                 const std::vector<const sample::Cube*>& cubes,
                                 const std::vector<const sample::Cube*>& quads,
-                                const sample::Cube& light) = 0;
+                                const sample::Cube& light,
+			                    const std::vector<const sample::Cube*>& space_origins,
+                                bool should_render_next_hologram) = 0;
 
       };
 

@@ -58,6 +58,8 @@ IDB_PNG3                PNG                     "Assets\\bojack.PNG"
 
 IDB_PNG4                PNG                     "Assets\\space_origin_diffuse.png"
 
+IDB_PNG5                PNG                     "Assets\\space_origin2_final.png"
+
 #endif    // English (United States) resources
 /////////////////////////////////////////////////////////////////////////////
 

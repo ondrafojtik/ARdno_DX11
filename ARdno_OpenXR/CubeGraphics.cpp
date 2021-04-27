@@ -834,7 +834,7 @@ namespace {
             hr = DirectX::CreateWICTextureFromFile(m_device.get(), L"Assets\\font_sheet_5.png", nullptr, font_texture.GetAddressOf());
             hr = DirectX::CreateWICTextureFromFile(m_device.get(), L"Assets\\StoreLogo.png", nullptr, cube_texture.GetAddressOf());
             hr = DirectX::CreateWICTextureFromFile(m_device.get(), L"Assets\\Blank.png", nullptr, blank_texture.GetAddressOf());
-			hr = DirectX::CreateWICTextureFromFile(m_device.get(), L"Assets\\space_origin_diffuse.png", nullptr, space_origin_texture.GetAddressOf());
+			hr = DirectX::CreateWICTextureFromFile(m_device.get(), L"Assets\\space_origin2_final.png", nullptr, space_origin_texture.GetAddressOf());
 
 
         }
@@ -868,7 +868,9 @@ namespace {
             ID3D11Texture2D* depthTexture,
             const std::vector<const sample::Cube*>& cubes,
             const std::vector<const sample::Cube*>& quads,
-            const sample::Cube& light) override {
+            const sample::Cube& light,
+            const std::vector<const sample::Cube*>& space_origins,
+            bool should_render_next_hologram) override {
             const uint32_t viewInstanceCount = (uint32_t)viewProjections.size();
             CHECK_MSG(viewInstanceCount <= CubeShader::MaxViewInstance,
                 "Sample shader supports 2 or fewer view instances. Adjust shader to accommodate more.")
@@ -935,12 +937,44 @@ namespace {
             //m_deviceContext->IASetIndexBuffer(m_cubeIndexBuffer.get(), DXGI_FORMAT_R16_UINT, 0);
             //model->bind();
 
-            Model* currModel = loader.models[1];
+            if (should_render_next_hologram == true)
+            {
+                if (id_hologram_to_render == loader.models.size() - 1)
+                    id_hologram_to_render = 0;
+                else
+                    id_hologram_to_render += 1;
+            }
+                
+            Model* currModel = loader.models[4];
             
             m_deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
             m_deviceContext->IASetInputLayout(m_CubeInputLayout.get());
-            m_deviceContext->PSSetShaderResources(0, 1, blank_texture.GetAddressOf());
+            m_deviceContext->PSSetShaderResources(0, 1, space_origin_texture.GetAddressOf());
 			//m_deviceContext->PSSetShaderResources(0, 1, space_origin_texture.GetAddressOf());
+
+			// Render each space origin (meaninig right hand and current origin)
+			for (const sample::Cube* cube : space_origins) {
+				// Compute and update the model transform for each cube, transpose for shader usage.
+
+				for (Mesh* m : currModel->meshes)
+				{
+					m->bind();
+					CubeShader::ModelConstantBuffer model;
+					//const DirectX::XMMATRIX scaleMatrix = DirectX::XMMatrixScaling(cube->Scale.x, cube->Scale.y, cube->Scale.z);
+					const DirectX::XMMATRIX scaleMatrix = DirectX::XMMatrixScaling(0.4f, 0.4f, 0.4f);
+					DirectX::XMStoreFloat4x4(&model.Model, DirectX::XMMatrixTranspose(scaleMatrix * xr::math::LoadXrPose(cube->PoseInAppSpace)));
+					m_deviceContext->UpdateSubresource(m_modelCBuffer.get(), 0, nullptr, &model, 0, 0);
+					DirectX::XMStoreFloat4x4(&model.Model, DirectX::XMMatrixTranspose(DirectX::XMMatrixRotationRollPitchYaw(DirectX::XM_PIDIV2, DirectX::XM_PIDIV2, 0) * scaleMatrix * xr::math::LoadXrPose(cube->PoseInAppSpace)));
+					m_deviceContext->UpdateSubresource(m_modelCBuffer.get(), 0, nullptr, &model, 0, 0);
+
+					m_deviceContext->DrawIndexedInstanced((UINT)m->ib.size(), viewInstanceCount, 0, 0, 0);
+
+				}
+
+			}
+
+            currModel = loader.models[id_hologram_to_render];
+            m_deviceContext->PSSetShaderResources(0, 1, blank_texture.GetAddressOf());
 
             // Render each cube
             for (const sample::Cube* cube : cubes) {
@@ -951,7 +985,7 @@ namespace {
                     m->bind();
 					CubeShader::ModelConstantBuffer model;
 					//const DirectX::XMMATRIX scaleMatrix = DirectX::XMMatrixScaling(cube->Scale.x, cube->Scale.y, cube->Scale.z);
-					const DirectX::XMMATRIX scaleMatrix = DirectX::XMMatrixScaling(9.2f, 0.2f, 0.2f);
+					const DirectX::XMMATRIX scaleMatrix = DirectX::XMMatrixScaling(0.2f, 0.2f, 0.2f);
 					DirectX::XMStoreFloat4x4(&model.Model, DirectX::XMMatrixTranspose(scaleMatrix * xr::math::LoadXrPose(cube->PoseInAppSpace)));
 					m_deviceContext->UpdateSubresource(m_modelCBuffer.get(), 0, nullptr, &model, 0, 0);
 					DirectX::XMStoreFloat4x4(&model.Model, DirectX::XMMatrixTranspose(DirectX::XMMatrixRotationRollPitchYaw(DirectX::XM_PIDIV2, DirectX::XM_PIDIV2, 0) * scaleMatrix * xr::math::LoadXrPose(cube->PoseInAppSpace)));
@@ -1041,6 +1075,7 @@ namespace {
 
         // test 
         objLoader loader{};
+        int32_t id_hologram_to_render = 0;
 
     };
 } // namespace

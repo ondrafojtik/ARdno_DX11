@@ -257,6 +257,9 @@
     <Image Include="Assets\space_origin_diffuse.png">
       <Filter>Assets</Filter>
     </Image>
+    <Image Include="Assets\space_origin2_final.png">
+      <Filter>Assets</Filter>
+    </Image>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="ARdno_OpenXR.rc" />

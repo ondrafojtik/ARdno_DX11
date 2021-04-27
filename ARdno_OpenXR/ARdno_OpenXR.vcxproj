@@ -279,6 +279,7 @@
     <Image Include="Assets\SmallTile.scale-150.png" />
     <Image Include="Assets\SmallTile.scale-200.png" />
     <Image Include="Assets\SmallTile.scale-400.png" />
+    <Image Include="Assets\space_origin2_final.png" />
     <Image Include="Assets\space_origin_diffuse.png" />
     <Image Include="Assets\SplashScreen.scale-100.png" />
     <Image Include="Assets\SplashScreen.scale-125.png" />

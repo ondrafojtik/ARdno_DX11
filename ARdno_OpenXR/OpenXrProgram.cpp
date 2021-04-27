@@ -28,6 +28,17 @@
 #include "XrUtility/XrSceneUnderstanding.h"
 #include "XrUtility/XrSceneUnderstanding.hpp"
 
+#include "winrt/windows.Storage.h"
+#include "winrt/windows.Foundation.h"
+#include "winrt/windows.Foundation.Collections.h"
+
+#include <experimental/resumable>
+#include <experimental/coroutine>
+#include <ppltasks.h>
+#include <pplawait.h>
+
+#define VERSION_D 1
+
 namespace util
 {
     XrVector3f convert_to_app_space(XrVector3f position, XrPosef pose)
@@ -444,6 +455,7 @@ namespace {
             }
 
             OutputDebugString(L"\nOBJECT DATA START");
+            std::string final_string__ = "";
 
             for (LocalSaveObject object : _localObjects)
             {
@@ -492,9 +504,36 @@ namespace {
                 LPCWSTR _final_string = r.c_str();
                 OutputDebugString(_final_string);
 
+                final_string__ += s;
+
             }
 
             OutputDebugString(L"\nOBJECT DATA END");
+
+			// try to write data into file
+			{
+				using namespace winrt;
+				using namespace winrt::Windows::Foundation;
+				using namespace winrt::Windows::Storage;
+
+				StorageFolder picturesFolder = winrt::Windows::Storage::KnownFolders::GetFolderForUserAsync(nullptr, winrt::Windows::Storage::KnownFolderId::PicturesLibrary).get();
+				Collections::IVectorView<StorageFolder> folderList = picturesFolder.GetFoldersAsync().get();
+				for (StorageFolder& folder : folderList)
+				{
+					std::string name = winrt::to_string(folder.DisplayName());
+
+					if (name == "ARdno_data")
+					{
+						StorageFolder dataFolder = folder;
+						StorageFile file_ = dataFolder.GetFileAsync(L"application_data.txt").get();
+						hstring s_ = winrt::to_hstring(final_string__);
+						FileIO::WriteTextAsync(file_, s_);
+						//hstring file_content_ = FileIO::ReadTextAsync(file_, Streams::UnicodeEncoding::Utf8).get();
+						//d = winrt::to_string(file_content_);
+					}
+				}
+
+			}
 
         }
 
@@ -532,26 +571,47 @@ namespace {
         void InitializeApplication()
         {
 
-            if (m_holograms.size() > 0)
-                save_objects();
-
-            m_holograms.clear();
+            //if (m_holograms.size() > 0)
+            //    save_objects();
+            //m_holograms.clear();
 
 			//std::string d = "0.0;0.0;-1.0;0.000000;0.000000;1.000000;0.000000;0.250000;0.250000;0.250000;1;1;   "
 			//    "0.0; 0.0; 1.0;0.000000;0.000000;1.000000;0.000000;0.250000; 0.250000; 0.250000; 1; 2;         "
 			//    "1.0; 0.0; 0.0;0.000000;0.000000;1.000000;0.000000;0.250000; 0.250000; 0.250000; 1; 3;        "
 			//    "-1.0; 0.0; 0.0;0.000000;0.000000;1.000000;0.000000;0.250000; 0.250000; 0.250000; 1; 4;        ";
-            
-            std::string d =
-                "-0.038227; 0.006364; 3.006190; -0.027686; 0.995729; 0.002311; -0.088044; 0.100000; 0.100000; 0.100000; 1;TABULE;";
+#if VERSION_D
+			std::string d = "";
 
+			// for "d" version
+            // load the data
+            {
+				using namespace winrt;
+				using namespace winrt::Windows::Foundation;
+				using namespace winrt::Windows::Storage;
+				
+                StorageFolder picturesFolder = winrt::Windows::Storage::KnownFolders::GetFolderForUserAsync(nullptr, winrt::Windows::Storage::KnownFolderId::PicturesLibrary).get();
+                Collections::IVectorView<StorageFolder> folderList = picturesFolder.GetFoldersAsync().get();
+                for (StorageFolder& folder : folderList)
+                {
+                    std::string name = winrt::to_string(folder.DisplayName());
 
+					if (name == "ARdno_data")
+					{
+						StorageFolder dataFolder = folder;
+                        StorageFile file_ = dataFolder.GetFileAsync(L"application_data.txt").get();
+                        hstring file_content_ = FileIO::ReadTextAsync(file_, Streams::UnicodeEncoding::Utf8).get();
+                        d = winrt::to_string(file_content_);
+                    }
+                }
+
+            }
+            m_holograms.clear();
             load_objects(d);
-
-            //create_hologram(0.25f, { 0,  0, -1 }, { 0, 0, 0 }, ObjectType::Quad, "TEST");
-            //create_hologram(0.25f, { 0,  0,  1 }, { 0, 0, 0 }, ObjectType::Cube);
-            //create_hologram(0.25f, { 1,  0,  0 }, { 0, 0, 0 }, ObjectType::Cube);
-            //create_hologram(0.25f, { -1,  0,  0 }, { 0, 0, 0 }, ObjectType::Cube);
+#else
+            // for the "e" version
+            // saving is done when placing holograms
+            m_holograms.clear();
+#endif
 
         }
 
@@ -863,12 +923,18 @@ namespace {
                     else {
                         if (side == LeftSide)
                         {
+
+#if VERSION_D
+                            // for the "d" version
+                            // toggle which hologram to display
+                            should_render_next_hologram = true;
+#else
+                            // for the "e" version
                             std::vector<std::string> text_buffer;
                             text_buffer.push_back("SAMPLE");
                             text_buffer.push_back("OBRAZ");
                             text_buffer.push_back("KYTKA");
 
-                            //create_hologram(0.25f, { handLocation.pose.position.x, handLocation.pose.position.y, handLocation.pose.position.z }, { handLocation.pose.orientation.x, handLocation.pose.orientation.y, handLocation.pose.orientation.z }, ObjectType::Quad, "BLANK");
                             m_holograms.push_back(CreateHologram(handLocation.pose, placementTime, ObjectType::Quad));
                             if (text_index < 3)
                                 m_holograms[m_holograms.size() - 1].Cube.text = text_buffer[text_index];
@@ -876,6 +942,8 @@ namespace {
                                 m_holograms[m_holograms.size() - 1].Cube.text = "SAMPLE TEXT";
                             text_index += 1;
 
+                            save_objects();
+#endif
                         }
                         else if (side == RightSide)
                         {
@@ -1055,6 +1123,7 @@ namespace {
 
             std::vector<const sample::Cube*> visibleCubes;
             std::vector<const sample::Cube*> visibleQuads;
+            std::vector<const sample::Cube*> visibleSpaceOrigins;
 
             auto UpdateVisibleCube = [&](sample::Cube& cube) {
                 if (cube.Space.Get() != XR_NULL_HANDLE) {
@@ -1090,7 +1159,23 @@ namespace {
                     }
                 }
             };
+			auto UpdateVisibleSpaceOrigin = [&](sample::Cube& cube) {
+				if (cube.Space.Get() != XR_NULL_HANDLE) {
+					XrSpaceLocation cubeSpaceInAppSpace{ XR_TYPE_SPACE_LOCATION };
+					CHECK_XRCMD(xrLocateSpace(cube.Space.Get(), m_appSpace.Get(), predictedDisplayTime, &cubeSpaceInAppSpace));
 
+					// Update cube's location with latest space location
+					if (xr::math::Pose::IsPoseValid(cubeSpaceInAppSpace)) {
+						if (cube.PoseInSpace.has_value()) {
+							cube.PoseInAppSpace = xr::math::Pose::Multiply(cube.PoseInSpace.value(), cubeSpaceInAppSpace.pose);
+						}
+						else {
+							cube.PoseInAppSpace = cubeSpaceInAppSpace.pose;
+						}
+						visibleSpaceOrigins.push_back(&cube);
+					}
+				}
+			};
 
             /*{
                 xr::su::SceneObserver m_sceneObserver(m_extensions, m_session.Get());
@@ -1139,9 +1224,9 @@ namespace {
 
             UpdateVisibleQuad(m_cubesInHand[LeftSide]);
             m_cubesInHand[LeftSide].text = "SAMPLE";
-            UpdateVisibleCube(m_cubesInHand[RightSide]);
+            UpdateVisibleSpaceOrigin(m_cubesInHand[RightSide]);
 
-            UpdateVisibleCube(hologram_space_origin.Cube);
+            UpdateVisibleSpaceOrigin(hologram_space_origin.Cube);
 
 
             for (auto& hologram : m_holograms) {
@@ -1212,7 +1297,11 @@ namespace {
                 depthSwapchain.Images[depthSwapchainImageIndex].texture,
                 visibleCubes,
                 visibleQuads,
-                m_light);
+                m_light,
+                visibleSpaceOrigins,
+                should_render_next_hologram);
+
+            should_render_next_hologram = false;
 
 
             XrSwapchainImageReleaseInfo releaseInfo{ XR_TYPE_SWAPCHAIN_IMAGE_RELEASE_INFO };
@@ -1281,6 +1370,8 @@ namespace {
 
         std::vector<Hologram> m_holograms;
         Hologram hologram_space_origin;
+        bool should_render_next_hologram = false;
+
         //sample::Light m_light;
         XrPosef space_origin = xr::math::Pose::Identity();
         XrPosef test = xr::math::Pose::Identity();
