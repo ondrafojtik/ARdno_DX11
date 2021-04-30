@@ -570,19 +570,9 @@ namespace {
         enum ObjectType;
         void InitializeApplication()
         {
-
-            //if (m_holograms.size() > 0)
-            //    save_objects();
-            //m_holograms.clear();
-
-			//std::string d = "0.0;0.0;-1.0;0.000000;0.000000;1.000000;0.000000;0.250000;0.250000;0.250000;1;1;   "
-			//    "0.0; 0.0; 1.0;0.000000;0.000000;1.000000;0.000000;0.250000; 0.250000; 0.250000; 1; 2;         "
-			//    "1.0; 0.0; 0.0;0.000000;0.000000;1.000000;0.000000;0.250000; 0.250000; 0.250000; 1; 3;        "
-			//    "-1.0; 0.0; 0.0;0.000000;0.000000;1.000000;0.000000;0.250000; 0.250000; 0.250000; 1; 4;        ";
 #if VERSION_D
 			std::string d = "";
 
-			// for "d" version
             // load the data
             {
 				using namespace winrt;
@@ -608,7 +598,6 @@ namespace {
             m_holograms.clear();
             load_objects(d);
 #else
-            // for the "e" version
             // saving is done when placing holograms
             m_holograms.clear();
 #endif
