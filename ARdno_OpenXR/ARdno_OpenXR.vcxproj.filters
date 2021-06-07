@@ -71,6 +71,7 @@
     <ClCompile Include="App.cpp" />
     <ClCompile Include="CubeGraphics.cpp" />
     <ClCompile Include="liver.h" />
+    <ClCompile Include="QuadShader.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ARdno_OpenXRMain.h" />
