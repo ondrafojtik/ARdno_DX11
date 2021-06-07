@@ -14,9 +14,6 @@
 //
 //*********************************************************
 
-// TODO: nasobit tim space_originem (pak bych asi mohl dostat konzistentni rotace) 
-
-
 #include "pch.h"
 #include "OpenXrProgram.h"
 #include "DxUtility.h"
@@ -41,16 +38,16 @@
 
 namespace util
 {
+    // DirectX::XMMATRIX m = DirectX::XMMatrixRotationQuaternion(xr::math::LoadXrQuaternion(pose.orientation));
+    /* XMMATRIX STRUCTURE
+    _11 _12 _13 _14
+    _21 _22 _23 _24
+    _31 _32 _33 _34
+    _41 _42 _43 _44
+    */
+
     XrVector3f convert_to_app_space(XrVector3f position, XrPosef pose)
     {
-        //DirectX::XMMATRIX m = DirectX::XMMatrixRotationQuaternion(xr::math::LoadXrQuaternion(pose.orientation));
-        /* XMMATRIX STRUCTURE
-        _11 _12 _13 _14
-        _21 _22 _23 _24
-        _31 _32 _33 _34
-        _41 _42 _43 _44
-        */
-
         XrQuaternionf q = pose.orientation;
 
         float roll = atan2(2.0 * (q.w * q.z + q.x * q.y), 1.0 - 2.0 * (q.y * q.y + q.z * q.z));
@@ -60,9 +57,9 @@ namespace util
         yaw = yaw * (-1);
 
         XrVector3f new_position_ = {
-        position.x * cos(yaw) + position.z * sin(yaw),
-        position.y,
-        position.z * cos(yaw) - position.x * sin(yaw),
+            position.x * cos(yaw) + position.z * sin(yaw),
+            position.y,
+            position.z * cos(yaw) - position.x * sin(yaw),
         };
 
         new_position_.x += pose.position.x;
@@ -81,9 +78,9 @@ namespace util
         float yaw = atan2(2.0 * (q.w * q.x + q.y * q.z), -1.0 + 2.0 * (q.x * q.x + q.y * q.y));
 
         XrVector3f old_position = {
-        position.x - pose.position.x,
-        position.y - pose.position.y,
-        position.z - pose.position.z
+            position.x - pose.position.x,
+            position.y - pose.position.y,
+            position.z - pose.position.z
         };
 
         XrVector3f final_position = {
@@ -96,39 +93,47 @@ namespace util
 
     }
 
-	XrQuaternionf orientation_save(XrQuaternionf q1, XrQuaternionf q2)
-	{
-		XrQuaternionf _final;
-		xr::math::StoreXrQuaternion(&_final, DirectX::XMQuaternionMultiply(xr::math::LoadXrQuaternion(q1), xr::math::LoadXrQuaternion(q2)));
+    XrQuaternionf orientation_save(XrQuaternionf q1, XrQuaternionf q2)
+    {
+        XrQuaternionf _final;
+        xr::math::StoreXrQuaternion(&_final, DirectX::XMQuaternionMultiply(xr::math::LoadXrQuaternion(q1), xr::math::LoadXrQuaternion(q2)));
 
-		return _final;
-	}
+        return _final;
+    }
 
-	XrQuaternionf orientation_load(XrQuaternionf q1, XrQuaternionf q2)
-	{
-		XrQuaternionf _final;
-		xr::math::StoreXrQuaternion(&_final, DirectX::XMQuaternionMultiply(xr::math::LoadXrQuaternion(q1), DirectX::XMQuaternionInverse(xr::math::LoadXrQuaternion(q2))));
+    XrQuaternionf orientation_load(XrQuaternionf q1, XrQuaternionf q2)
+    {
+        XrQuaternionf _final;
+        xr::math::StoreXrQuaternion(&_final, DirectX::XMQuaternionMultiply(xr::math::LoadXrQuaternion(q1), DirectX::XMQuaternionInverse(xr::math::LoadXrQuaternion(q2))));
 
-		return _final;
-	}
+        return _final;
+    }
 
     XrQuaternionf q_multiply(XrQuaternionf q1, XrQuaternionf q2)
     {
-		XrQuaternionf _final;
-		xr::math::StoreXrQuaternion(&_final, DirectX::XMQuaternionMultiply(xr::math::LoadXrQuaternion(q1), xr::math::LoadXrQuaternion(q2)));
+        XrQuaternionf _final;
+        xr::math::StoreXrQuaternion(&_final, DirectX::XMQuaternionMultiply(xr::math::LoadXrQuaternion(q1), xr::math::LoadXrQuaternion(q2)));
 
-		return _final;
+        return _final;
     }
 
     XrQuaternionf q_divide(XrQuaternionf q1, XrQuaternionf q2)
     {
-		XrQuaternionf _final;
-		xr::math::StoreXrQuaternion(&_final, DirectX::XMQuaternionMultiply(xr::math::LoadXrQuaternion(q1), DirectX::XMQuaternionInverse(xr::math::LoadXrQuaternion(q2))));
+        XrQuaternionf _final;
+        xr::math::StoreXrQuaternion(&_final, DirectX::XMQuaternionMultiply(xr::math::LoadXrQuaternion(q1), DirectX::XMQuaternionInverse(xr::math::LoadXrQuaternion(q2))));
 
-		return _final;
+        return _final;
     }
 
+    XrVector3f cross_product(XrVector3f v1, XrVector3f v2)
+    {
+        XrVector3f final = { 0, 0, 0 };
+        final.x = v1.y * v2.z - v1.z * v2.y;
+        final.y = v1.x * v2.z - v1.z * v2.x;
+        final.z = v1.x * v2.y - v1.y * v2.x;
 
+        return final;
+    }
 }
 
 namespace {
@@ -303,7 +308,6 @@ namespace {
             CHECK(m_instance.Get() != XR_NULL_HANDLE);
             CHECK(m_systemId == XR_NULL_SYSTEM_ID);
 
-            // kinda useles.. (check, if headset is available (na hololens to nedava smysl..))
             XrSystemGetInfo systemInfo{ XR_TYPE_SYSTEM_GET_INFO };
             systemInfo.formFactor = m_formFactor;
             while (true) {
@@ -327,7 +331,6 @@ namespace {
             // Choosing a reasonable depth range can help improve hologram visual quality.
             // Use reversed-Z (near > far) for more uniform Z resolution.
             m_nearFar = { 20.f, 0.1f };
-            //m_nearFar = { 0.1f, 20.f };
         }
 
         void InitializeSession() {
@@ -409,9 +412,9 @@ namespace {
 
                 o.orientation.x = std::stof(_elems[(i * 12) + 3]);
                 o.orientation.y = std::stof(_elems[(i * 12) + 4]);
-				o.orientation.z = std::stof(_elems[(i * 12) + 5]);
-				o.orientation.w = std::stof(_elems[(i * 12) + 6]);
-                
+                o.orientation.z = std::stof(_elems[(i * 12) + 5]);
+                o.orientation.w = std::stof(_elems[(i * 12) + 6]);
+
                 o.scale.x = std::stof(_elems[(i * 12) + 7]);
                 o.scale.y = std::stof(_elems[(i * 12) + 8]);
                 o.scale.z = std::stof(_elems[(i * 12) + 9]);
@@ -435,7 +438,7 @@ namespace {
         }
 
         // saving orientation as roll, pitch, yaw which I later convert to Quaternion via DX
-        void save_objects()                         
+        void save_objects()
         {
             std::vector<LocalSaveObject> _localObjects;
             _localObjects.reserve(m_holograms.size());
@@ -473,10 +476,10 @@ namespace {
                 data += std::to_string(object.orientation.y);
                 data += ";";
                 data += std::to_string(object.orientation.z);
-				data += ";";
-				data += std::to_string(object.orientation.w);
-				data += ";";
-                
+                data += ";";
+                data += std::to_string(object.orientation.w);
+                data += ";";
+
                 data += std::to_string(object.scale.x);
                 data += ";";
                 data += std::to_string(object.scale.y);
@@ -510,30 +513,30 @@ namespace {
 
             OutputDebugString(L"\nOBJECT DATA END");
 
-			// try to write data into file
-			{
-				using namespace winrt;
-				using namespace winrt::Windows::Foundation;
-				using namespace winrt::Windows::Storage;
+            // try to write data into file
+            {
+                using namespace winrt;
+                using namespace winrt::Windows::Foundation;
+                using namespace winrt::Windows::Storage;
 
-				StorageFolder picturesFolder = winrt::Windows::Storage::KnownFolders::GetFolderForUserAsync(nullptr, winrt::Windows::Storage::KnownFolderId::PicturesLibrary).get();
-				Collections::IVectorView<StorageFolder> folderList = picturesFolder.GetFoldersAsync().get();
-				for (StorageFolder& folder : folderList)
-				{
-					std::string name = winrt::to_string(folder.DisplayName());
+                StorageFolder picturesFolder = winrt::Windows::Storage::KnownFolders::GetFolderForUserAsync(nullptr, winrt::Windows::Storage::KnownFolderId::PicturesLibrary).get();
+                Collections::IVectorView<StorageFolder> folderList = picturesFolder.GetFoldersAsync().get();
+                for (StorageFolder& folder : folderList)
+                {
+                    std::string name = winrt::to_string(folder.DisplayName());
 
-					if (name == "ARdno_data")
-					{
-						StorageFolder dataFolder = folder;
-						StorageFile file_ = dataFolder.GetFileAsync(L"application_data.txt").get();
-						hstring s_ = winrt::to_hstring(final_string__);
-						FileIO::WriteTextAsync(file_, s_);
-						//hstring file_content_ = FileIO::ReadTextAsync(file_, Streams::UnicodeEncoding::Utf8).get();
-						//d = winrt::to_string(file_content_);
-					}
-				}
+                    if (name == "ARdno_data")
+                    {
+                        StorageFolder dataFolder = folder;
+                        StorageFile file_ = dataFolder.GetFileAsync(L"application_data.txt").get();
+                        hstring s_ = winrt::to_hstring(final_string__);
+                        FileIO::WriteTextAsync(file_, s_);
+                        //hstring file_content_ = FileIO::ReadTextAsync(file_, Streams::UnicodeEncoding::Utf8).get();
+                        //d = winrt::to_string(file_content_);
+                    }
+                }
 
-			}
+            }
 
         }
 
@@ -551,14 +554,12 @@ namespace {
 
             Hologram hologram{};
             hologram.Cube.position = util::convert_to_app_space({ position.x, position.y, position.z }, space_origin);
-            //hologram.Cube.orientation = util::orientation_load(orientation, space_origin.orientation);
             hologram.Cube.orientation = util::q_multiply(orientation, space_origin.orientation);
             hologram.Cube.Scale = { scale, scale, scale };
 
 
             XrPosef _pose = xr::math::Pose::Identity();
             _pose.position = util::convert_to_app_space({ position.x, position.y, position.z }, space_origin);
-            //_pose.orientation = util::orientation_load(orientation, space_origin.orientation);
             _pose.orientation = util::q_multiply(orientation, space_origin.orientation);
 
             hologram.Cube.Space = createReferenceSpace(XR_REFERENCE_SPACE_TYPE_LOCAL, _pose);
@@ -571,23 +572,23 @@ namespace {
         void InitializeApplication()
         {
 #if VERSION_D
-			std::string d = "";
+            std::string d = "";
 
             // load the data
             {
-				using namespace winrt;
-				using namespace winrt::Windows::Foundation;
-				using namespace winrt::Windows::Storage;
-				
+                using namespace winrt;
+                using namespace winrt::Windows::Foundation;
+                using namespace winrt::Windows::Storage;
+
                 StorageFolder picturesFolder = winrt::Windows::Storage::KnownFolders::GetFolderForUserAsync(nullptr, winrt::Windows::Storage::KnownFolderId::PicturesLibrary).get();
                 Collections::IVectorView<StorageFolder> folderList = picturesFolder.GetFoldersAsync().get();
                 for (StorageFolder& folder : folderList)
                 {
                     std::string name = winrt::to_string(folder.DisplayName());
 
-					if (name == "ARdno_data")
-					{
-						StorageFolder dataFolder = folder;
+                    if (name == "ARdno_data")
+                    {
+                        StorageFolder dataFolder = folder;
                         StorageFile file_ = dataFolder.GetFileAsync(L"application_data.txt").get();
                         hstring file_content_ = FileIO::ReadTextAsync(file_, Streams::UnicodeEncoding::Utf8).get();
                         d = winrt::to_string(file_content_);
@@ -606,21 +607,18 @@ namespace {
 
         void CreateSpaces() {
             CHECK(m_session.Get() != XR_NULL_HANDLE);
-
-            // Create a app space to bridge interactions and all holograms.
             {
                 m_appSpaceType = XR_REFERENCE_SPACE_TYPE_UNBOUNDED_MSFT;
 
-                // TODO: tady bych to mb mohl vyresit..
                 XrReferenceSpaceCreateInfo spaceCreateInfo{ XR_TYPE_REFERENCE_SPACE_CREATE_INFO };
                 spaceCreateInfo.referenceSpaceType = m_appSpaceType;
                 spaceCreateInfo.poseInReferenceSpace = xr::math::Pose::Identity();
-                //CHECK_XRCMD(xrCreateReferenceSpace(m_session.Get(), &spaceCreateInfo, m_appSpace.Put()));
-                XrResult res = xrCreateReferenceSpace(m_session.Get(), &spaceCreateInfo, m_appSpace.Put());
+                CHECK_XRCMD(xrCreateReferenceSpace(m_session.Get(), &spaceCreateInfo, m_appSpace.Put()));
             }
 
             // Create a space for each hand pointer pose.
-            for (uint32_t side : {LeftSide, RightSide}) {
+            for (uint32_t side : {LeftSide, RightSide})
+            {
                 XrActionSpaceCreateInfo createInfo{ XR_TYPE_ACTION_SPACE_CREATE_INFO };
                 createInfo.action = m_poseAction.Get();
                 createInfo.poseInActionSpace = xr::math::Pose::Identity();
@@ -629,7 +627,8 @@ namespace {
             }
         }
 
-        std::tuple<DXGI_FORMAT, DXGI_FORMAT> SelectSwapchainPixelFormats() {
+        std::tuple<DXGI_FORMAT, DXGI_FORMAT> SelectSwapchainPixelFormats()
+        {
             CHECK(m_session.Get() != XR_NULL_HANDLE);
 
             // Query the runtime's preferred swapchain formats.
@@ -659,7 +658,8 @@ namespace {
             return { colorSwapchainFormat, depthSwapchainFormat };
         }
 
-        void CreateSwapchains() {
+        void CreateSwapchains()
+        {
             CHECK(m_session.Get() != XR_NULL_HANDLE);
             CHECK(m_renderResources == nullptr);
 
@@ -762,7 +762,8 @@ namespace {
             return swapchain;
         }
 
-        void ProcessEvents(bool* exitRenderLoop, bool* requestRestart) {
+        void ProcessEvents(bool* exitRenderLoop, bool* requestRestart)
+        {
             *exitRenderLoop = *requestRestart = false;
 
             auto pollEvent = [&](XrEventDataBuffer& eventData) -> bool {
@@ -772,14 +773,17 @@ namespace {
             };
 
             XrEventDataBuffer eventData{};
-            while (pollEvent(eventData)) {
-                switch (eventData.type) {
+            while (pollEvent(eventData))
+            {
+                switch (eventData.type)
+                {
                 case XR_TYPE_EVENT_DATA_INSTANCE_LOSS_PENDING: {
                     *exitRenderLoop = true;
                     *requestRestart = false;
                     return;
                 }
-                case XR_TYPE_EVENT_DATA_SESSION_STATE_CHANGED: {
+                case XR_TYPE_EVENT_DATA_SESSION_STATE_CHANGED:
+                {
                     const auto stateEvent = *reinterpret_cast<const XrEventDataSessionStateChanged*>(&eventData);
                     CHECK(m_session.Get() != XR_NULL_HANDLE && m_session.Get() == stateEvent.session);
                     m_sessionState = stateEvent.state;
@@ -825,12 +829,14 @@ namespace {
 
         struct Hologram;
         enum ObjectType;
-        Hologram CreateHologram(const XrPosef& poseInAppSpace, XrTime placementTime, ObjectType type) const {
+        Hologram CreateHologram(const XrPosef& poseInAppSpace, XrTime placementTime, ObjectType type) const
+        {
             Hologram hologram{};
             hologram.type = type;
             hologram.Cube.position = poseInAppSpace.position;
             hologram.Cube.orientation = poseInAppSpace.orientation;
-            if (m_optionalExtensions.SpatialAnchorSupported) {
+            if (m_optionalExtensions.SpatialAnchorSupported)
+            {
                 // Anchors provide the best stability when moving beyond 5 meters, so if the extension is enabled,
                 // create an anchor at given location and place the hologram at the resulting anchor space.
                 XrSpatialAnchorCreateInfoMSFT createInfo{ XR_TYPE_SPATIAL_ANCHOR_CREATE_INFO_MSFT };
@@ -840,7 +846,8 @@ namespace {
 
                 XrResult result = m_extensions.xrCreateSpatialAnchorMSFT(
                     m_session.Get(), &createInfo, hologram.Anchor.Put(m_extensions.xrDestroySpatialAnchorMSFT));
-                if (XR_SUCCEEDED(result)) {
+                if (XR_SUCCEEDED(result))
+                {
                     XrSpatialAnchorSpaceCreateInfoMSFT createSpaceInfo{ XR_TYPE_SPATIAL_ANCHOR_SPACE_CREATE_INFO_MSFT };
                     createSpaceInfo.anchor = hologram.Anchor.Get();
                     createSpaceInfo.poseInAnchorSpace = xr::math::Pose::Identity();
@@ -849,11 +856,13 @@ namespace {
                 else if (result == XR_ERROR_CREATE_SPATIAL_ANCHOR_FAILED_MSFT) {
                     DEBUG_PRINT("Anchor cannot be created, likely due to lost positional tracking.");
                 }
-                else {
+                else
+                {
                     CHECK_XRRESULT(result, "xrCreateSpatialAnchorMSFT");
                 }
             }
-            else {
+            else
+            {
                 // If the anchor extension is not available, place hologram in the app space.
                 // This works fine as long as user doesn't move far away from app space origin.
                 XrReferenceSpaceCreateInfo createInfo{ XR_TYPE_REFERENCE_SPACE_CREATE_INFO };
@@ -865,18 +874,9 @@ namespace {
         }
 
 
-        XrVector3f cross_product(XrVector3f v1, XrVector3f v2)
+
+        void PollActions()
         {
-            XrVector3f final = { 0, 0, 0 };
-            final.x = v1.y * v2.z - v1.z * v2.y;
-            final.y = v1.x * v2.z - v1.z * v2.x;
-            final.z = v1.x * v2.y - v1.y * v2.x;
-
-            return final;
-        }
-
-
-        void PollActions() {
             // Get updated action states.
             std::vector<XrActiveActionSet> activeActionSets = { {m_actionSet.Get(), XR_NULL_PATH} };
             XrActionsSyncInfo syncInfo{ XR_TYPE_ACTIONS_SYNC_INFO };
@@ -884,8 +884,8 @@ namespace {
             syncInfo.activeActionSets = activeActionSets.data();
             CHECK_XRCMD(xrSyncActions(m_session.Get(), &syncInfo));
 
-            // Check the state of the actions for left and right hands separately.
-            for (uint32_t side : {LeftSide, RightSide}) {
+            for (uint32_t side : {LeftSide, RightSide})
+            {
                 const XrPath subactionPath = m_subactionPaths[side];
 
 
@@ -906,10 +906,12 @@ namespace {
                     XrSpaceLocation handLocation{ XR_TYPE_SPACE_LOCATION };
                     CHECK_XRCMD(xrLocateSpace(m_cubesInHand[side].Space.Get(), m_appSpace.Get(), placementTime, &handLocation));
                     // Ensure we have tracking before placing a cube in the scene, so that it stays reliably at a physical location.
-                    if (!xr::math::Pose::IsPoseValid(handLocation)) {
+                    if (!xr::math::Pose::IsPoseValid(handLocation))
+                    {
                         DEBUG_PRINT("Cube cannot be placed when positional tracking is lost.");
                     }
-                    else {
+                    else
+                    {
                         if (side == LeftSide)
                         {
 
@@ -918,28 +920,17 @@ namespace {
                             // toggle which hologram to display
                             should_render_next_hologram = true;
 #else
-                            // for the "e" version
-                            std::vector<std::string> text_buffer;
-                            text_buffer.push_back("SAMPLE");
-                            text_buffer.push_back("OBRAZ");
-                            text_buffer.push_back("KYTKA");
-
                             m_holograms.push_back(CreateHologram(handLocation.pose, placementTime, ObjectType::Quad));
-                            if (text_index < 3)
-                                m_holograms[m_holograms.size() - 1].Cube.text = text_buffer[text_index];
-                            else
-                                m_holograms[m_holograms.size() - 1].Cube.text = "SAMPLE TEXT";
-                            text_index += 1;
+                            m_holograms[m_holograms.size() - 1].Cube.text = "SAMPLE TEXT";
 
                             save_objects();
 #endif
                         }
                         else if (side == RightSide)
                         {
+                            // re-init the app-space (the space-origin has changed)
                             space_origin = handLocation.pose;
-
                             hologram_space_origin = CreateHologram(handLocation.pose, placementTime, ObjectType::Cube);
-
                             InitializeApplication();
 
                         }
@@ -948,24 +939,11 @@ namespace {
 
                 }
 
-                /*// determine whether the right hand did an air-tap (so that we can stop rendering the rotating cube..)
-                {
-                    XrActionStateBoolean aim_action_value{ XR_TYPE_ACTION_STATE_BOOLEAN };
-                    XrActionStateGetInfo getInfo{ XR_TYPE_ACTION_STATE_GET_INFO };
-                    getInfo.action = m_stopAction.Get();
-                    getInfo.subactionPath = subactionPath;
-                    CHECK_XRCMD(xrGetActionStateBoolean(m_session.Get(), &getInfo, &aim_action_value));
-
-                    if (aim_action_value.isActive && aim_action_value.changedSinceLastSync && aim_action_value.currentState)
-                    {
-                        aim_action = !aim_action;
-                    }
-
-                }*/
             }
         }
 
-        void RenderFrame() {
+        void RenderFrame()
+        {
             CHECK(m_session.Get() != XR_NULL_HANDLE);
 
             XrFrameWaitInfo frameWaitInfo{ XR_TYPE_FRAME_WAIT_INFO };
@@ -987,7 +965,8 @@ namespace {
             layer.layerFlags = XR_COMPOSITION_LAYER_BLEND_TEXTURE_SOURCE_ALPHA_BIT;
 
             // Only render when session is visible, otherwise submit zero layers.
-            if (frameState.shouldRender) {
+            if (frameState.shouldRender)
+            {
                 // First update the viewState and views using latest predicted display time.
                 {
                     XrViewLocateInfo viewLocateInfo{ XR_TYPE_VIEW_LOCATE_INFO };
@@ -1013,7 +992,8 @@ namespace {
                 }
 
                 // Then, render projection layer into each view.
-                if (RenderLayer(frameState.predictedDisplayTime, layer)) {
+                if (RenderLayer(frameState.predictedDisplayTime, layer))
+                {
                     layers.push_back(reinterpret_cast<XrCompositionLayerBaseHeader*>(&layer));
                 }
             }
@@ -1027,7 +1007,8 @@ namespace {
             CHECK_XRCMD(xrEndFrame(m_session.Get(), &frameEndInfo));
         }
 
-        uint32_t AcquireAndWaitForSwapchainImage(XrSwapchain handle) {
+        uint32_t AcquireAndWaitForSwapchainImage(XrSwapchain handle)
+        {
             uint32_t swapchainImageIndex;
             XrSwapchainImageAcquireInfo acquireInfo{ XR_TYPE_SWAPCHAIN_IMAGE_ACQUIRE_INFO };
             CHECK_XRCMD(xrAcquireSwapchainImage(handle, &acquireInfo, &swapchainImageIndex));
@@ -1039,73 +1020,12 @@ namespace {
             return swapchainImageIndex;
         }
 
-        // initialize light
-
-
-        /*void InitializeSpinningCube(XrTime predictedDisplayTime) {
-            auto createReferenceSpace = [session = m_session.Get()](XrReferenceSpaceType referenceSpaceType, XrPosef poseInReferenceSpace) {
-                xr::SpaceHandle space;
-                XrReferenceSpaceCreateInfo createInfo{XR_TYPE_REFERENCE_SPACE_CREATE_INFO};
-                createInfo.referenceSpaceType = referenceSpaceType;
-                createInfo.poseInReferenceSpace = poseInReferenceSpace;
-                CHECK_XRCMD(xrCreateReferenceSpace(session, &createInfo, space.Put()));
-                return space;
-            };
-
-            {
-                // Initialize a big cube 1 meter in front of user.
-                Hologram hologram{};
-                hologram.Cube.Scale = {0.25f, 0.25f, 0.25f};
-                hologram.Cube.Space = createReferenceSpace(XR_REFERENCE_SPACE_TYPE_LOCAL, xr::math::Pose::Translation({0, 0, -1}));
-                hologram.type = ObjectType::Cube;
-                m_holograms.push_back(std::move(hologram));
-                m_mainCubeIndex = (uint32_t)m_holograms.size() - 1;
-            }
-
-            {
-                // Initialize a small cube and remember the time when animation is started.
-                Hologram hologram{};
-                hologram.Cube.Scale = {0.1f, 0.1f, 0.1f};
-                hologram.Cube.Space = createReferenceSpace(XR_REFERENCE_SPACE_TYPE_LOCAL, xr::math::Pose::Translation({0, 0, -1}));
-                hologram.type = ObjectType::Cube;
-                m_holograms.push_back(std::move(hologram));
-                m_spinningCubeIndex = (uint32_t)m_holograms.size() - 1;
-
-                m_spinningCubeStartTime = predictedDisplayTime;
-            }
-        }*/
-
-        /*void UpdateSpinningCube(XrTime predictedDisplayTime) {
-            if (!m_mainCubeIndex || !m_spinningCubeIndex) {
-                // Deferred initialization of spinning cubes so they appear at right place for the first frame.
-                InitializeSpinningCube(predictedDisplayTime);
-            }
-
-            // Pause spinning cube animation when app loses 3D focus
-            if (aim_action) {
-                auto convertToSeconds = [](XrDuration nanoSeconds) {
-                    using namespace std::chrono;
-                    return duration_cast<duration<float>>(duration<XrDuration, std::nano>(nanoSeconds)).count();
-                };
-
-                const XrDuration duration = predictedDisplayTime - m_spinningCubeStartTime;
-                const float seconds = convertToSeconds(duration);
-                const float angle = DirectX::XM_PIDIV2 * seconds; // Rotate 90 degrees per second
-                const float radius = 0.5f;                        // Rotation radius in meters
-
-                // Let spinning cube rotate around the main cube's y axis.
-                XrPosef pose;
-                pose.position = {radius * std::sin(angle), 0, radius * std::cos(angle)};
-                pose.orientation = xr::math::Quaternion::RotationAxisAngle({0, 1, 0}, angle);
-                m_holograms[m_spinningCubeIndex.value()].Cube.PoseInSpace = pose;
-                m_holograms[m_spinningCubeIndex.value()].type = ObjectType::Cube;
-                m_holograms[m_mainCubeIndex.value()].type = ObjectType::Cube;
-            }
-        }*/
-        bool RenderLayer(XrTime predictedDisplayTime, XrCompositionLayerProjection& layer) {
+        bool RenderLayer(XrTime predictedDisplayTime, XrCompositionLayerProjection& layer)
+        {
             const uint32_t viewCount = (uint32_t)m_renderResources->ConfigViews.size();
 
-            if (!xr::math::Pose::IsPoseValid(m_renderResources->ViewState)) {
+            if (!xr::math::Pose::IsPoseValid(m_renderResources->ViewState))
+            {
                 DEBUG_PRINT("xrLocateViews returned an invalid pose.");
                 return false; // Skip rendering layers if view location is invalid
             }
@@ -1114,8 +1034,10 @@ namespace {
             std::vector<const sample::Cube*> visibleQuads;
             std::vector<const sample::Cube*> visibleSpaceOrigins;
 
-            auto UpdateVisibleCube = [&](sample::Cube& cube) {
-                if (cube.Space.Get() != XR_NULL_HANDLE) {
+            auto UpdateVisibleCube = [&](sample::Cube& cube)
+            {
+                if (cube.Space.Get() != XR_NULL_HANDLE)
+                {
                     XrSpaceLocation cubeSpaceInAppSpace{ XR_TYPE_SPACE_LOCATION };
                     CHECK_XRCMD(xrLocateSpace(cube.Space.Get(), m_appSpace.Get(), predictedDisplayTime, &cubeSpaceInAppSpace));
 
@@ -1131,41 +1053,51 @@ namespace {
                     }
                 }
             };
-            auto UpdateVisibleQuad = [&](sample::Cube& cube) {
-                if (cube.Space.Get() != XR_NULL_HANDLE) {
+            auto UpdateVisibleQuad = [&](sample::Cube& cube)
+            {
+                if (cube.Space.Get() != XR_NULL_HANDLE)
+                {
                     XrSpaceLocation cubeSpaceInAppSpace{ XR_TYPE_SPACE_LOCATION };
                     CHECK_XRCMD(xrLocateSpace(cube.Space.Get(), m_appSpace.Get(), predictedDisplayTime, &cubeSpaceInAppSpace));
 
                     // Update cube's location with latest space location
-                    if (xr::math::Pose::IsPoseValid(cubeSpaceInAppSpace)) {
+                    if (xr::math::Pose::IsPoseValid(cubeSpaceInAppSpace))
+                    {
                         if (cube.PoseInSpace.has_value()) {
                             cube.PoseInAppSpace = xr::math::Pose::Multiply(cube.PoseInSpace.value(), cubeSpaceInAppSpace.pose);
                         }
-                        else {
+                        else
+                        {
                             cube.PoseInAppSpace = cubeSpaceInAppSpace.pose;
                         }
                         visibleQuads.push_back(&cube);
                     }
                 }
             };
-			auto UpdateVisibleSpaceOrigin = [&](sample::Cube& cube) {
-				if (cube.Space.Get() != XR_NULL_HANDLE) {
-					XrSpaceLocation cubeSpaceInAppSpace{ XR_TYPE_SPACE_LOCATION };
-					CHECK_XRCMD(xrLocateSpace(cube.Space.Get(), m_appSpace.Get(), predictedDisplayTime, &cubeSpaceInAppSpace));
+            auto UpdateVisibleSpaceOrigin = [&](sample::Cube& cube)
+            {
+                if (cube.Space.Get() != XR_NULL_HANDLE)
+                {
+                    XrSpaceLocation cubeSpaceInAppSpace{ XR_TYPE_SPACE_LOCATION };
+                    CHECK_XRCMD(xrLocateSpace(cube.Space.Get(), m_appSpace.Get(), predictedDisplayTime, &cubeSpaceInAppSpace));
 
-					// Update cube's location with latest space location
-					if (xr::math::Pose::IsPoseValid(cubeSpaceInAppSpace)) {
-						if (cube.PoseInSpace.has_value()) {
-							cube.PoseInAppSpace = xr::math::Pose::Multiply(cube.PoseInSpace.value(), cubeSpaceInAppSpace.pose);
-						}
-						else {
-							cube.PoseInAppSpace = cubeSpaceInAppSpace.pose;
-						}
-						visibleSpaceOrigins.push_back(&cube);
-					}
-				}
-			};
+                    // Update cube's location with latest space location
+                    if (xr::math::Pose::IsPoseValid(cubeSpaceInAppSpace))
+                    {
+                        if (cube.PoseInSpace.has_value())
+                        {
+                            cube.PoseInAppSpace = xr::math::Pose::Multiply(cube.PoseInSpace.value(), cubeSpaceInAppSpace.pose);
+                        }
+                        else
+                        {
+                            cube.PoseInAppSpace = cubeSpaceInAppSpace.pose;
+                        }
+                        visibleSpaceOrigins.push_back(&cube);
+                    }
+                }
+            };
 
+            // TODO: Scene Understanding.. (begging of smth, I guess?)
             /*{
                 xr::su::SceneObserver m_sceneObserver(m_extensions, m_session.Get());
                 static const std::vector<xr::su::SceneObject::Kind> kindFilter{ XR_SCENE_OBJECT_KIND_BACKGROUND_MSFT,
@@ -1185,49 +1117,22 @@ namespace {
 
             }*/
 
-
-            // create light
-            /*{
-                auto createReferenceSpace = [session = m_session.Get()](XrReferenceSpaceType referenceSpaceType, XrPosef poseInReferenceSpace) {
-                    xr::SpaceHandle space;
-                    XrReferenceSpaceCreateInfo createInfo{ XR_TYPE_REFERENCE_SPACE_CREATE_INFO };
-                    createInfo.referenceSpaceType = referenceSpaceType;
-                    createInfo.poseInReferenceSpace = poseInReferenceSpace;
-                    CHECK_XRCMD(xrCreateReferenceSpace(session, &createInfo, space.Put()));
-                    return space;
-                };
-
-                // Initialize a big cube 1 meter in front of user.
-                Hologram hologram{};
-                hologram.Cube.Scale = { 0.25f, 0.25f, 0.25f };
-                hologram.Cube.Space = createReferenceSpace(XR_REFERENCE_SPACE_TYPE_LOCAL, xr::math::Pose::Translation({ 0, 0, -1 }));
-                hologram.type = ObjectType::Cube;
-                //m_holograms.push_back(std::move(hologram));
-                //m_mainCubeIndex = (uint32_t)m_holograms.size() - 1;
-
-                m_light.PoseInAppSpace = hologram.Cube.PoseInAppSpace;
-
-
-            }*/
-
-
             UpdateVisibleQuad(m_cubesInHand[LeftSide]);
             m_cubesInHand[LeftSide].text = "SAMPLE";
             UpdateVisibleSpaceOrigin(m_cubesInHand[RightSide]);
-
             UpdateVisibleSpaceOrigin(hologram_space_origin.Cube);
 
-
-            for (auto& hologram : m_holograms) {
+            for (auto& hologram : m_holograms)
+            {
                 if (hologram.type == ObjectType::Cube)
                     UpdateVisibleCube(hologram.Cube);
                 if (hologram.type == ObjectType::Quad)
                     UpdateVisibleQuad(hologram.Cube);
-
             }
 
             m_renderResources->ProjectionLayerViews.resize(viewCount);
-            if (m_optionalExtensions.DepthExtensionSupported) {
+            if (m_optionalExtensions.DepthExtensionSupported)
+            {
                 m_renderResources->DepthInfoViews.resize(viewCount);
             }
 
@@ -1246,7 +1151,8 @@ namespace {
             // Prepare rendering parameters of each view for swapchain texture arrays
 
             std::vector<xr::math::ViewProjection> viewProjections(viewCount);
-            for (uint32_t i = 0; i < viewCount; i++) {
+            for (uint32_t i = 0; i < viewCount; i++)
+            {
                 viewProjections[i] = { m_renderResources->Views[i].pose, m_renderResources->Views[i].fov, m_nearFar };
 
                 m_renderResources->ProjectionLayerViews[i] = { XR_TYPE_COMPOSITION_LAYER_PROJECTION_VIEW };
@@ -1256,7 +1162,8 @@ namespace {
                 m_renderResources->ProjectionLayerViews[i].subImage.imageRect = imageRect;
                 m_renderResources->ProjectionLayerViews[i].subImage.imageArrayIndex = i;
 
-                if (m_optionalExtensions.DepthExtensionSupported) {
+                if (m_optionalExtensions.DepthExtensionSupported)
+                {
                     m_renderResources->DepthInfoViews[i] = { XR_TYPE_COMPOSITION_LAYER_DEPTH_INFO_KHR };
                     m_renderResources->DepthInfoViews[i].minDepth = 0;
                     m_renderResources->DepthInfoViews[i].maxDepth = 1;
@@ -1303,7 +1210,8 @@ namespace {
             return true;
         }
 
-        void PrepareSessionRestart() {
+        void PrepareSessionRestart()
+        {
             m_mainCubeIndex = m_spinningCubeIndex = {};
             m_holograms.clear();
             m_renderResources.reset();
@@ -1311,18 +1219,20 @@ namespace {
             m_systemId = XR_NULL_SYSTEM_ID;
         }
 
-        constexpr bool IsSessionFocused() const {
+        constexpr bool IsSessionFocused() const
+        {
             return m_sessionState == XR_SESSION_STATE_FOCUSED;
         }
 
-        XrPath GetXrPath(const char* string) const {
+        XrPath GetXrPath(const char* string) const
+        {
             return xr::StringToPath(m_instance.Get(), string);
         }
 
     private:
         constexpr static XrFormFactor m_formFactor{ XR_FORM_FACTOR_HEAD_MOUNTED_DISPLAY };
         constexpr static XrViewConfigurationType m_primaryViewConfigType{ XR_VIEW_CONFIGURATION_TYPE_PRIMARY_STEREO };
-        constexpr static uint32_t m_stereoViewCount = 2; // PRIMARY_STEREO view configuration always has 2 views
+        constexpr static uint32_t m_stereoViewCount = 2; // 0 - left eye, 1 - right eye
 
         const std::string m_applicationName;
         const std::unique_ptr<sample::IGraphicsPluginD3D11> m_graphicsPlugin;
@@ -1332,7 +1242,8 @@ namespace {
         uint64_t m_systemId{ XR_NULL_SYSTEM_ID };
         xr::ExtensionDispatchTable m_extensions;
 
-        struct {
+        struct
+        {
             bool DepthExtensionSupported{ false };
             bool UnboundedRefSpaceSupported{ false };
             bool SpatialAnchorSupported{ false };
@@ -1352,16 +1263,10 @@ namespace {
             ObjectType type;
         };
 
-        //struct Light
-        //{
-        //    xr::SpaceHandle Space{}; // refers to position
-        //};
-
         std::vector<Hologram> m_holograms;
         Hologram hologram_space_origin;
         bool should_render_next_hologram = false;
 
-        //sample::Light m_light;
         XrPosef space_origin = xr::math::Pose::Identity();
         XrPosef test = xr::math::Pose::Identity();
 
@@ -1379,16 +1284,15 @@ namespace {
         xr::ActionSetHandle m_actionSet;
         xr::ActionHandle m_placeAction;
         xr::ActionHandle m_poseAction;
-        // mine
         xr::ActionHandle m_stopAction;
         bool aim_action = 0;
-        int text_index = 0;
 
 
         XrEnvironmentBlendMode m_environmentBlendMode{};
         xr::math::NearFar m_nearFar{};
 
-        struct SwapchainD3D11 {
+        struct SwapchainD3D11
+        {
             xr::SwapchainHandle Handle;
             DXGI_FORMAT Format{ DXGI_FORMAT_UNKNOWN };
             uint32_t Width{ 0 };
@@ -1397,7 +1301,8 @@ namespace {
             std::vector<XrSwapchainImageD3D11KHR> Images;
         };
 
-        struct RenderResources {
+        struct RenderResources
+        {
             XrViewState ViewState{ XR_TYPE_VIEW_STATE };
             std::vector<XrView> Views;
             std::vector<XrViewConfigurationView> ConfigViews;
@@ -1425,5 +1330,3 @@ namespace sample {
         return std::make_unique<ImplementOpenXrProgram>(std::move(applicationName), std::move(graphicsPlugin));
     }
 } // namespace sample
-
-

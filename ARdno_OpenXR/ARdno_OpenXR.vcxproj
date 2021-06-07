@@ -334,10 +334,12 @@
     <ClInclude Include="Content\SampleFpsTextRenderer.h" />
     <ClInclude Include="Content\ShaderStructures.h" />
     <ClInclude Include="coord_space_model.h" />
+    <ClInclude Include="CubeShader.h" />
     <ClInclude Include="DxUtility.h" />
     <ClInclude Include="new_liver.h" />
     <ClInclude Include="OpenXrProgram.h" />
     <ClInclude Include="pch.h" />
+    <ClInclude Include="QuadShader.h" />
     <ClInclude Include="resource.h" />
   </ItemGroup>
   <ItemGroup>

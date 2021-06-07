@@ -82,6 +82,8 @@
     <ClInclude Include="coord_space_model.h" />
     <ClInclude Include="new_liver.h" />
     <ClInclude Include="cancer_mesh.h" />
+    <ClInclude Include="CubeShader.h" />
+    <ClInclude Include="QuadShader.h" />
   </ItemGroup>
   <ItemGroup>
     <AppxManifest Include="Package.appxmanifest" />
