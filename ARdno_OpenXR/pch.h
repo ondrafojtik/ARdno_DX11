@@ -47,3 +47,4 @@
 #include <concrt.h>
 
 
+#include "defines.h"

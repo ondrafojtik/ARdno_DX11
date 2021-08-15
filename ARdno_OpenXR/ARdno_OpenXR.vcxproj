@@ -349,6 +349,7 @@
     <ClCompile Include="Content\SampleFpsTextRenderer.cpp" />
     <ClCompile Include="Content\Sample3DSceneRenderer.cpp" />
     <ClCompile Include="CubeGraphics.cpp" />
+    <ClCompile Include="defines.h" />
     <ClCompile Include="DxUtility.cpp" />
     <ClCompile Include="liver.h" />
     <ClCompile Include="OpenXrProgram.cpp" />
