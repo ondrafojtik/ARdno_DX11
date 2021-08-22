@@ -46,10 +46,6 @@
 #include "CubeShader.h"
 #include "QuadShader.h"
 
-// new ones
-//#include "new_liver.h"
-//#include "cancer_mesh.h"
-
 namespace {
     
 
@@ -618,6 +614,7 @@ namespace {
 		Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> cube_texture;
 		Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> blank_texture;
 		Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> space_origin_texture;
+
 
 		objLoader loader{};
 		int32_t id_hologram_to_render = 0;

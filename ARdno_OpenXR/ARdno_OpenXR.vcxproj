@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="..\packages\Microsoft.Windows.CppWinRT.2.0.210403.2\build\native\Microsoft.Windows.CppWinRT.props" Condition="Exists('..\packages\Microsoft.Windows.CppWinRT.2.0.210403.2\build\native\Microsoft.Windows.CppWinRT.props')" />
+  <Import Project="..\packages\Microsoft.Windows.CppWinRT.2.0.210806.1\build\native\Microsoft.Windows.CppWinRT.props" Condition="Exists('..\packages\Microsoft.Windows.CppWinRT.2.0.210806.1\build\native\Microsoft.Windows.CppWinRT.props')" />
+  <Import Project="..\packages\Microsoft.MixedReality.QR.0.5.3011\build\native\Microsoft.MixedReality.QR.props" Condition="Exists('..\packages\Microsoft.MixedReality.QR.0.5.3011\build\native\Microsoft.MixedReality.QR.props')" />
   <Import Project="..\packages\OpenXR.Loader.1.0.10.2\build\native\OpenXR.Loader.props" Condition="Exists('..\packages\OpenXR.Loader.1.0.10.2\build\native\OpenXR.Loader.props')" />
   <Import Project="..\packages\OpenXR.Headers.1.0.10.2\build\native\OpenXR.Headers.props" Condition="Exists('..\packages\OpenXR.Headers.1.0.10.2\build\native\OpenXR.Headers.props')" />
   <ItemGroup Label="ProjectConfigurations">
@@ -397,9 +398,10 @@
     <Import Project="$(VSINSTALLDIR)\Common7\IDE\Extensions\Microsoft\VsGraphics\ShaderGraphContentTask.targets" />
     <Import Project="..\packages\OpenXR.Headers.1.0.10.2\build\native\OpenXR.Headers.targets" Condition="Exists('..\packages\OpenXR.Headers.1.0.10.2\build\native\OpenXR.Headers.targets')" />
     <Import Project="..\packages\OpenXR.Loader.1.0.10.2\build\native\OpenXR.Loader.targets" Condition="Exists('..\packages\OpenXR.Loader.1.0.10.2\build\native\OpenXR.Loader.targets')" />
-    <Import Project="..\packages\Microsoft.Windows.CppWinRT.2.0.210403.2\build\native\Microsoft.Windows.CppWinRT.targets" Condition="Exists('..\packages\Microsoft.Windows.CppWinRT.2.0.210403.2\build\native\Microsoft.Windows.CppWinRT.targets')" />
-    <Import Project="..\packages\directxtex_uwp.2021.4.7.2\build\native\directxtex_uwp.targets" Condition="Exists('..\packages\directxtex_uwp.2021.4.7.2\build\native\directxtex_uwp.targets')" />
-    <Import Project="..\packages\directxtk_uwp.2021.4.7.2\build\native\directxtk_uwp.targets" Condition="Exists('..\packages\directxtk_uwp.2021.4.7.2\build\native\directxtk_uwp.targets')" />
+    <Import Project="..\packages\Microsoft.MixedReality.QR.0.5.3011\build\native\Microsoft.MixedReality.QR.targets" Condition="Exists('..\packages\Microsoft.MixedReality.QR.0.5.3011\build\native\Microsoft.MixedReality.QR.targets')" />
+    <Import Project="..\packages\directxtex_uwp.2021.8.2.1\build\native\directxtex_uwp.targets" Condition="Exists('..\packages\directxtex_uwp.2021.8.2.1\build\native\directxtex_uwp.targets')" />
+    <Import Project="..\packages\directxtk_uwp.2021.8.2.1\build\native\directxtk_uwp.targets" Condition="Exists('..\packages\directxtk_uwp.2021.8.2.1\build\native\directxtk_uwp.targets')" />
+    <Import Project="..\packages\Microsoft.Windows.CppWinRT.2.0.210806.1\build\native\Microsoft.Windows.CppWinRT.targets" Condition="Exists('..\packages\Microsoft.Windows.CppWinRT.2.0.210806.1\build\native\Microsoft.Windows.CppWinRT.targets')" />
   </ImportGroup>
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
@@ -409,9 +411,11 @@
     <Error Condition="!Exists('..\packages\OpenXR.Headers.1.0.10.2\build\native\OpenXR.Headers.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\OpenXR.Headers.1.0.10.2\build\native\OpenXR.Headers.targets'))" />
     <Error Condition="!Exists('..\packages\OpenXR.Loader.1.0.10.2\build\native\OpenXR.Loader.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\OpenXR.Loader.1.0.10.2\build\native\OpenXR.Loader.props'))" />
     <Error Condition="!Exists('..\packages\OpenXR.Loader.1.0.10.2\build\native\OpenXR.Loader.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\OpenXR.Loader.1.0.10.2\build\native\OpenXR.Loader.targets'))" />
-    <Error Condition="!Exists('..\packages\Microsoft.Windows.CppWinRT.2.0.210403.2\build\native\Microsoft.Windows.CppWinRT.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.Windows.CppWinRT.2.0.210403.2\build\native\Microsoft.Windows.CppWinRT.props'))" />
-    <Error Condition="!Exists('..\packages\Microsoft.Windows.CppWinRT.2.0.210403.2\build\native\Microsoft.Windows.CppWinRT.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.Windows.CppWinRT.2.0.210403.2\build\native\Microsoft.Windows.CppWinRT.targets'))" />
-    <Error Condition="!Exists('..\packages\directxtex_uwp.2021.4.7.2\build\native\directxtex_uwp.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\directxtex_uwp.2021.4.7.2\build\native\directxtex_uwp.targets'))" />
-    <Error Condition="!Exists('..\packages\directxtk_uwp.2021.4.7.2\build\native\directxtk_uwp.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\directxtk_uwp.2021.4.7.2\build\native\directxtk_uwp.targets'))" />
+    <Error Condition="!Exists('..\packages\Microsoft.MixedReality.QR.0.5.3011\build\native\Microsoft.MixedReality.QR.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.MixedReality.QR.0.5.3011\build\native\Microsoft.MixedReality.QR.props'))" />
+    <Error Condition="!Exists('..\packages\Microsoft.MixedReality.QR.0.5.3011\build\native\Microsoft.MixedReality.QR.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.MixedReality.QR.0.5.3011\build\native\Microsoft.MixedReality.QR.targets'))" />
+    <Error Condition="!Exists('..\packages\directxtex_uwp.2021.8.2.1\build\native\directxtex_uwp.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\directxtex_uwp.2021.8.2.1\build\native\directxtex_uwp.targets'))" />
+    <Error Condition="!Exists('..\packages\directxtk_uwp.2021.8.2.1\build\native\directxtk_uwp.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\directxtk_uwp.2021.8.2.1\build\native\directxtk_uwp.targets'))" />
+    <Error Condition="!Exists('..\packages\Microsoft.Windows.CppWinRT.2.0.210806.1\build\native\Microsoft.Windows.CppWinRT.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.Windows.CppWinRT.2.0.210806.1\build\native\Microsoft.Windows.CppWinRT.props'))" />
+    <Error Condition="!Exists('..\packages\Microsoft.Windows.CppWinRT.2.0.210806.1\build\native\Microsoft.Windows.CppWinRT.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.Windows.CppWinRT.2.0.210806.1\build\native\Microsoft.Windows.CppWinRT.targets'))" />
   </Target>
 </Project>
