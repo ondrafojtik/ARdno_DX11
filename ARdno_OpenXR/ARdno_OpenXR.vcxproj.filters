@@ -73,6 +73,7 @@
     <ClCompile Include="liver.h" />
     <ClCompile Include="QuadShader.cpp" />
     <ClCompile Include="defines.h" />
+    <ClCompile Include="QRHandle.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ARdno_OpenXRMain.h" />

@@ -16,106 +16,21 @@
 
 #include "pch.h"
 #include "OpenXrProgram.h"
-#include "DxUtility.h"
 
-#include <WindowsNumerics.h>
-#include <fstream>
-#include <sstream>
-
-#include "XrUtility/XrSceneUnderstanding.h"
-#include "XrUtility/XrSceneUnderstanding.hpp"
-
-#include "winrt/windows.Storage.h"
-#include "winrt/windows.Foundation.h"
-#include "winrt/windows.Foundation.Collections.h"
+#include "QRHandle.cpp"
 
 // winrt wrap for QR lib
 // I cant use c++20 because of /WZ. Thats why Ive got to get around c++17 limitations around by using winrt wrap ( .get() ).. 
-#include "winrt/Microsoft.MixedReality.QR.h"
-#include "winrt/windows.Perception.Spatial.h"
-#include "winrt/windows.Perception.Spatial.Preview.h"
 
-#include <experimental/resumable>
-#include <experimental/coroutine>
-#include <ppltasks.h>
-#include <pplawait.h>
+//#include <experimental/resumable>
+//#include <experimental/coroutine>
+//#include <ppltasks.h>
+//#include <pplawait.h>
+
 
 
 #define VERSION_D 1
 
-namespace qr_test
-{
-    //using namespace Microsoft::MixedReality::QR;
-    using namespace winrt::Windows::Foundation;
-    using namespace winrt::Microsoft::MixedReality::QR;
-    
-    struct QRHandle
-    {
-        QRCodeWatcher watcher{ nullptr };
-
-        void initialize()
-        {
-            if (watcher.IsSupported())
-            {
-                QRCodeWatcherAccessStatus status = QRCodeWatcher::RequestAccessAsync().get();
-                if (status == QRCodeWatcherAccessStatus::Allowed)
-                {
-                    watcher = QRCodeWatcher();
-                    watcher.Start();
-
-                }
-
-            }
-        }
-
-        void OnAdded(const winrt::Windows::Foundation::IInspectable&, const QRCodeAddedEventArgs& args)
-        {
-            ;
-        }
-
-        void OnUpdated(const winrt::Windows::Foundation::IInspectable&, const QRCodeUpdatedEventArgs& args)
-        {
-            ;
-        }
-
-        void OnEnumerationComplete(const winrt::Windows::Foundation::IInspectable&, const winrt::Windows::Foundation::IInspectable&)
-        {
-            ;
-        }
-
-    };
-
-
-
-
-
-
-
-
-
-    void _te(void)
-    {
-        QRCodeWatcher watcher{};
-        if (watcher.IsSupported())
-        {
-            QRCodeWatcherAccessStatus status = QRCodeWatcher::RequestAccessAsync().get();
-            
-            if (status == QRCodeWatcherAccessStatus::Allowed)
-            {
-                watcher = QRCodeWatcher();
-                watcher.Start();
-
-				using namespace winrt::Windows::Perception::Spatial;
-				using namespace winrt::Windows::Perception::Spatial::Preview;
-             
-                //QRCode code{};
-                //SpatialCoordinateSystem qrCoordinateSystem = SpatialGraphInteropPreview::CreateCoordinateSystemForNode(code.SpatialGraphNodeId());
-            }
-
-        }
-    }
-
-}
 
 namespace util
 {
@@ -304,6 +219,7 @@ namespace {
 
             // D3D11 extension is required for this sample, so check if it's supported.
             CHECK(EnableExtensionIfSupported(XR_KHR_D3D11_ENABLE_EXTENSION_NAME));
+            CHECK(EnableExtensionIfSupported(XR_MSFT_SPATIAL_GRAPH_BRIDGE_EXTENSION_NAME));
             //CHECK(EnableExtensionIfSupported(XR_MSFT_SCENE_UNDERSTANDING_PREVIEW2_EXTENSION_NAME));
             //CHECK(EnableExtensionIfSupported(XR_MSFT_SCENE_UNDERSTANDING_SERIALIZATION_PREVIEW_EXTENSION_NAME));
 #if UWP

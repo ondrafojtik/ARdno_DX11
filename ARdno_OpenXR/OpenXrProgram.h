@@ -17,6 +17,7 @@
 #pragma once
 
 
+#include <../packages/OpenXR.Headers.1.0.10.2/include/openxr/openxr.h>
 namespace sample {
     struct Cube {
         xr::SpaceHandle Space{};
