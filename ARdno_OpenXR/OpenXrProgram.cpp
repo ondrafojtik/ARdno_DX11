@@ -600,6 +600,9 @@ namespace {
             // saving is done when placing holograms
             m_holograms.clear();
 #endif
+            qr_handle->m_session.m_handle = m_session.Get();
+            qr_handle->m_extensions = m_extensions;
+            qr_handle->initialize();
 
         }
 
@@ -1267,7 +1270,8 @@ namespace {
 
         XrPosef space_origin = xr::math::Pose::Identity();
         XrPosef test = xr::math::Pose::Identity();
-
+        qr_test::QRHandle* qr_handle = new qr_test::QRHandle();
+        
         sample::Cube m_light;
 
         std::optional<uint32_t> m_mainCubeIndex;

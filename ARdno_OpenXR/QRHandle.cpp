@@ -40,6 +40,32 @@ namespace qr_test
             using namespace winrt::Windows::Foundation::Numerics;
             using namespace winrt::Windows::Perception::Spatial;
 
+			struct guid_
+			{
+				uint32_t Data1;
+				uint16_t Data2;
+				uint16_t Data3;
+				uint8_t  Data4[8];
+
+				guid_(QRCode code)
+				{
+					uint32_t Data1 = code.SpatialGraphNodeId().Data1;
+					uint16_t Data2 = code.SpatialGraphNodeId().Data2;
+					uint16_t Data3 = code.SpatialGraphNodeId().Data3;
+					uint8_t  Data4[8];
+					Data4[0] = code.SpatialGraphNodeId().Data4[0];
+					Data4[1] = code.SpatialGraphNodeId().Data4[1];
+					Data4[2] = code.SpatialGraphNodeId().Data4[2];
+					Data4[3] = code.SpatialGraphNodeId().Data4[3];
+					Data4[4] = code.SpatialGraphNodeId().Data4[4];
+					Data4[5] = code.SpatialGraphNodeId().Data4[5];
+					Data4[6] = code.SpatialGraphNodeId().Data4[6];
+					Data4[7] = code.SpatialGraphNodeId().Data4[7];
+
+				}
+			};
+
+
             QRCode code = args.Code();
             SpatialCoordinateSystem qr_coords = SpatialGraphInteropPreview::CreateCoordinateSystemForNode(code.SpatialGraphNodeId());
             SpatialCoordinateSystem null_space = SpatialGraphInteropPreview::CreateCoordinateSystemForNode(code.SpatialGraphNodeId(), { 10, 0, 0 });
@@ -47,43 +73,13 @@ namespace qr_test
 
             XrSpace target_space{};
             XrSpatialGraphNodeSpaceCreateInfoMSFT* create_info{};
+			// note(Ondra): this may be set to XR_SPATIAL_GRAPH_NODE_TYPE_DYNAMIC_MSFT if we want it to move
             create_info->type = XR_TYPE_SPATIAL_GRAPH_NODE_SPACE_CREATE_INFO_MSFT;
-            // note(Ondra): this may be set to XR_SPATIAL_GRAPH_NODE_TYPE_DYNAMIC_MSFT if we want it to move
-
-
-            struct guid_
-            {
-                uint32_t Data1;
-                uint16_t Data2;
-                uint16_t Data3;
-                uint8_t  Data4[8];
-
-                guid_(QRCode code)
-                {
-                    uint32_t Data1 = code.SpatialGraphNodeId().Data1;
-                    uint16_t Data2 = code.SpatialGraphNodeId().Data2;
-                    uint16_t Data3 = code.SpatialGraphNodeId().Data3;
-                    uint8_t  Data4[8];
-                    Data4[0] = code.SpatialGraphNodeId().Data4[0];
-                    Data4[1] = code.SpatialGraphNodeId().Data4[1];
-                    Data4[2] = code.SpatialGraphNodeId().Data4[2];
-                    Data4[3] = code.SpatialGraphNodeId().Data4[3];
-                    Data4[4] = code.SpatialGraphNodeId().Data4[4];
-                    Data4[5] = code.SpatialGraphNodeId().Data4[5];
-                    Data4[6] = code.SpatialGraphNodeId().Data4[6];
-                    Data4[7] = code.SpatialGraphNodeId().Data4[7];
-
-                }
-            };
             guid_ g_data{ code };
-
-
             create_info->nodeType = XR_SPATIAL_GRAPH_NODE_TYPE_STATIC_MSFT;
             memcpy(create_info->nodeId, (void*)g_data.Data1, 16 * 8);
             xrCreateSpatialGraphNodeSpaceMSFT(m_session, create_info, &target_space);
-
-
-
+            
             xr::su::Scene* scene = new xr::su::Scene(m_extensions, m_session.Get());
             std::vector<xr::su::SceneObject> objects_ = scene->GetObjects();
             for (xr::su::SceneObject o : objects_)
