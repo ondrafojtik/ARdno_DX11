@@ -17,8 +17,6 @@
 #include "pch.h"
 #include "OpenXrProgram.h"
 
-#include "QRHandle.cpp"
-
 // winrt wrap for QR lib
 // I cant use c++20 because of /WZ. Thats why Ive got to get around c++17 limitations around by using winrt wrap ( .get() ).. 
 
@@ -223,7 +221,6 @@ namespace {
             //CHECK(EnableExtensionIfSupported(XR_MSFT_SCENE_UNDERSTANDING_PREVIEW2_EXTENSION_NAME));
             //CHECK(EnableExtensionIfSupported(XR_MSFT_SCENE_UNDERSTANDING_SERIALIZATION_PREVIEW_EXTENSION_NAME));
 #if UWP
-            // Require XR_EXT_win32_appcontainer_compatible extension when building in UWP context.
             CHECK(EnableExtensionIfSupported(XR_EXT_WIN32_APPCONTAINER_COMPATIBLE_EXTENSION_NAME));
 #endif
 
@@ -602,6 +599,7 @@ namespace {
 #endif
             qr_handle->m_session.m_handle = m_session.Get();
             qr_handle->m_extensions = m_extensions;
+            qr_handle->m_instance = m_instance.Get();
             qr_handle->initialize();
 
         }

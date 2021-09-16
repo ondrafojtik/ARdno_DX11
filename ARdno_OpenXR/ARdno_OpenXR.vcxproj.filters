@@ -87,6 +87,7 @@
     <ClInclude Include="cancer_mesh.h" />
     <ClInclude Include="CubeShader.h" />
     <ClInclude Include="QuadShader.h" />
+    <ClInclude Include="QRHandle.h" />
   </ItemGroup>
   <ItemGroup>
     <AppxManifest Include="Package.appxmanifest" />
