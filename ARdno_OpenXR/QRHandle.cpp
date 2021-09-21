@@ -56,70 +56,105 @@ namespace qr_test
                 Data4[7] = code.SpatialGraphNodeId().Data4[7];
 
             }
+
+            uint8_t* get_array()
+            {
+                uint8_t d[16];
+				for (int i = 0; i < 4; ++i)
+					d[i] = ((uint8_t*)&Data1)[3 - i];
+
+				for (int i = 4; i < 6; ++i)
+					d[i] = ((uint8_t*)&Data2)[1 - i];
+
+				for (int i = 6; i < 8; ++i)
+					d[i] = ((uint8_t*)&Data3)[1 - i];
+
+				d[8] = Data4[0];
+				d[9] = Data4[1];
+				d[10] = Data4[2];
+				d[11] = Data4[3];
+				d[12] = Data4[4];
+				d[13] = Data4[5];
+				d[14] = Data4[6];
+				d[15] = Data4[7];
+
+                return d;
+            }
+
+        };
+
+        struct guid__
+        {
+            uint8_t data[16];
+
+            guid__(QRCode code)
+            {
+
+				data[0] = static_cast<uint8_t>(code.SpatialGraphNodeId().Data1 >> 24);
+				data[1] = static_cast<uint8_t>(code.SpatialGraphNodeId().Data1 >> 16);
+				data[2] = static_cast<uint8_t>(code.SpatialGraphNodeId().Data1 >> 8);
+				data[3] = static_cast<uint8_t>(code.SpatialGraphNodeId().Data1 >> 0);
+
+				data[4] = static_cast<uint8_t>(code.SpatialGraphNodeId().Data2 >> 8);
+				data[5] = static_cast<uint8_t>(code.SpatialGraphNodeId().Data2 >> 0);
+
+				data[6] = static_cast<uint8_t>(code.SpatialGraphNodeId().Data3 >> 8);
+				data[7] = static_cast<uint8_t>(code.SpatialGraphNodeId().Data3 >> 0);
+
+				data[8] = code.SpatialGraphNodeId().Data4[0];
+				data[9] = code.SpatialGraphNodeId().Data4[1];
+				data[10] = code.SpatialGraphNodeId().Data4[2];
+				data[11] = code.SpatialGraphNodeId().Data4[3];
+				data[12] = code.SpatialGraphNodeId().Data4[4];
+				data[13] = code.SpatialGraphNodeId().Data4[5];
+				data[14] = code.SpatialGraphNodeId().Data4[6];
+				data[15] = code.SpatialGraphNodeId().Data4[7];
+
+            }
+
         };
 
 
-        QRCode code = args.Code();
-        SpatialCoordinateSystem qr_coords = SpatialGraphInteropPreview::CreateCoordinateSystemForNode(code.SpatialGraphNodeId());
-        SpatialCoordinateSystem null_space = SpatialGraphInteropPreview::CreateCoordinateSystemForNode(code.SpatialGraphNodeId(), { 10, 0, 0 });
-        // winrt::guid const& nodeId, winrt::Windows::Foundation::Numerics::float3 const& relativePosition
-
-        //XrSpace target_space{};
-		// note(Ondra): this may be set to XR_SPATIAL_GRAPH_NODE_TYPE_DYNAMIC_MSFT if we want it to move
-
-        xr::SpaceHandle target_space{};
+		xr::SpaceHandle target_space{};
         XrSpatialGraphNodeSpaceCreateInfoMSFT* create_info = new XrSpatialGraphNodeSpaceCreateInfoMSFT();
         create_info->type = XR_TYPE_SPATIAL_GRAPH_NODE_SPACE_CREATE_INFO_MSFT;
-        guid_ g_data{ code };
-        create_info->nodeType = XR_SPATIAL_GRAPH_NODE_TYPE_STATIC_MSFT;
-        memcpy(create_info->nodeId, (void*)g_data.Data1, sizeof(guid_));
-        xrGetInstanceProcAddr(m_instance, XR_MSFT_SPATIAL_GRAPH_BRIDGE_EXTENSION_NAME, );
-        //xrCreateSpatialGraphNodeSpaceMSFT(m_session.Get(), create_info, target_space.Put());
+		guid__ g_data{ args.Code() };
+        // note(Ondra): this may be set to XR_SPATIAL_GRAPH_NODE_TYPE_DYNAMIC_MSFT if we want it to move
+		create_info->nodeType = XR_SPATIAL_GRAPH_NODE_TYPE_STATIC_MSFT;
 
-        //XrSceneObserverMSFT scene_obs{};
-        //xr::su::Scene* scene = new xr::su::Scene(m_extensions, scene_obs);
-        //std::vector<xr::su::SceneObject> objects_ = scene->GetObjects();
-        //for (xr::su::SceneObject o : objects_)
-        //{
-        //    //if (o.id == code.SpatialGraphNodeId()) // TypedUuid<SceneObject> : guid
-        //}
-
+        // TODO: test this?
         /*
-        xr::su::SceneObserver m_sceneObserver(m_extensions, m_session.Get());
-            static const std::vector<xr::su::SceneObject::Kind> kindFilter{ XR_SCENE_OBJECT_KIND_BACKGROUND_MSFT,
-                                                                            XR_SCENE_OBJECT_KIND_WALL_MSFT,
-                                                                            XR_SCENE_OBJECT_KIND_FLOOR_MSFT,
-                                                                            XR_SCENE_OBJECT_KIND_CEILING_MSFT,
-                                                                            XR_SCENE_OBJECT_KIND_PLATFORM_MSFT,
-                                                                            XR_SCENE_OBJECT_KIND_INFERRED_MSFT };
-            //std::vector<xr::su::SceneObject> objects_ = m_sceneObserver.CreateScene().get()->GetObjects(kindFilter);
-            xr::SceneBounds bounds{};
-            bounds.space = m_appSpace.Get();
-            //m_sceneObserver.ComputeNewScene();
-            xr::su::Scene* m_scene = m_sceneObserver.CreateScene().get();
-
-            xr::SpaceHandle new_space;
-            m_appSpace = new_space;
-
+		unsigned char const* GuidToByteArray(GUID const& g)
+        {
+        	return reinterpret_cast<unsigned char const*>(&g);
+        }
         */
+        //uint8_t __guid[16] = reinterpret_cast<unsigned char const*>(args.Code().SpatialGraphNodeId());
+        //winrt::unbox_value<Collections::IVector<unsigned char>>(args.Code().SpatialGraphNodeId());
+		
+        //memcpy(create_info->nodeId, (void*)args.Code().SpatialGraphNodeId().Data1, sizeof(guid_));
+        //memcpy(create_info->nodeId, (void*)g_data.Data1, sizeof(guid_));
+        
 
-        /*
-        winrt::Windows::Foundation::IReference<winrt::Windows::Foundation::Numerics::float4x4> m = qr_coords.TryGetTransformTo(null_space);
-        winrt::Windows::Foundation::Numerics::float4x4 vec = winrt::unbox_value<winrt::Windows::Foundation::Numerics::float4x4>(m);
+        // 200 (OK), 201 (Created), or 204 (No Content).
+        //uint8_t data__[16];
+        //for (int i = 0; i < 16; i++)
+        //    data__[i] = g_data.get_array()[i];
+        //// the data might not be in the correct order (little endiang..) -> get_array method
+        //std::copy(std::begin(data__), std::end(data__), std::begin(create_info->nodeId));
+        
+        // CHECK THIS!! VERY LIKELY IT WORKS!
+        memcpy(create_info->nodeId, g_data.data, sizeof(uint8_t)*16);
+        m_extensions.xrCreateSpatialGraphNodeSpaceMSFT(m_session.Get(), create_info, target_space.Put());
 
-
-
-        XrVector3f position{};
-        position.x = vec.m14;
-        position.y = vec.m24;
-        position.z = vec.m34;
-
-        XrVector3f scale{};
-        scale.x = vec.m11;
-        scale.y = vec.m22;
-        scale.z = vec.m33;
-        */
-
+        // tmp
+		//XrFrameWaitInfo frameWaitInfo{ XR_TYPE_FRAME_WAIT_INFO };
+		//XrFrameState frameState{ XR_TYPE_FRAME_STATE };
+		//CHECK_XRCMD(xrWaitFrame(m_session.Get(), &frameWaitInfo, &frameState));
+        //
+		//XrSpaceLocation spaceLocation{ XR_TYPE_SPACE_LOCATION };
+		//XrResult res = xrLocateSpace(target_space.Get(), m_appSpace.Get(), frameState.predictedDisplayTime, &spaceLocation);
+        
 	}
 
 

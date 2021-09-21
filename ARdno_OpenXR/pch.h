@@ -23,6 +23,7 @@
 
 #include <d3d11.h>
 
+#include <unknwn.h>
 #include <Unknwn.h>
 
 #define XR_USE_PLATFORM_WIN32

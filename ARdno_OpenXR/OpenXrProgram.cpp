@@ -600,6 +600,7 @@ namespace {
             qr_handle->m_session.m_handle = m_session.Get();
             qr_handle->m_extensions = m_extensions;
             qr_handle->m_instance = m_instance.Get();
+            qr_handle->m_appSpace.m_handle = m_appSpace.Get();
             qr_handle->initialize();
 
         }

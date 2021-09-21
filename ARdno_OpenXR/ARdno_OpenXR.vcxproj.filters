@@ -94,7 +94,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
-    <None Include="$(OpenXRLoaderBinaryRoot)\bin\openxr_loader.dll" />
     <None Include="html1.htm" />
   </ItemGroup>
   <ItemGroup>
