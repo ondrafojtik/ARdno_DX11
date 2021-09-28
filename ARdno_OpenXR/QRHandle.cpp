@@ -118,9 +118,11 @@ namespace qr_test
 		xr::SpaceHandle target_space{};
         XrSpatialGraphNodeSpaceCreateInfoMSFT* create_info = new XrSpatialGraphNodeSpaceCreateInfoMSFT();
         create_info->type = XR_TYPE_SPATIAL_GRAPH_NODE_SPACE_CREATE_INFO_MSFT;
-		guid__ g_data{ args.Code() };
+		guid_ g_data{ args.Code() };
         // note(Ondra): this may be set to XR_SPATIAL_GRAPH_NODE_TYPE_DYNAMIC_MSFT if we want it to move
 		create_info->nodeType = XR_SPATIAL_GRAPH_NODE_TYPE_STATIC_MSFT;
+        create_info->pose.orientation = xr::math::Quaternion::Identity();
+        create_info->pose.position = { 0, 0, 0 };
 
         // TODO: test this?
         /*
@@ -136,24 +138,35 @@ namespace qr_test
         //memcpy(create_info->nodeId, (void*)g_data.Data1, sizeof(guid_));
         
 
-        // 200 (OK), 201 (Created), or 204 (No Content).
+        QRVersion version = args.Code().Version();
+        winrt::guid g1 = args.Code().Id();
+		winrt::guid g2 = args.Code().SpatialGraphNodeId();
+        float side_len = args.Code().PhysicalSideLength();
+        //winrt::Windows::Foundation::DateTime tim = args.Code().LastDetectedTime();
+        //DateTime timee = winrt::unbox_value<DateTime>(args.Code().LastDetectedTime().IInspectable);
+        winrt::Windows::Foundation::DateTime a = args.Code().LastDetectedTime();
+        
+        int64_t tim = args.Code().LastDetectedTime().time_since_epoch().count();
+        
+        // 200 (OK), 201 (Created), or 204 (No Content). 204 == 0xcc
         //uint8_t data__[16];
         //for (int i = 0; i < 16; i++)
         //    data__[i] = g_data.get_array()[i];
         //// the data might not be in the correct order (little endiang..) -> get_array method
         //std::copy(std::begin(data__), std::end(data__), std::begin(create_info->nodeId));
         
+        //memcpy(create_info->nodeId, reinterpret_cast<void*>(&args.Code().SpatialGraphNodeId()), sizeof(uint8_t) * 16);
+        
+        //memcpy(create_info->nodeId, reinterpret_cast<void*>(&args.Code().SpatialGraphNodeId()), sizeof(uint8_t) * 16);
         // CHECK THIS!! VERY LIKELY IT WORKS!
-        memcpy(create_info->nodeId, g_data.data, sizeof(uint8_t)*16);
-        m_extensions.xrCreateSpatialGraphNodeSpaceMSFT(m_session.Get(), create_info, target_space.Put());
+        //memcpy(create_info->nodeId, (void*)g_data.Data1, sizeof(uint8_t)*16);
+        
+        memcpy(create_info->nodeId, reinterpret_cast<void*>(&g2), sizeof(uint8_t)*16);
+        XrResult res = m_extensions.xrCreateSpatialGraphNodeSpaceMSFT(m_session.Get(), create_info, target_space.Put());
 
         // tmp
-		//XrFrameWaitInfo frameWaitInfo{ XR_TYPE_FRAME_WAIT_INFO };
-		//XrFrameState frameState{ XR_TYPE_FRAME_STATE };
-		//CHECK_XRCMD(xrWaitFrame(m_session.Get(), &frameWaitInfo, &frameState));
-        //
-		//XrSpaceLocation spaceLocation{ XR_TYPE_SPACE_LOCATION };
-		//XrResult res = xrLocateSpace(target_space.Get(), m_appSpace.Get(), frameState.predictedDisplayTime, &spaceLocation);
+		XrSpaceLocation spaceLocation{ XR_TYPE_SPACE_LOCATION };
+		res = xrLocateSpace(target_space.Get(), m_appSpace.Get(), time, &spaceLocation);
         
 	}
 
@@ -169,3 +182,8 @@ namespace qr_test
     }
 
 }
+
+/*
+
+
+*/

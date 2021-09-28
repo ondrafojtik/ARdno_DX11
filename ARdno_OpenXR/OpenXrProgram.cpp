@@ -949,9 +949,10 @@ namespace {
             XrFrameWaitInfo frameWaitInfo{ XR_TYPE_FRAME_WAIT_INFO };
             XrFrameState frameState{ XR_TYPE_FRAME_STATE };
             CHECK_XRCMD(xrWaitFrame(m_session.Get(), &frameWaitInfo, &frameState));
-
             XrFrameBeginInfo frameBeginInfo{ XR_TYPE_FRAME_BEGIN_INFO };
             CHECK_XRCMD(xrBeginFrame(m_session.Get(), &frameBeginInfo));
+
+			qr_handle->time = frameState.predictedDisplayTime;
 
             // xrEndFrame can submit multiple layers. This sample submits one.
             std::vector<XrCompositionLayerBaseHeader*> layers;

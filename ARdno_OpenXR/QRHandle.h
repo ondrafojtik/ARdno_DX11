@@ -14,6 +14,7 @@ namespace qr_test
         xr::ExtensionDispatchTable m_extensions;
         XrInstance m_instance;
         xr::SpaceHandle m_appSpace;
+        XrTime time;
 
         void initialize();
         void OnAdded(const winrt::Windows::Foundation::IInspectable&, const QRCodeAddedEventArgs& args);
