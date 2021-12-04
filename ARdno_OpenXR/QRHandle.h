@@ -17,8 +17,8 @@ namespace qr_test
         XrTime time;
 
         void initialize();
-        void OnAdded(const winrt::Windows::Foundation::IInspectable&, const QRCodeAddedEventArgs& args);
-        void OnUpdated(const winrt::Windows::Foundation::IInspectable&, const QRCodeUpdatedEventArgs& args);
+        void OnAdded(const winrt::Windows::Foundation::IInspectable&, const winrt::Microsoft::MixedReality::QR::QRCodeAddedEventArgs& args);
+        void OnUpdated(const winrt::Windows::Foundation::IInspectable&, const winrt::Microsoft::MixedReality::QR::QRCodeUpdatedEventArgs& args);
         void OnEnumerationComplete(const winrt::Windows::Foundation::IInspectable&, const winrt::Windows::Foundation::IInspectable&);
     };
 

@@ -36,11 +36,12 @@
 //#include <openxr/openxr.h>
 //#include <openxr/openxr_platform.h>
 
-#include <XrUtility/XrError.h>
-#include <XrUtility/XrHandle.h>
-#include <XrUtility/XrMath.h>
-#include <XrUtility/XrString.h>
-#include <XrUtility/XrExtensions.h>
+#include <XrError.h>
+#include <XrHandle.h>
+#include <XrMath.h>
+#include <XrString.h>
+#include <XrExtensions.h>
+#include <XrSpatialGraphBridge.h>
 //#include "XrUtility/XrSceneUnderstanding.h"
 //#include "XrUtility/XrSceneUnderstanding.hpp"
 

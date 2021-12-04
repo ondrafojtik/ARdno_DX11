@@ -597,11 +597,13 @@ namespace {
             // saving is done when placing holograms
             m_holograms.clear();
 #endif
-            qr_handle->m_session.m_handle = m_session.Get();
-            qr_handle->m_extensions = m_extensions;
-            qr_handle->m_instance = m_instance.Get();
-            qr_handle->m_appSpace.m_handle = m_appSpace.Get();
-            qr_handle->initialize();
+            // TODO: QR
+            //qr_handle->m_session.m_handle = m_session.Get();
+            //qr_handle->m_extensions = m_extensions;
+            //qr_handle->m_instance = m_instance.Get();
+            //qr_handle->m_appSpace.m_handle = m_appSpace.Get();
+            //qr_handle->initialize();
+            initialize();
 
         }
 
@@ -929,8 +931,8 @@ namespace {
                         else if (side == RightSide)
                         {
                             // re-init the app-space (the space-origin has changed)
-                            space_origin = handLocation.pose;
-                            hologram_space_origin = CreateHologram(handLocation.pose, placementTime, ObjectType::Cube);
+                            //space_origin = handLocation.pose;
+                            //hologram_space_origin = CreateHologram(handLocation.pose, placementTime, ObjectType::Cube);
                             InitializeApplication();
 
                         }
@@ -952,7 +954,7 @@ namespace {
             XrFrameBeginInfo frameBeginInfo{ XR_TYPE_FRAME_BEGIN_INFO };
             CHECK_XRCMD(xrBeginFrame(m_session.Get(), &frameBeginInfo));
 
-			qr_handle->time = frameState.predictedDisplayTime;
+			//current_time = frameState.predictedDisplayTime;
 
             // xrEndFrame can submit multiple layers. This sample submits one.
             std::vector<XrCompositionLayerBaseHeader*> layers;
@@ -1030,6 +1032,8 @@ namespace {
                 DEBUG_PRINT("xrLocateViews returned an invalid pose.");
                 return false; // Skip rendering layers if view location is invalid
             }
+
+            current_time = predictedDisplayTime;
 
             std::vector<const sample::Cube*> visibleCubes;
             std::vector<const sample::Cube*> visibleQuads;
@@ -1230,7 +1234,80 @@ namespace {
             return xr::StringToPath(m_instance.Get(), string);
         }
 
+
+        void initialize() 
+        {
+			using namespace winrt::Windows::Foundation;
+			using namespace winrt::Microsoft::MixedReality::QR;
+
+			if (watcher.IsSupported())
+			{
+				QRCodeWatcherAccessStatus status = QRCodeWatcher::RequestAccessAsync().get();
+				if (status == QRCodeWatcherAccessStatus::Allowed)
+				{
+					watcher = QRCodeWatcher();
+					watcher.Added({ this, &ImplementOpenXrProgram::OnAdded });
+					watcher.Updated({ this, &ImplementOpenXrProgram::OnUpdated });
+					watcher.EnumerationCompleted({ this, &ImplementOpenXrProgram::OnEnumerationComplete });
+					watcher.Start();
+				}
+
+			}
+        }
+        void OnAdded(const winrt::Windows::Foundation::IInspectable&, const winrt::Microsoft::MixedReality::QR::QRCodeAddedEventArgs& args)
+        {
+            using namespace winrt::Windows::Perception::Spatial;
+            using namespace winrt::Windows::Perception::Spatial::Preview;
+            using namespace winrt::Windows::Foundation::Numerics;
+            using namespace winrt::Windows::Perception::Spatial;
+
+            //xr::SpatialGraphStaticNodeBindingHandle node_binding = TryCreateSpatialGraphStaticNodeBinding(m_extensions, m_session, );
+            //XrSpatialGraphStaticNodeBindingPropertiesMSFT node_binding{};
+			
+            /*
+			XrPosef pose{};
+			pose.position = { 1, 0, 0 };
+			pose.orientation = xr::math::Quaternion::Identity();
+
+            xr::SpaceHandle space;
+            xr::SpatialGraphStaticNodeBindingHandle node_binding = TryCreateSpatialGraphStaticNodeBinding(m_extensions, m_session.Get(), m_appSpace.Get(), pose, current_time);
+            xr::SpatialGraphStaticNodeBindingProperties properties = GetSpatialGraphStaticNodeBindingProperties(m_extensions, node_binding.Get());
+
+            xr::SpaceHandle target_space = xr::CreateSpatialGraphNodeSpace(m_extensions, m_session.Get(), XR_SPATIAL_GRAPH_NODE_TYPE_STATIC_MSFT, properties.nodeId, pose);
+            */
+
+            //xr::SpaceHandle space1 = CreateSpatialGraphNodeSpace(m_extensions, m_session, XR_SPATIAL_GRAPH_NODE_TYPE_STATIC_MSFT, xr::GetNodeIdAsGuid(node_binding.Get()), pose);
+
+            XrPosef pose = xr::math::Pose::Identity();
+            hologram_space_origin = CreateHologram(pose, current_time, ObjectType::Cube);
+
+            GUID nodeId = args.Code().SpatialGraphNodeId();
+            hologram_space_origin.Cube.Space = CreateSpatialGraphNodeSpace(m_extensions, m_session.Get(), XR_SPATIAL_GRAPH_NODE_TYPE_STATIC_MSFT, nodeId, pose);
+           
+			XrSpaceLocation spaceLocation{ XR_TYPE_SPACE_LOCATION };
+			XrResult res = xrLocateSpace(hologram_space_origin.Cube.Space.Get(), m_appSpace.Get(), current_time, &spaceLocation);
+            
+            if (xr::math::Pose::IsPoseValid(spaceLocation))
+				hologram_space_origin = CreateHologram(spaceLocation.pose, current_time, ObjectType::Cube);
+
+
+        }
+        void OnUpdated(const winrt::Windows::Foundation::IInspectable&, const winrt::Microsoft::MixedReality::QR::QRCodeUpdatedEventArgs& args) 
+        {
+			//XrSpaceLocation spaceLocation{ XR_TYPE_SPACE_LOCATION };
+			//XrResult res = xrLocateSpace(hologram_space_origin.Cube.Space.Get(), //m_appSpace.Get(), current_time, &spaceLocation);
+            //
+			//if (xr::math::Pose::IsPoseValid(spaceLocation))
+            //    hologram_space_origin = CreateHologram(spaceLocation.pose, current_time, ObjectType::Cube);
+
+        }
+        void OnEnumerationComplete(const winrt::Windows::Foundation::IInspectable&, const winrt::Windows::Foundation::IInspectable&) { ; }
+
     private:
+        winrt::Microsoft::MixedReality::QR::QRCodeWatcher watcher{ nullptr };
+        XrTime current_time{1};
+
+
         constexpr static XrFormFactor m_formFactor{ XR_FORM_FACTOR_HEAD_MOUNTED_DISPLAY };
         constexpr static XrViewConfigurationType m_primaryViewConfigType{ XR_VIEW_CONFIGURATION_TYPE_PRIMARY_STEREO };
         constexpr static uint32_t m_stereoViewCount = 2; // 0 - left eye, 1 - right eye

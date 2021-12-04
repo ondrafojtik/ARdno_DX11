@@ -88,6 +88,7 @@
     <ClInclude Include="CubeShader.h" />
     <ClInclude Include="QuadShader.h" />
     <ClInclude Include="QRHandle.h" />
+    <ClInclude Include="XrSpatialGraphBridge.h" />
   </ItemGroup>
   <ItemGroup>
     <AppxManifest Include="Package.appxmanifest" />
@@ -95,6 +96,7 @@
   <ItemGroup>
     <None Include="packages.config" />
     <None Include="html1.htm" />
+    <None Include="$(OpenXRLoaderBinaryRoot)\bin\openxr_loader.dll" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="Assets\SmallTile.scale-100.png">
