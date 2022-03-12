@@ -18,7 +18,7 @@
 #include "OpenXrProgram.h"
 
 // winrt wrap for QR lib
-// I cant use c++20 because of /WZ. Thats why Ive got to get around c++17 limitations around by using winrt wrap ( .get() ).. 
+// I cant use c++20 because of /WZ. Thats why Ive got to get around c++17 limitations around by using winrt wrap ( .get() )..
 
 //#include <experimental/resumable>
 //#include <experimental/coroutine>
@@ -1235,7 +1235,7 @@ namespace {
         }
 
 
-        void initialize() 
+        void initialize()
         {
 			using namespace winrt::Windows::Foundation;
 			using namespace winrt::Microsoft::MixedReality::QR;
@@ -1261,38 +1261,21 @@ namespace {
             using namespace winrt::Windows::Foundation::Numerics;
             using namespace winrt::Windows::Perception::Spatial;
 
-            //xr::SpatialGraphStaticNodeBindingHandle node_binding = TryCreateSpatialGraphStaticNodeBinding(m_extensions, m_session, );
-            //XrSpatialGraphStaticNodeBindingPropertiesMSFT node_binding{};
-			
-            /*
-			XrPosef pose{};
-			pose.position = { 1, 0, 0 };
-			pose.orientation = xr::math::Quaternion::Identity();
-
-            xr::SpaceHandle space;
-            xr::SpatialGraphStaticNodeBindingHandle node_binding = TryCreateSpatialGraphStaticNodeBinding(m_extensions, m_session.Get(), m_appSpace.Get(), pose, current_time);
-            xr::SpatialGraphStaticNodeBindingProperties properties = GetSpatialGraphStaticNodeBindingProperties(m_extensions, node_binding.Get());
-
-            xr::SpaceHandle target_space = xr::CreateSpatialGraphNodeSpace(m_extensions, m_session.Get(), XR_SPATIAL_GRAPH_NODE_TYPE_STATIC_MSFT, properties.nodeId, pose);
-            */
-
-            //xr::SpaceHandle space1 = CreateSpatialGraphNodeSpace(m_extensions, m_session, XR_SPATIAL_GRAPH_NODE_TYPE_STATIC_MSFT, xr::GetNodeIdAsGuid(node_binding.Get()), pose);
-
             XrPosef pose = xr::math::Pose::Identity();
             hologram_space_origin = CreateHologram(pose, current_time, ObjectType::Cube);
 
             GUID nodeId = args.Code().SpatialGraphNodeId();
             hologram_space_origin.Cube.Space = CreateSpatialGraphNodeSpace(m_extensions, m_session.Get(), XR_SPATIAL_GRAPH_NODE_TYPE_STATIC_MSFT, nodeId, pose);
-           
+
 			XrSpaceLocation spaceLocation{ XR_TYPE_SPACE_LOCATION };
 			XrResult res = xrLocateSpace(hologram_space_origin.Cube.Space.Get(), m_appSpace.Get(), current_time, &spaceLocation);
-            
+
             if (xr::math::Pose::IsPoseValid(spaceLocation))
 				hologram_space_origin = CreateHologram(spaceLocation.pose, current_time, ObjectType::Cube);
 
 
         }
-        void OnUpdated(const winrt::Windows::Foundation::IInspectable&, const winrt::Microsoft::MixedReality::QR::QRCodeUpdatedEventArgs& args) 
+        void OnUpdated(const winrt::Windows::Foundation::IInspectable&, const winrt::Microsoft::MixedReality::QR::QRCodeUpdatedEventArgs& args)
         {
 			//XrSpaceLocation spaceLocation{ XR_TYPE_SPACE_LOCATION };
 			//XrResult res = xrLocateSpace(hologram_space_origin.Cube.Space.Get(), //m_appSpace.Get(), current_time, &spaceLocation);
@@ -1348,7 +1331,7 @@ namespace {
         XrPosef space_origin = xr::math::Pose::Identity();
         XrPosef test = xr::math::Pose::Identity();
         qr_test::QRHandle* qr_handle = new qr_test::QRHandle();
-        
+
         sample::Cube m_light;
 
         std::optional<uint32_t> m_mainCubeIndex;
