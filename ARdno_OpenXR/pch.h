@@ -1,6 +1,7 @@
 ﻿#pragma once
 
 #define _XM_NO_INTRINSICS_
+#define _CRT_SECURE_NO_WARNINGS
 
 #include <memory>
 #include <string>

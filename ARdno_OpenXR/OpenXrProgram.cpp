@@ -1141,6 +1141,8 @@ namespace {
                 m_renderResources->DepthInfoViews.resize(viewCount);
             }
 
+            // TODO
+
             // Swapchain is acquired, rendered to, and released together for all views as texture array
             const SwapchainD3D11& colorSwapchain = m_renderResources->ColorSwapchain;
             const SwapchainD3D11& depthSwapchain = m_renderResources->DepthSwapchain;
@@ -1269,6 +1271,9 @@ namespace {
 
 			XrSpaceLocation spaceLocation{ XR_TYPE_SPACE_LOCATION };
 			XrResult res = xrLocateSpace(hologram_space_origin.Cube.Space.Get(), m_appSpace.Get(), current_time, &spaceLocation);
+
+            winrt::hstring decoded = args.Code().Data();
+            std::string decoded_ = winrt::to_string(decoded);
 
             if (xr::math::Pose::IsPoseValid(spaceLocation))
 				hologram_space_origin = CreateHologram(spaceLocation.pose, current_time, ObjectType::Cube);

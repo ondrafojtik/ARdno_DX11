@@ -146,6 +146,7 @@ namespace CubeShader {
                 output.texCoord = input.texCoord;
 
                 output.normal = mul((float3x3)inverse(transpose(Model)), input.Color);
+                output.normal = input.Color;
 
                 output.lightPos = lightPos.xyz;
                 output.viewId = input.instId;
@@ -166,6 +167,14 @@ namespace CubeShader {
                 float3 result = mul((diffuseStrength + ambientStrength), albedo.xyz);
                 float4 _result = float4(result, 1.0f);
                 float4 _color = float4(ambient, 1.0f) + float4(diffuse, 1.0f);
+                //norm.x = (norm.x + 1.0f) / 3;
+                //norm.y = (norm.y + 1.0f) / 3;
+                //norm.z = (norm.z + 1.0f) / 3;
+                norm.x = abs(norm.x);
+                norm.y = abs(norm.y);
+                norm.z = abs(norm.z);
+
+                _result = float4(norm.x, norm.y, norm.z, 1.0f);
                 return _result;
             }
             )_";

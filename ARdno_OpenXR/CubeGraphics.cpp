@@ -46,6 +46,9 @@
 #include "CubeShader.h"
 #include "QuadShader.h"
 
+#include "DirectXMesh.h"
+#include "WaveFrontReader.h"
+
 namespace {
     
 
@@ -105,8 +108,18 @@ namespace {
 		std::vector<std::string> paths;
 		std::vector<Model*> models;
 
+		const wchar_t* GetWC(const char* c)
+		{
+			const size_t cSize = strlen(c) + 1;
+			wchar_t* wc = new wchar_t[cSize];
+			mbstowcs(wc, c, cSize);
+
+			return wc;
+		}
+
 		void init()
 		{
+		
 			using namespace winrt;
 			using namespace winrt::Windows::Foundation;
 			using namespace winrt::Windows::Storage;
@@ -119,6 +132,7 @@ namespace {
 			// saved
 			std::vector<std::string> obj_files_;
 			std::string data_file;
+			std::vector<std::string> model_files_;
 
 			for (StorageFolder& folder : folderList)
 			{
@@ -136,6 +150,54 @@ namespace {
 						data_file = name;
 					}
 				}
+				if (name == "ARdno_models")
+				{
+					StorageFolder modelFolder = folder;
+					Collections::IVectorView<StorageFile> model_files = modelFolder.GetFilesAsync().get();
+					for (StorageFile const& file : model_files)
+					{
+						std::string name = winrt::to_string(file.Path());
+						model_files_.push_back(name);
+
+						file.CopyAsync(ApplicationData::Current().LocalFolder());
+						Collections::IVectorView<StorageFile> local_files = ApplicationData::Current().LocalFolder().GetFilesAsync().get();
+						file.CopyAsync(ApplicationData::Current().TemporaryFolder());
+						Collections::IVectorView<StorageFile> temporary_files = ApplicationData::Current().TemporaryFolder().GetFilesAsync().get();
+
+						std::string model_name_local;
+						for (StorageFile fi : local_files)
+						{
+							model_name_local = winrt::to_string(fi.Path());
+						}
+						std::string model_name_temp;
+						for (StorageFile fi : temporary_files)
+						{
+							model_name_temp = winrt::to_string(fi.Path());
+						}
+						// TEST
+						
+						// C:\\Data\\Users\\myaccount\\Pictures\\ARdno_models\\stul__.obj
+						// C:\\Data\\Users\\myaccount\\AppData\\Local\\Packages\\6ced5e23-4d0b-4988-8cc6-0c35d8d3d1ce_cjak5k6ym8keg\\TempState\\stul__.obj
+						// C:\\Data\\Users\\myaccount\\AppData\\Local\\Packages\\6ced5e23-4d0b-4988-8cc6-0c35d8d3d1ce_cjak5k6ym8keg\\LocalState\\stul__.obj
+
+
+						WaveFrontReader<uint16_t> reader;
+						std::string model__ = model_name_local;
+						std::wstring model_name_(model__.begin(), model__.end());
+						HRESULT re = reader.Load(model_name_.c_str());
+						
+						//std::wstring model_name_(GetWC(model_name_local.c_str()));
+
+						//HRESULT re = reader.Load(L"stul__.obj");
+						//HRESULT re = reader.Load(file_path__.c_str());
+						//std::wstring path_(name.begin(), name.end());
+						//HRESULT re = reader.Load(GetWC(winrt::to_string(file.Path()).c_str()), 0);
+						
+						std::string t_ = winrt::to_string(model_name_);
+
+					}
+				}
+
 				// loading actuall models..
 				if (name == "ARdno_obj")
 				{
@@ -230,6 +292,8 @@ namespace {
 
 
 			}
+
+			
 		}
 	};
 
@@ -462,21 +526,6 @@ namespace {
 			ID3D11RenderTargetView* renderTargets[] = { renderTargetView.get() };
 			m_deviceContext->OMSetRenderTargets((UINT)std::size(renderTargets), renderTargets, depthStencilView.get());
 
-			CubeShader::ColorBuffer colorCBuffer;
-			//colorCBuffer.Color = DirectX::XMFLOAT4(0.8f, 0.0f, 0.0f, 1.0f);
-			colorCBuffer.Color = DirectX::XMFLOAT4(0.85f, 0.2f, 0.1f, 1.0f);
-
-			CubeShader::LightPosBuffer lightPosCBuffer;
-			lightPosCBuffer.lightPos = DirectX::XMFLOAT4(light.PoseInAppSpace.position.x, light.PoseInAppSpace.position.y, light.PoseInAppSpace.position.z, 1.0f);
-
-
-			m_deviceContext->UpdateSubresource(m_colorCBuffer.get(), 0, nullptr, &colorCBuffer, 0, 0);
-			m_deviceContext->UpdateSubresource(m_lightPosCBuffer.get(), 0, nullptr, &lightPosCBuffer, 0, 0);
-
-			ID3D11Buffer* const constantBuffers[] = { m_modelCBuffer.get(), m_viewProjectionCBuffer.get(), m_colorCBuffer.get(), m_lightPosCBuffer.get() };
-			m_deviceContext->VSSetConstantBuffers(0, (UINT)std::size(constantBuffers), constantBuffers);
-			m_deviceContext->PSSetSamplers(0, 1, sampler_state.GetAddressOf());
-
 			CubeShader::ViewProjectionConstantBuffer viewProjectionCBufferData{};
 
 			for (uint32_t k = 0; k < viewInstanceCount; k++) {
@@ -486,8 +535,29 @@ namespace {
 				// Set view projection matrix for each view, transpose for shader usage.
 				DirectX::XMStoreFloat4x4(&viewProjectionCBufferData.ViewProjection[k],
 					DirectX::XMMatrixTranspose(spaceToView * projectionMatrix));
+
+				light_pos.x = spaceToView._41;
+				light_pos.y = spaceToView._42;
+				light_pos.z = spaceToView._43;
+
 			}
 			m_deviceContext->UpdateSubresource(m_viewProjectionCBuffer.get(), 0, nullptr, &viewProjectionCBufferData, 0, 0);
+
+
+			CubeShader::ColorBuffer colorCBuffer;
+			//colorCBuffer.Color = DirectX::XMFLOAT4(0.8f, 0.0f, 0.0f, 1.0f);
+			colorCBuffer.Color = DirectX::XMFLOAT4(0.85f, 0.2f, 0.1f, 1.0f);
+
+			CubeShader::LightPosBuffer lightPosCBuffer;
+			lightPosCBuffer.lightPos = DirectX::XMFLOAT4(light_pos.x, light_pos.y, light_pos.z, 1.0f);
+			//lightPosCBuffer.lightPos = DirectX::XMFLOAT4(light.PoseInAppSpace.position.x, light.PoseInAppSpace.position.y, light.PoseInAppSpace.position.z, 1.0f);
+			
+			m_deviceContext->UpdateSubresource(m_colorCBuffer.get(), 0, nullptr, &colorCBuffer, 0, 0);
+			m_deviceContext->UpdateSubresource(m_lightPosCBuffer.get(), 0, nullptr, &lightPosCBuffer, 0, 0);
+			
+			ID3D11Buffer* const constantBuffers[] = { m_modelCBuffer.get(), m_viewProjectionCBuffer.get(), m_colorCBuffer.get(), m_lightPosCBuffer.get() };
+			m_deviceContext->VSSetConstantBuffers(0, (UINT)std::size(constantBuffers), constantBuffers);
+			m_deviceContext->PSSetSamplers(0, 1, sampler_state.GetAddressOf());
 
 			m_deviceContext->VSSetShader(m_CubeVertexShader.get(), nullptr, 0);
 			m_deviceContext->PSSetShader(m_CubePixelShader.get(), nullptr, 0);
@@ -618,6 +688,8 @@ namespace {
 
 		objLoader loader{};
 		int32_t id_hologram_to_render = 0;
+
+		DirectX::XMFLOAT3 light_pos{0, 0, 0};
 
 	};
 } // namespace
