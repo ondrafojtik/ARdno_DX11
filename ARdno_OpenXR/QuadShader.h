@@ -16,6 +16,79 @@ namespace QuadShader {
 	};
 	constexpr uint32_t MaxViewInstance = 2;
 
+	inline std::vector<unsigned short> get_picture_ib()
+	{
+		std::vector<unsigned short> ib;
+		ib.push_back(0);
+		ib.push_back(1);
+		ib.push_back(2);
+
+		ib.push_back(2);
+		ib.push_back(3);
+		ib.push_back(0);
+
+		return ib;
+	}
+
+	inline std::vector<Vertex> get_picture_vb()
+	{
+		std::vector<Vertex> _vertices;
+
+		// Vertex 1
+		{
+			Vertex v;
+			v.Position.x = 0.0f;
+			v.Position.y = -0.5f;
+			v.Position.z = -0.5f;
+
+			v.Color = { 1.0f, 1.0f, 1.0f };
+
+			v.TexCoords.x = 0.0f;
+			v.TexCoords.y = 0.0f;
+			_vertices.push_back(v);
+		}
+		// Vertex 2
+		{
+			Vertex v;
+			v.Position.x = 0.0f;
+			v.Position.y = -0.5f;
+			v.Position.z =  0.5f;
+
+			v.Color = { 1.0f, 1.0f, 1.0f };
+
+			v.TexCoords.x = 0.0f;
+			v.TexCoords.y = 1.0f;
+			_vertices.push_back(v);
+		}
+		// Vertex 3
+		{
+			Vertex v;
+			v.Position.x = 0.0f;
+			v.Position.y = 0.5f;
+			v.Position.z = 0.5f;
+
+			v.Color = { 1.0f, 1.0f, 1.0f };
+
+			v.TexCoords.x = 1.0f;
+			v.TexCoords.y = 1.0f;
+			_vertices.push_back(v);
+		}
+		// Vertex 4	
+		{
+		Vertex v;
+			v.Position.x = 0.0f;
+			v.Position.y =  0.5f;
+			v.Position.z = -0.5f;
+
+			v.Color = { 1.0f, 1.0f, 1.0f };
+
+			v.TexCoords.x = 1.0f;
+			v.TexCoords.y = 0.0f;
+			_vertices.push_back(v);
+		}
+		return _vertices;
+	}
+
 	inline std::vector<Vertex> get_vb_with_text(std::string text)
 	{
 		int32_t size = text.size();

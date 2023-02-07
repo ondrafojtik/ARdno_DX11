@@ -267,6 +267,79 @@
     <Image Include="Assets\space_origin2_final.png">
       <Filter>Assets</Filter>
     </Image>
+    <Image Include="..\..\..\Users\Ondra-PC\Desktop\semestral\snimky\1.jpg">
+      <Filter>Assets</Filter>
+    </Image>
+    <Image Include="icon1.ico" />
+    <Image Include="..\..\..\Users\Ondra-PC\Desktop\semestral\snimky\png\Screenshot 2022-04-29 113239.png">
+      <Filter>Assets</Filter>
+    </Image>
+    <Image Include="..\..\..\Users\Ondra-PC\Desktop\semestral\snimky\png\1.png">
+      <Filter>Assets</Filter>
+    </Image>
+    <Image Include="Assets\1.png">
+      <Filter>Assets</Filter>
+    </Image>
+    <Image Include="Assets\2.png">
+      <Filter>Assets</Filter>
+    </Image>
+    <Image Include="Assets\3.png">
+      <Filter>Assets</Filter>
+    </Image>
+    <Image Include="Assets\4.png">
+      <Filter>Assets</Filter>
+    </Image>
+    <Image Include="Assets\5.png">
+      <Filter>Assets</Filter>
+    </Image>
+    <Image Include="Assets\6.png">
+      <Filter>Assets</Filter>
+    </Image>
+    <Image Include="Assets\7.png">
+      <Filter>Assets</Filter>
+    </Image>
+    <Image Include="Assets\8.png">
+      <Filter>Assets</Filter>
+    </Image>
+    <Image Include="Assets\9.png">
+      <Filter>Assets</Filter>
+    </Image>
+    <Image Include="Assets\10.png">
+      <Filter>Assets</Filter>
+    </Image>
+    <Image Include="Assets\11.png">
+      <Filter>Assets</Filter>
+    </Image>
+    <Image Include="Assets\12.png">
+      <Filter>Assets</Filter>
+    </Image>
+    <Image Include="Assets\13.png">
+      <Filter>Assets</Filter>
+    </Image>
+    <Image Include="Assets\14.png">
+      <Filter>Assets</Filter>
+    </Image>
+    <Image Include="Assets\15.png">
+      <Filter>Assets</Filter>
+    </Image>
+    <Image Include="Assets\16.png">
+      <Filter>Assets</Filter>
+    </Image>
+    <Image Include="Assets\17.png">
+      <Filter>Assets</Filter>
+    </Image>
+    <Image Include="Assets\18.png">
+      <Filter>Assets</Filter>
+    </Image>
+    <Image Include="Assets\19.png">
+      <Filter>Assets</Filter>
+    </Image>
+    <Image Include="Assets\20.png">
+      <Filter>Assets</Filter>
+    </Image>
+    <Image Include="Assets\21.png">
+      <Filter>Assets</Filter>
+    </Image>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="ARdno_OpenXR.rc" />

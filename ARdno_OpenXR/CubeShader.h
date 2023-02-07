@@ -3,7 +3,7 @@
 namespace CubeShader {
 	struct Vertex {
 		XrVector3f Position;
-		XrVector3f Color;
+		XrVector3f Color; // color == normal
 		XrVector2f TexCoords;
 	};
 

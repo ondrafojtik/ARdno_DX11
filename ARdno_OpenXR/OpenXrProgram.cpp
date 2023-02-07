@@ -27,7 +27,7 @@
 
 
 
-#define VERSION_D 1
+#define VERSION_D 0
 
 
 namespace util
@@ -916,24 +916,30 @@ namespace {
                     {
                         if (side == LeftSide)
                         {
+                            should_render_next_hologram = true;
+                            InitializeApplication();
 
-#if VERSION_D
                             // for the "d" version
                             // toggle which hologram to display
-                            should_render_next_hologram = true;
-#else
-                            m_holograms.push_back(CreateHologram(handLocation.pose, placementTime, ObjectType::Quad));
-                            m_holograms[m_holograms.size() - 1].Cube.text = "SAMPLE TEXT";
-
+                            //should_render_next_hologram = true;
+                            //
+                            //m_holograms.push_back(createhologram(handlocation.pose, placementtime, objecttype::quad));
+                            //m_holograms[m_holograms.size() - 1].Cube.text = std::to_string(handLocation.pose.position.x);
+                            
                             save_objects();
-#endif
                         }
                         else if (side == RightSide)
                         {
+                            should_render_model = !should_render_model;
                             // re-init the app-space (the space-origin has changed)
                             //space_origin = handLocation.pose;
                             //hologram_space_origin = CreateHologram(handLocation.pose, placementTime, ObjectType::Cube);
-                            InitializeApplication();
+
+                            
+                            // this is temporary -> indicates loading of next object
+
+                            //should_render_next_hologram = true;
+                            
 
                         }
 
@@ -1097,6 +1103,8 @@ namespace {
                         {
                             cube.PoseInAppSpace = cubeSpaceInAppSpace.pose;
                         }
+                        // TODO
+                        //right_hand_position = cube.PoseInAppSpace.position;
                         visibleSpaceOrigins.push_back(&cube);
                     }
                 }
@@ -1124,7 +1132,9 @@ namespace {
 
             UpdateVisibleQuad(m_cubesInHand[LeftSide]);
             m_cubesInHand[LeftSide].text = "SAMPLE";
-            UpdateVisibleSpaceOrigin(m_cubesInHand[RightSide]);
+            
+            // #TODO: visible on right hand
+            //UpdateVisibleSpaceOrigin(m_cubesInHand[RightSide]);
             UpdateVisibleSpaceOrigin(hologram_space_origin.Cube);
 
             for (auto& hologram : m_holograms)
@@ -1202,7 +1212,9 @@ namespace {
                 visibleQuads,
                 m_light,
                 visibleSpaceOrigins,
-                should_render_next_hologram);
+                should_render_next_hologram,
+                should_render_model,
+                right_hand_position);
 
             should_render_next_hologram = false;
 
@@ -1332,6 +1344,8 @@ namespace {
         std::vector<Hologram> m_holograms;
         Hologram hologram_space_origin;
         bool should_render_next_hologram = false;
+        bool should_render_model = false;
+        XrVector3f right_hand_position{ 0, 0, 0 };
 
         XrPosef space_origin = xr::math::Pose::Identity();
         XrPosef test = xr::math::Pose::Identity();

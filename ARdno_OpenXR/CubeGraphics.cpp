@@ -103,10 +103,20 @@ namespace {
 		Model() { ; }
 	};
 
+	struct DxModel
+	{
+		
+	};
+
 	struct objLoader
 	{
 		std::vector<std::string> paths;
 		std::vector<Model*> models;
+		Model* liver_model = nullptr;
+		WaveFrontReader<uint16_t> reader;
+		std::vector<std::string> model_name_local;
+		int iterator = 0;
+		bool loaded = false;
 
 		const wchar_t* GetWC(const char* c)
 		{
@@ -117,13 +127,67 @@ namespace {
 			return wc;
 		}
 
+		void load_next_model()
+		{
+			if (loaded)
+				return;
+
+			for (std::string model : model_name_local)
+			{
+
+				std::string model__ = model;
+				iterator += 1;
+
+				std::wstring model_name_(model__.begin(), model__.end());
+
+				// TODO loading
+				if (!loaded)
+					HRESULT re = reader.Load(model_name_.c_str());
+
+				// convert form WaveFrontReader style to my style
+
+				std::vector<CubeShader::Vertex> vertices;
+				std::vector<unsigned short> indices;
+
+
+				//struct Vertex
+				//{
+				//	DirectX::XMFLOAT3 position;
+				//	DirectX::XMFLOAT3 normal;
+				//	DirectX::XMFLOAT2 textureCoordinate;
+				//};
+
+
+				for (auto vertex : reader.vertices)
+				{
+					CubeShader::Vertex v{};
+					v.Position = { vertex.position.x, vertex.position.y, vertex.position.z };
+					v.Color = { vertex.normal.x, vertex.normal.y, vertex.normal.z };
+					v.TexCoords = { vertex.textureCoordinate.x, vertex.textureCoordinate.y };
+					vertices.push_back(v);
+				}
+
+				for (auto index : reader.indices)
+					indices.push_back(index);
+
+
+				Mesh* m = new Mesh(vertices, indices);
+
+				models[0]->meshes.push_back(m);
+			}
+			loaded = true;
+
+		}
+
 		void init()
 		{
 		
 			using namespace winrt;
 			using namespace winrt::Windows::Foundation;
 			using namespace winrt::Windows::Storage;
-
+			
+			models.push_back(new Model());
+			models.push_back(new Model());
 			models.push_back(new Model());
 
 			StorageFolder picturesFolder = KnownFolders::GetFolderForUserAsync(nullptr, KnownFolderId::PicturesLibrary).get();
@@ -154,48 +218,30 @@ namespace {
 				{
 					StorageFolder modelFolder = folder;
 					Collections::IVectorView<StorageFile> model_files = modelFolder.GetFilesAsync().get();
+					
+					//ApplicationData::Current().LocalFolder().DeleteAsync().get(); // THIS DELETES THE LOCAL FOLDER
+					
+					for (StorageFile const& file : ApplicationData::Current().TemporaryFolder().GetFilesAsync().get())
+					{
+						file.DeleteAsync();
+					}
+
+
+					// copy data to local
 					for (StorageFile const& file : model_files)
 					{
-						std::string name = winrt::to_string(file.Path());
-						model_files_.push_back(name);
-
-						file.CopyAsync(ApplicationData::Current().LocalFolder());
-						Collections::IVectorView<StorageFile> local_files = ApplicationData::Current().LocalFolder().GetFilesAsync().get();
 						file.CopyAsync(ApplicationData::Current().TemporaryFolder());
-						Collections::IVectorView<StorageFile> temporary_files = ApplicationData::Current().TemporaryFolder().GetFilesAsync().get();
-
-						std::string model_name_local;
-						for (StorageFile fi : local_files)
-						{
-							model_name_local = winrt::to_string(fi.Path());
-						}
-						std::string model_name_temp;
-						for (StorageFile fi : temporary_files)
-						{
-							model_name_temp = winrt::to_string(fi.Path());
-						}
-						// TEST
 						
-						// C:\\Data\\Users\\myaccount\\Pictures\\ARdno_models\\stul__.obj
-						// C:\\Data\\Users\\myaccount\\AppData\\Local\\Packages\\6ced5e23-4d0b-4988-8cc6-0c35d8d3d1ce_cjak5k6ym8keg\\TempState\\stul__.obj
-						// C:\\Data\\Users\\myaccount\\AppData\\Local\\Packages\\6ced5e23-4d0b-4988-8cc6-0c35d8d3d1ce_cjak5k6ym8keg\\LocalState\\stul__.obj
-
-
-						WaveFrontReader<uint16_t> reader;
-						std::string model__ = model_name_local;
-						std::wstring model_name_(model__.begin(), model__.end());
-						HRESULT re = reader.Load(model_name_.c_str());
-						
-						//std::wstring model_name_(GetWC(model_name_local.c_str()));
-
-						//HRESULT re = reader.Load(L"stul__.obj");
-						//HRESULT re = reader.Load(file_path__.c_str());
-						//std::wstring path_(name.begin(), name.end());
-						//HRESULT re = reader.Load(GetWC(winrt::to_string(file.Path()).c_str()), 0);
-						
-						std::string t_ = winrt::to_string(model_name_);
-
 					}
+
+					
+					Collections::IVectorView<StorageFile> local_files = ApplicationData::Current().TemporaryFolder().GetFilesAsync().get();
+					for (StorageFile const& file : local_files)
+					{
+						model_name_local.push_back(winrt::to_string(file.Path()));
+					}
+
+					
 				}
 
 				// loading actuall models..
@@ -283,7 +329,7 @@ namespace {
 						}
 
 						if (name == "space_origin2.txt")
-							models[0] = model;
+							models.push_back(model);//models[0] = model; // NOTE: change
 						else
 							models.push_back(model);
 
@@ -461,6 +507,17 @@ namespace {
 			hr = DirectX::CreateWICTextureFromFile(m_device.get(), L"Assets\\StoreLogo.png", nullptr, cube_texture.GetAddressOf());
 			hr = DirectX::CreateWICTextureFromFile(m_device.get(), L"Assets\\Blank.png", nullptr, blank_texture.GetAddressOf());
 			hr = DirectX::CreateWICTextureFromFile(m_device.get(), L"Assets\\space_origin2_final.png", nullptr, space_origin_texture.GetAddressOf());
+			hr = DirectX::CreateWICTextureFromFile(m_device.get(), L"Assets\\1.png", nullptr, CT_scan_1.GetAddressOf());
+
+			for (int i = 0; i < 21; i++)
+			{
+				std::string number = std::to_string(i + 1);
+				std::string s_path = "Assets\\" + number + ".png";
+				std::wstring path(s_path.begin(), s_path.end());
+				Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> temp;
+				HRESULT h = DirectX::CreateWICTextureFromFile(m_device.get(), path.c_str(), nullptr, temp.GetAddressOf());
+				CT_scans.push_back(temp);
+			}
 
 
 		}
@@ -496,7 +553,9 @@ namespace {
 			const std::vector<const sample::Cube*>& quads,
 			const sample::Cube& light,
 			const std::vector<const sample::Cube*>& space_origins,
-			bool should_render_next_hologram) override {
+			bool should_render_next_hologram,
+			bool should_render_model,
+			XrVector3f right_hand_position) override {
 			const uint32_t viewInstanceCount = (uint32_t)viewProjections.size();
 			CHECK_MSG(viewInstanceCount <= CubeShader::MaxViewInstance,
 				"Sample shader supports 2 or fewer view instances. Adjust shader to accommodate more.")
@@ -564,12 +623,18 @@ namespace {
 
 
 			// stupid switch for the holo switch action..
+			
 			if (should_render_next_hologram == true)
 			{
-				if (id_hologram_to_render == loader.models.size() - 1)
-					id_hologram_to_render = 0;
-				else
-					id_hologram_to_render += 1;
+				loader.load_next_model();
+				 
+				for (Mesh* m : loader.models[0]->meshes)
+				{
+					m->m_device = m_device;
+					m->m_deviceContext = m_deviceContext;
+					m->create_buffers();
+				}
+				
 			}
 
 			Model* currModel = loader.models[0];
@@ -579,17 +644,28 @@ namespace {
 			m_deviceContext->PSSetShaderResources(0, 1, space_origin_texture.GetAddressOf());
 
 			// Render each space origin (meaninig right hand and current origin)
-			for (const sample::Cube* cube : space_origins)
+			
+			// TODO check
+			if (should_render_model)
 			{
-				for (Mesh* m : currModel->meshes)
+				for (const sample::Cube* cube : space_origins)
 				{
-					m->bind();
-					CubeShader::ModelConstantBuffer model;
-					const DirectX::XMMATRIX scaleMatrix = DirectX::XMMatrixScaling(0.4f, 0.4f, 0.4f);
-					DirectX::XMStoreFloat4x4(&model.Model, DirectX::XMMatrixTranspose(DirectX::XMMatrixRotationRollPitchYaw(DirectX::XM_PIDIV2, DirectX::XM_PIDIV2, 0) * scaleMatrix * xr::math::LoadXrPose(cube->PoseInAppSpace)));
-					m_deviceContext->UpdateSubresource(m_modelCBuffer.get(), 0, nullptr, &model, 0, 0);
-
-					m_deviceContext->DrawIndexedInstanced((UINT)m->ib.size(), viewInstanceCount, 0, 0, 0);
+					for (Mesh* m : currModel->meshes)
+					{
+						m->bind();
+						CubeShader::ModelConstantBuffer model;
+						const DirectX::XMMATRIX scaleMatrix = DirectX::XMMatrixScaling(-0.1f, 0.1f, 0.1f);
+						//DirectX::XMStoreFloat4x4(&model.Model, DirectX::XMMatrixTranspose(DirectX::XMMatrixRotationRollPitchYaw(DirectX::XM_PIDIV2, DirectX::XM_PIDIV2, 0) * //   aleMatrix * xr::math::LoadXrPose(cube->PoseInAppSpace)));
+						DirectX::XMStoreFloat4x4(&model.Model, 
+							DirectX::XMMatrixTranspose(DirectX::XMMatrixTranslation(-1.0f, 0.2f, 0.7f) *		
+							DirectX::XMMatrixRotationRollPitchYaw(-DirectX::XM_PIDIV2, 0, 0) * 
+							scaleMatrix * 
+							xr::math::LoadXrPose(cube->PoseInAppSpace)));
+						m_deviceContext->UpdateSubresource(m_modelCBuffer.get(), 0, nullptr, &model, 0, 0);
+				
+						m_deviceContext->DrawIndexedInstanced((UINT)m->ib.size(), viewInstanceCount, 0, 0, 0);
+					}
+					
 				}
 			}
 
@@ -624,7 +700,7 @@ namespace {
 
 			m_deviceContext->PSSetShaderResources(0, 1, font_texture.GetAddressOf());
 
-			for (const sample::Cube* quad : quads)
+			/*for (const sample::Cube* quad : quads)
 			{
 				QuadShader::ModelConstantBuffer model;
 				const DirectX::XMMATRIX scaleMatrix = DirectX::XMMatrixScaling(quad->Scale.x * 2, quad->Scale.y * 2, quad->Scale.z * 2);
@@ -634,7 +710,7 @@ namespace {
 
 
 				std::vector<QuadShader::Vertex> cc = QuadShader::get_vb_with_text("OLA");
-				std::string word_to_render = quad->text;
+				std::string word_to_render = std::to_string(quad->PoseInAppSpace.position.x);//std::to_string(quad->PoseInAppSpace.position.x);
 				{
 					// VB
 					D3D11_MAPPED_SUBRESOURCE resource;
@@ -658,8 +734,73 @@ namespace {
 
 				m_deviceContext->DrawIndexedInstanced((UINT)std::size(QuadShader::c_quadIndices), viewInstanceCount, 0, 0, 0);
 
-			}
+			}*/
 
+			// drawing pictures (scans)
+			// TODO: bind
+			auto reverse_lerp = [](float value, float min, float max) -> float
+			{
+				float val = (value - min) / (max - min);
+				return val;
+			};
+
+			// quad->PoseInAppSpace.position.x
+			// 0.05(-1.0f) -> 0.10(-0.5f)
+			// -0.1 -> 0.3
+
+
+			float min_pos = 0.05f - 0.2f;
+			float max_pos = 0.10f - 0.2f;
+
+			float pos_x = min_pos;//right_hand_position.x;// space_origins[0]->PoseInAppSpace.position.x;//0.075f;
+			if (quads.size() == 1)
+				pos_x = quads.at(0)->PoseInAppSpace.position.x;
+			if (pos_x <= min_pos) pos_x = min_pos;
+			if (pos_x >= max_pos) pos_x = max_pos;
+
+
+			// space origins
+			float lerped = reverse_lerp(pos_x, min_pos, max_pos);
+			lerped = lerped * 20;
+			lerped = floor(lerped);
+
+			m_deviceContext->PSSetShaderResources(0, 1, CT_scans.at(lerped).GetAddressOf());
+			//m_deviceContext->PSSetShaderResources(0, 1, CT_scan_1.GetAddressOf());
+			for (const sample::Cube* cube : space_origins) 
+			{
+				for (Mesh* m : currModel->meshes)
+				{
+					QuadShader::ModelConstantBuffer model;							
+					const DirectX::XMMATRIX scaleMatrix = DirectX::XMMatrixScaling(-0.25f, 0.25f, 0.25f);			// -1.0f -> -0.5f
+					DirectX::XMStoreFloat4x4(&model.Model, DirectX::XMMatrixTranspose(DirectX::XMMatrixTranslation(-1.0f + (0.025f * lerped), 0.5f, -0.4uf) * DirectX::XMMatrixRotationRollPitchYaw(0, 0, 0) * scaleMatrix * xr::math::LoadXrPose(cube->PoseInAppSpace)));
+					m_deviceContext->UpdateSubresource(m_modelCBuffer.get(), 0, nullptr, &model, 0, 0);
+				}
+
+				{
+					// VB
+					std::vector<QuadShader::Vertex> test = QuadShader::get_picture_vb();
+					D3D11_MAPPED_SUBRESOURCE resource;
+					HRESULT hr = m_deviceContext->Map(m_quadVertexBuffer.get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &resource);
+					memcpy(resource.pData, static_cast<void*>(QuadShader::get_picture_vb().data()), QuadShader::get_picture_vb().size() * sizeof(float) * 8);
+					m_deviceContext->Unmap(m_quadVertexBuffer.get(), 0);
+				}
+
+				{
+					// IB
+					D3D11_MAPPED_SUBRESOURCE resource;
+					HRESULT hr = m_deviceContext->Map(m_quadIndexBuffer.get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &resource);
+					memcpy(resource.pData, static_cast<void*>(QuadShader::get_picture_ib().data()), 6 * sizeof(unsigned short));
+					m_deviceContext->Unmap(m_quadIndexBuffer.get(), 0);
+				}
+
+				const UINT strides_quad[] = { sizeof(float) * 8 };
+				ID3D11Buffer* vb_quad[] = { m_quadVertexBuffer.get() };
+				m_deviceContext->IASetVertexBuffers(0, (UINT)std::size({ m_quadVertexBuffer.get() }), vb_quad, strides_quad, offsets);
+				m_deviceContext->IASetIndexBuffer(m_quadIndexBuffer.get(), DXGI_FORMAT_R16_UINT, 0);
+
+				m_deviceContext->DrawIndexedInstanced((UINT)std::size(QuadShader::c_quadIndices), viewInstanceCount, 0, 0, 0);
+			
+			}
 		}
 
 	private:
@@ -685,6 +826,9 @@ namespace {
 		Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> blank_texture;
 		Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> space_origin_texture;
 
+		// snimky
+		Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> CT_scan_1;
+		std::vector<Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>> CT_scans;
 
 		objLoader loader{};
 		int32_t id_hologram_to_render = 0;

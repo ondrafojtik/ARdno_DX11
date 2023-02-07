@@ -72,7 +72,9 @@ namespace sample {
                                 const std::vector<const sample::Cube*>& quads,
                                 const sample::Cube& light,
 			                    const std::vector<const sample::Cube*>& space_origins,
-                                bool should_render_next_hologram) = 0;
+                                bool should_render_next_hologram,
+                                bool should_render_model,
+                                XrVector3f right_hand_position) = 0;
 
       };
 

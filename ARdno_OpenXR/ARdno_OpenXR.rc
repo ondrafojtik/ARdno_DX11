@@ -60,6 +60,50 @@ IDB_PNG4                PNG                     "Assets\\space_origin_diffuse.pn
 
 IDB_PNG5                PNG                     "Assets\\space_origin2_final.png"
 
+IDB_PNG6                PNG                     "C:\\Users\\Ondra-PC\\Desktop\\semestral\\snimky\\png\\1.png"
+
+IDB_PNG7                PNG                     "Assets\\1.png"
+
+IDB_PNG8                PNG                     "Assets\\2.png"
+
+IDB_PNG9                PNG                     "Assets\\3.png"
+
+IDB_PNG10               PNG                     "Assets\\4.png"
+
+IDB_PNG11               PNG                     "Assets\\5.png"
+
+IDB_PNG12               PNG                     "Assets\\6.png"
+
+IDB_PNG13               PNG                     "Assets\\7.png"
+
+IDB_PNG14               PNG                     "Assets\\8.png"
+
+IDB_PNG15               PNG                     "Assets\\9.png"
+
+IDB_PNG16               PNG                     "Assets\\10.png"
+
+IDB_PNG17               PNG                     "Assets\\11.png"
+
+IDB_PNG18               PNG                     "Assets\\12.png"
+
+IDB_PNG19               PNG                     "Assets\\13.png"
+
+IDB_PNG20               PNG                     "Assets\\14.png"
+
+IDB_PNG21               PNG                     "Assets\\15.png"
+
+IDB_PNG22               PNG                     "Assets\\16.png"
+
+IDB_PNG23               PNG                     "Assets\\17.png"
+
+IDB_PNG24               PNG                     "Assets\\18.png"
+
+IDB_PNG25               PNG                     "Assets\\19.png"
+
+IDB_PNG26               PNG                     "Assets\\20.png"
+
+IDB_PNG27               PNG                     "Assets\\21.png"
+
 #endif    // English (United States) resources
 /////////////////////////////////////////////////////////////////////////////
 

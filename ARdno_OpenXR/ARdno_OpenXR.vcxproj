@@ -261,6 +261,30 @@
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <Image Include="..\..\..\Users\Ondra-PC\Desktop\semestral\snimky\1.jpg" />
+    <Image Include="..\..\..\Users\Ondra-PC\Desktop\semestral\snimky\png\1.png" />
+    <Image Include="..\..\..\Users\Ondra-PC\Desktop\semestral\snimky\png\Screenshot 2022-04-29 113239.png" />
+    <Image Include="Assets\1.png" />
+    <Image Include="Assets\10.png" />
+    <Image Include="Assets\11.png" />
+    <Image Include="Assets\12.png" />
+    <Image Include="Assets\13.png" />
+    <Image Include="Assets\14.png" />
+    <Image Include="Assets\15.png" />
+    <Image Include="Assets\16.png" />
+    <Image Include="Assets\17.png" />
+    <Image Include="Assets\18.png" />
+    <Image Include="Assets\19.png" />
+    <Image Include="Assets\2.png" />
+    <Image Include="Assets\20.png" />
+    <Image Include="Assets\21.png" />
+    <Image Include="Assets\3.png" />
+    <Image Include="Assets\4.png" />
+    <Image Include="Assets\5.png" />
+    <Image Include="Assets\6.png" />
+    <Image Include="Assets\7.png" />
+    <Image Include="Assets\8.png" />
+    <Image Include="Assets\9.png" />
     <Image Include="Assets\BadgeLogo.scale-100.png" />
     <Image Include="Assets\BadgeLogo.scale-125.png" />
     <Image Include="Assets\BadgeLogo.scale-150.png" />
@@ -323,6 +347,7 @@
     <Image Include="Assets\Wide310x150Logo.scale-200.png" />
     <Image Include="Assets\Wide310x150Logo.scale-400.png" />
     <Image Include="bitmap1.bmp" />
+    <Image Include="icon1.ico" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="arrow.h" />
