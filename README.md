@@ -9,4 +9,4 @@ Technologies used
 	- OpenXR
 	- CppWinRT
  
-![](https://github.com/ondrafojtik/ARdno_DX11/blob/master/Animation.gif?raw=true "Result")
+![](Animation.gif)
