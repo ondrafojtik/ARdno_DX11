@@ -2,6 +2,8 @@
 
 Project created as part of Bachelor's thesis. It was created in cooperation with FNU & IT4. Deployed to Microsoft Hololens 2 (UWP). 
 
+![alt text](https://github.com/ondrafojtik/ARdno_DX11/blob/master/Animation.gif "Result")
+
 Technologies used
 
 	- C++
@@ -9,4 +11,4 @@ Technologies used
 	- OpenXR
 	- CppWinRT
  
-![alt text](https://github.com/ondrafojtik/ARdno_DX11/blob/master/Animation.gif "Result")
+
